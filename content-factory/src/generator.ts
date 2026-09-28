@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import fs from 'fs';
 import path from 'path';
 import type { ArticleRequest } from './prompts/types';
-import { SYSTEM_PROMPT } from './prompts/system';
+import { REQUIRED_DISCLAIMER_TEXT, SAFE_LIMITS_SENTENCE, SYSTEM_PROMPT } from './prompts/system';
 import { buildArticlePrompt } from './prompts/article-de';
 import { fetchUnsplashImages, CLUSTER_IMAGE_QUERIES } from './images';
 import { validateArticle } from './validator';
@@ -11,6 +11,7 @@ import { computeArticleStats, formatStatsLog } from './stats';
 import { generateMockArticle } from './mock-generator';
 
 const LOG_DIR = path.join(__dirname, '../logs');
+const MAX_GENERATION_ATTEMPTS = 3;
 
 function getMinWordCount(format: string): number {
   const map: Record<string, number> = {
@@ -73,30 +74,67 @@ export async function generateArticle(
   const userPrompt = buildArticlePrompt(req, images, internalLinks);
 
   const client = new Anthropic({ apiKey });
+  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: userPrompt }];
+  let lastErrors: string[] = [];
 
-  console.log(`🤖 Generating article: ${req.slug}...`);
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt++) {
+    console.log(`🤖 Generating article: ${req.slug} (attempt ${attempt}/${MAX_GENERATION_ATTEMPTS})...`);
 
-  const message = await client.messages.create({
-    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
-    max_tokens: 16000,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
+    const message = await client.messages.create({
+      model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
+      max_tokens: 16000,
+      system: SYSTEM_PROMPT,
+      messages,
+    });
 
-  const textBlock = message.content.find((b) => b.type === 'text');
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text content in Claude response');
+    const textBlock = message.content.find((b) => b.type === 'text');
+    if (!textBlock || textBlock.type !== 'text') {
+      throw new Error('No text content in Claude response');
+    }
+
+    const articleContent = extractMdxContent(textBlock.text);
+    const validation = reviewArticle(req, articleContent, { mock: false });
+    if (validation.valid) {
+      return articleContent;
+    }
+
+    lastErrors = validation.errors;
+    if (attempt === MAX_GENERATION_ATTEMPTS) break;
+
+    console.warn(`↩️ Compliance retry ${attempt} for ${req.slug}`);
+    messages.push(
+      { role: 'assistant', content: textBlock.text },
+      { role: 'user', content: complianceRepairPrompt(validation.errors) },
+    );
   }
 
-  const articleContent = extractMdxContent(textBlock.text);
-  return finalizeArticle(req, articleContent, { mock: false });
+  throw new Error(`Article validation failed: ${lastErrors.join('; ')}`);
 }
 
-function finalizeArticle(
+function complianceRepairPrompt(errors: string[]): string {
+  return `The draft failed the wellness compliance validator and was not published.
+Rewrite the complete article from scratch. Start directly with ---.
+
+Errors:
+${errors.map((error) => `- ${error}`).join('\n')}
+
+Keep this limits sentence:
+${SAFE_LIMITS_SENTENCE}
+
+Keep this disclaimer verbatim at the end:
+${REQUIRED_DISCLAIMER_TEXT}
+
+Describe wellness signals, hydration indicators, and habits.
+Do not state a diagnosis, a prescription, a cure, or a guaranteed health outcome.
+Do not write that the reader has a disease.
+Do not write "detects disease", "diagnoses dehydration", "medical diagnosis of", "FDA-approved", or "replaces your doctor".`;
+}
+
+function reviewArticle(
   req: ArticleRequest,
   articleContent: string,
   meta: { mock: boolean; minWordCount?: number },
-): string {
+): ReturnType<typeof validateArticle> {
   const minWordCount = meta.minWordCount ?? getMinWordCount(req.format);
   const validation = validateArticle(
     articleContent,
@@ -108,7 +146,7 @@ function finalizeArticle(
     console.error('❌ Validation failed:');
     validation.errors.forEach((e) => console.error(e));
     logGeneration(req.slug, { errors: validation.errors, warnings: validation.warnings, mock: meta.mock });
-    throw new Error(`Article validation failed: ${validation.errors.join('; ')}`);
+    return validation;
   }
 
   if (validation.warnings.length > 0) {
@@ -122,6 +160,18 @@ function finalizeArticle(
 
   logGeneration(req.slug, { stats, warnings: validation.warnings, mock: meta.mock });
 
+  return validation;
+}
+
+function finalizeArticle(
+  req: ArticleRequest,
+  articleContent: string,
+  meta: { mock: boolean; minWordCount?: number },
+): string {
+  const validation = reviewArticle(req, articleContent, meta);
+  if (!validation.valid) {
+    throw new Error(`Article validation failed: ${validation.errors.join('; ')}`);
+  }
   return articleContent;
 }
 

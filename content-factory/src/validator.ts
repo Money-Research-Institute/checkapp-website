@@ -2,17 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import {
   FORBIDDEN_PATTERNS,
-  FORBIDDEN_PATTERN_MESSAGES,
+  complianceFailureMessages,
 } from '../config/forbidden-patterns';
 import authors from '../config/authors.json';
-
-const COMPLIANCE_KEYS = [
-  'medicalDiagnosis',
-  'medicalDeviceClaim',
-  'replacesDoctor',
-  'guaranteedOutcome',
-  'fakeExpertAuthor',
-] as const;
 
 const CANONICAL_AUTHORS = new Set(authors.map((a) => a.name.toLowerCase()));
 
@@ -160,11 +152,7 @@ export function validateArticle(
     errors.push('❌ Mock copy-paste filler in article — publication blocked');
   }
 
-  for (const key of COMPLIANCE_KEYS) {
-    if (FORBIDDEN_PATTERNS[key].test(content)) {
-      errors.push(`❌ ${FORBIDDEN_PATTERN_MESSAGES[key]}`);
-    }
-  }
+  errors.push(...complianceFailureMessages(content));
 
   const authorMatch = content.match(/^\s*name:\s*["']?(.+?)["']?\s*$/m);
   if (authorMatch && !CANONICAL_AUTHORS.has(authorMatch[1].trim().toLowerCase())) {
