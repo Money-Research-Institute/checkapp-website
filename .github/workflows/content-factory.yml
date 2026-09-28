@@ -133,6 +133,10 @@ jobs:
         if: steps.gen.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         run: cd content-factory && npm run test:fallback
 
+      - name: Validate compliance patterns
+        if: steps.gen.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
+        run: cd content-factory && npm run test:compliance
+
       - name: Run integration test
         if: github.event_name == 'workflow_dispatch'
         continue-on-error: true

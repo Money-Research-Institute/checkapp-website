@@ -1,5 +1,6 @@
 import type { ArticleRequest } from './types';
 import { clusterTagEn } from '../../config/cluster-tags';
+import { REQUIRED_DISCLAIMER_TEXT, SAFE_LIMITS_SENTENCE } from './system';
 
 export function buildArticlePrompt(
   req: ArticleRequest,
@@ -85,16 +86,31 @@ sources:
 - At least 1 data table
 - At least 1 numbered list (5+ items)
 - One in-body image (not the cover) mid-article
-- Limits section — what wellness apps can and cannot do (no diagnosis, not a medical device)
+- Limits section — copy this sentence and stay with signals / indicators:
+  ${SAFE_LIMITS_SENTENCE}
 - Practical checklist or how-to
 - Closing CTA, verbatim:
   Try CheckApp free — DIDI turns daily wellness advice into a habit you actually keep. [Get CheckApp Free](/download/)
-- Required italic disclaimer (see system prompt)
+- Required italic disclaimer, verbatim:
+  ${REQUIRED_DISCLAIMER_TEXT}
 - **Do not** add a "Further reading" section
 
 ### 3. FAQ
 At least 5 questions in frontmatter. First question must be the most common search query for "${keyword}".
-FAQ answers must not diagnose or promise medical outcomes.
+FAQ answers describe habits and limits. The first FAQ must not ask whether the app diagnoses a condition.
+
+## FEW-SHOT (limits + disclaimer)
+Safe paragraph:
+Thirst, urine color, and afternoon energy are hydration signals you can notice at home. ${SAFE_LIMITS_SENTENCE}
+
+Safe FAQ answer:
+No. CheckApp and DIDI support daily habits and wellness indicators. ${SAFE_LIMITS_SENTENCE}
+
+Unsafe (do not write these strings anywhere, including headings and FAQ):
+- "diagnoses dehydration" / "detects disease" / "identifies illness" / "medical diagnosis of"
+- "you have diabetes" / "you have dehydration" / "you have been diagnosed"
+- "cures disease" / "treats cancer" / "prescribes medication"
+- "FDA-approved" / "replaces your doctor" / "guaranteed to cure" / "100% accurate diagnosis"
 
 ## FORBIDDEN PATTERNS (AGAIN)
 - ❌ {#anchor-id}
@@ -105,9 +121,7 @@ FAQ answers must not diagnose or promise medical outcomes.
 - ❌ ---en---
 - ❌ titleEn / descriptionEn / tagsEn
 - ❌ readTime: "8 min" (must be a number)
-- ❌ "diagnoses dehydration" / "detects disease" / "FDA-approved"
-- ❌ "guaranteed cure" / "100% accurate diagnosis"
-- ❌ "replaces your doctor"
+- ❌ diagnosis, prescription, cure, or guaranteed-outcome claims listed above
 
 Write the complete article now. Start directly with the three dashes (---) of the frontmatter.
 `;
