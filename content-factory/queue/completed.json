@@ -388,5 +388,35 @@
     "plannedDate": "2026-06-06",
     "language": "EN",
     "completedAt": "2026-06-06"
+  },
+  {
+    "id": 14,
+    "cluster": "Hydration",
+    "slug": "morning-hydration-routine",
+    "titleDe": "Morning Hydration: Why the First Glass Matters More Than You Think",
+    "titleEn": "Morning Hydration: Why the First Glass Matters More Than You Think",
+    "keywordDe": "morning hydration routine",
+    "keywordEn": "morning hydration routine",
+    "lsiKeywords": [
+      "morning water intake",
+      "overnight dehydration",
+      "wake up hydration",
+      "daily fluid balance"
+    ],
+    "format": "Howto",
+    "category": "Hydration Science",
+    "unsplashQuery": "morning glass of water sunrise wellness",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 1800,
+    "kd": 22,
+    "searchVolEn": 3600,
+    "targetLength": 1500,
+    "taSegments": [
+      "beginners"
+    ],
+    "plannedDate": "2026-08-24",
+    "language": "EN",
+    "completedAt": "2026-09-29T11:53:52.568Z"
   }
 ]
