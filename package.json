@@ -9,6 +9,9 @@
     "preview": "npx serve out",
     "start": "next start",
     "lint": "eslint",
+    "test:webhooks": "node --experimental-strip-types src/lib/leadsWebhook.test.ts",
+    "test:publish-date": "node --experimental-strip-types scripts/check-publish-dates.test.ts",
+    "test": "npm run test:webhooks && npm run test:publish-date",
     "assets:sync": "bash scripts/sync-assets.sh",
     "og:generate": "node scripts/generate-og-image.js"
   },

@@ -61,7 +61,8 @@ export function Footer() {
             <ul className="space-y-2">
               <li><a href={SOCIAL_LINKS.instagram} className="text-sm text-white/70 transition-colors hover:text-white" target="_blank" rel="noopener noreferrer">Instagram</a></li>
               <li><a href={SOCIAL_LINKS.twitter} className="text-sm text-white/70 transition-colors hover:text-white" target="_blank" rel="noopener noreferrer">Twitter/X</a></li>
-              <li><a href={SOCIAL_LINKS.contact} className="text-sm text-white/70 transition-colors hover:text-white">Contact</a></li>
+              <li><Link href="/contact" className="text-sm text-white/70 transition-colors hover:text-white">Contact</Link></li>
+              <li><a href={SOCIAL_LINKS.contact} className="text-sm text-white/70 transition-colors hover:text-white">hello@checkapp.today</a></li>
             </ul>
           </div>
         </div>
