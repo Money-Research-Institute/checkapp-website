@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run site tests (shared leads webhook, no future publish dates)
+        run: npm test
+
       - name: Build static site
         run: npm run build
         env:
