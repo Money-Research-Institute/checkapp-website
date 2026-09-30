@@ -30,6 +30,7 @@ Download: https://checkapp.today/download/
 - [Preventive Care vs. Reactive Care: The Economic Difference](https://checkapp.today/blog/preventive-vs-reactive-care-economics/)
 - [The Basics of 4P Medicine: What It Means for Your Daily Life](https://checkapp.today/blog/4p-medicine-basics/)
 - [The Participative Patient: Taking Control of Your Health Data](https://checkapp.today/blog/participative-patient-health-data/)
+- [Tongue Scan Wellness: What Your Daily Check-In Can Reveal](https://checkapp.today/blog/tongue-scan-wellness-guide/)
 - [What Can an AI Health Companion Actually Do? (Honest Guide)](https://checkapp.today/blog/ai-health-companion-guide/)
 - [Why Continuous Dialogue Beats One-Off Doctor Visits](https://checkapp.today/blog/continuous-dialogue-vs-doctor-visits/)
 

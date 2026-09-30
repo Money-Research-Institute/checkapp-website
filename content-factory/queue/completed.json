@@ -417,6 +417,36 @@
     ],
     "plannedDate": "2026-08-24",
     "language": "EN",
-    "completedAt": "2026-09-29T11:53:52.568Z"
+    "completedAt": "2026-08-24"
+  },
+  {
+    "id": 15,
+    "cluster": "Oral Wellness",
+    "slug": "tongue-scan-wellness-guide",
+    "titleDe": "Tongue Scan Wellness: What Your Daily Check-In Can Reveal",
+    "titleEn": "Tongue Scan Wellness: What Your Daily Check-In Can Reveal",
+    "keywordDe": "tongue scan wellness",
+    "keywordEn": "tongue scan wellness",
+    "lsiKeywords": [
+      "tongue photo analysis",
+      "AI tongue check",
+      "oral wellness signals",
+      "daily health scan"
+    ],
+    "format": "Guide",
+    "category": "Preventive Care",
+    "unsplashQuery": "tongue health wellness check mirror",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 600,
+    "kd": 16,
+    "searchVolEn": 1200,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-08-28",
+    "language": "EN",
+    "completedAt": "2026-09-30T14:32:29.938Z"
   }
 ]
