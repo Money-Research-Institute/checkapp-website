@@ -31,12 +31,15 @@ const dmMono = DM_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = createMetadata({
-  title: 'CheckApp — Your AI Health Companion. Meet DIDI.',
-  description:
-    'CheckApp is an AI-powered wellness app where DIDI — your personal health companion — tracks hydration, analyzes your tongue scans, and checks in on you every day.',
-  path: '/',
-});
+export const metadata: Metadata = {
+  ...createMetadata({
+    title: 'CheckApp — Your AI Health Companion. Meet DIDI.',
+    description:
+      'CheckApp is an AI-powered wellness app where DIDI — your personal health companion — tracks hydration, analyzes your tongue scans, and checks in on you every day.',
+    path: '/',
+  }),
+  other: { yandex: 'noindex, nofollow' },
+};
 
 export default function RootLayout({
   children,
