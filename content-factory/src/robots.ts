@@ -23,7 +23,13 @@ export function ensureRobotsTxt(): void {
   const ROBOTS_PATH = getRobotsPath();
   const BASE_URL = getBaseUrl();
 
-  const content = `User-agent: *
+  const content = `User-agent: Yandex
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: *
 Allow: /
 Allow: /blog/
 Allow: /llms.txt
