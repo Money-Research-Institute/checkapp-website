@@ -18,6 +18,7 @@ Download: https://checkapp.today/download/
 
 ## Blog
 
+- [AI Daily Check-Ins: Why Proactive Wellness Beats Reactive Apps](https://checkapp.today/blog/ai-daily-check-in-benefits/)
 - [Bio-Tracking Without the Stress: The Psychology of Gamified Health](https://checkapp.today/blog/gamified-health-psychology/)
 - [Building a Daily Health Routine You Won't Quit](https://checkapp.today/blog/daily-health-routine-that-sticks/)
 - [How to Build a Water Drinking Habit That Actually Sticks](https://checkapp.today/blog/water-drinking-habit/)

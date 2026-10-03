@@ -447,6 +447,36 @@
     ],
     "plannedDate": "2026-08-28",
     "language": "EN",
-    "completedAt": "2026-09-30T14:32:29.938Z"
+    "completedAt": "2026-08-28"
+  },
+  {
+    "id": 19,
+    "cluster": "AI Companion",
+    "slug": "ai-daily-check-in-benefits",
+    "titleDe": "AI Daily Check-Ins: Why Proactive Wellness Beats Reactive Apps",
+    "titleEn": "AI Daily Check-Ins: Why Proactive Wellness Beats Reactive Apps",
+    "keywordDe": "AI daily check-in benefits",
+    "keywordEn": "AI daily check-in benefits",
+    "lsiKeywords": [
+      "proactive wellness AI",
+      "health check-in app",
+      "continuous monitoring",
+      "AI companion benefits"
+    ],
+    "format": "Explainer",
+    "category": "AI & Health",
+    "unsplashQuery": "AI wellness check-in smartphone notification",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 700,
+    "kd": 17,
+    "searchVolEn": 1400,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-13",
+    "language": "EN",
+    "completedAt": "2026-10-03T12:57:49.262Z"
   }
 ]
