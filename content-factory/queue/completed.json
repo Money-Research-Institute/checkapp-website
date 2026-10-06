@@ -477,6 +477,36 @@
     ],
     "plannedDate": "2026-09-13",
     "language": "EN",
-    "completedAt": "2026-10-03T12:57:49.262Z"
+    "completedAt": "2026-09-13"
+  },
+  {
+    "id": 20,
+    "cluster": "Habits",
+    "slug": "habit-stacking-wellness",
+    "titleDe": "Habit Stacking for Wellness: Link Small Actions Into Lasting Routines",
+    "titleEn": "Habit Stacking for Wellness: Link Small Actions Into Lasting Routines",
+    "keywordDe": "habit stacking wellness",
+    "keywordEn": "habit stacking wellness",
+    "lsiKeywords": [
+      "behaviour chaining",
+      "routine building",
+      "micro habits",
+      "habit architecture"
+    ],
+    "format": "Howto",
+    "category": "Daily Habits",
+    "unsplashQuery": "habit stacking morning routine checklist",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 1500,
+    "kd": 23,
+    "searchVolEn": 3000,
+    "targetLength": 1500,
+    "taSegments": [
+      "beginners"
+    ],
+    "plannedDate": "2026-09-17",
+    "language": "EN",
+    "completedAt": "2026-10-06T14:40:30.583Z"
   }
 ]
