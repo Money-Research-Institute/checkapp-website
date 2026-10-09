@@ -507,6 +507,36 @@
     ],
     "plannedDate": "2026-09-17",
     "language": "EN",
-    "completedAt": "2026-10-06T14:40:30.583Z"
+    "completedAt": "2026-09-17"
+  },
+  {
+    "id": 24,
+    "cluster": "AI Companion",
+    "slug": "ai-health-companion-vs-fitness-tracker",
+    "titleDe": "AI Health Companion vs Fitness Tracker: Which Fits Your Wellness Goals?",
+    "titleEn": "AI Health Companion vs Fitness Tracker: Which Fits Your Wellness Goals?",
+    "keywordDe": "AI health companion vs fitness tracker",
+    "keywordEn": "AI health companion vs fitness tracker",
+    "lsiKeywords": [
+      "wearable vs AI app",
+      "wellness tracking comparison",
+      "smartwatch limitations",
+      "conversational health AI"
+    ],
+    "format": "Guide",
+    "category": "AI & Health",
+    "unsplashQuery": "fitness tracker vs AI health app comparison",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 950,
+    "kd": 20,
+    "searchVolEn": 1900,
+    "targetLength": 1500,
+    "taSegments": [
+      "beginners"
+    ],
+    "plannedDate": "2026-10-03",
+    "language": "EN",
+    "completedAt": "2026-10-09T14:54:09.258Z"
   }
 ]
