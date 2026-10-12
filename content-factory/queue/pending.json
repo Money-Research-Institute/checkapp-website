@@ -290,35 +290,6 @@
     "language": "EN"
   },
   {
-    "id": 29,
-    "cluster": "AI Companion",
-    "slug": "personalized-wellness-ai",
-    "titleDe": "Personalized Wellness AI: How Adaptive Companions Learn Your Patterns",
-    "titleEn": "Personalized Wellness AI: How Adaptive Companions Learn Your Patterns",
-    "keywordDe": "personalized wellness AI",
-    "keywordEn": "personalized wellness AI",
-    "lsiKeywords": [
-      "adaptive health AI",
-      "personalized recommendations",
-      "AI health patterns",
-      "custom wellness plans"
-    ],
-    "format": "Explainer",
-    "category": "AI & Health",
-    "unsplashQuery": "personalized AI wellness dashboard adaptive",
-    "status": "pending",
-    "priority": "high",
-    "searchVolDe": 1100,
-    "kd": 23,
-    "searchVolEn": 2200,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-10-23",
-    "language": "EN"
-  },
-  {
     "id": 30,
     "cluster": "Preventive Care",
     "slug": "preventive-daily-actions",
