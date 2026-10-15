@@ -567,6 +567,36 @@
     ],
     "plannedDate": "2026-10-23",
     "language": "EN",
-    "completedAt": "2026-10-12T17:15:25.546Z"
+    "completedAt": "2026-10-23"
+  },
+  {
+    "id": 30,
+    "cluster": "Preventive Care",
+    "slug": "preventive-daily-actions",
+    "titleDe": "Preventive Daily Actions: Small Steps That Reduce Long-Term Health Risk",
+    "titleEn": "Preventive Daily Actions: Small Steps That Reduce Long-Term Health Risk",
+    "keywordDe": "preventive daily actions",
+    "keywordEn": "preventive daily actions",
+    "lsiKeywords": [
+      "daily prevention habits",
+      "risk reduction wellness",
+      "proactive health steps",
+      "chronic disease prevention"
+    ],
+    "format": "Howto",
+    "category": "Preventive Care",
+    "unsplashQuery": "preventive health daily actions wellness",
+    "status": "completed",
+    "priority": "high",
+    "searchVolDe": 1000,
+    "kd": 21,
+    "searchVolEn": 2000,
+    "targetLength": 1500,
+    "taSegments": [
+      "beginners"
+    ],
+    "plannedDate": "2026-10-27",
+    "language": "EN",
+    "completedAt": "2026-10-15T13:01:41.380Z"
   }
 ]
