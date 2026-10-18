@@ -348,35 +348,6 @@
     "language": "EN"
   },
   {
-    "id": 33,
-    "cluster": "4P Medicine",
-    "slug": "4p-personalized-prevention",
-    "titleDe": "4P Personalized Prevention: Moving From Generic Advice to Your Data",
-    "titleEn": "4P Personalized Prevention: Moving From Generic Advice to Your Data",
-    "keywordDe": "4P personalized prevention",
-    "keywordEn": "4P personalized prevention",
-    "lsiKeywords": [
-      "personalised preventive medicine",
-      "predictive wellness",
-      "individual health plans",
-      "4P medicine framework"
-    ],
-    "format": "Guide",
-    "category": "4P Medicine",
-    "unsplashQuery": "personalized prevention health data 4P medicine",
-    "status": "pending",
-    "priority": "high",
-    "searchVolDe": 550,
-    "kd": 18,
-    "searchVolEn": 1100,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-11-08",
-    "language": "EN"
-  },
-  {
     "id": 34,
     "cluster": "Habits",
     "slug": "longevity-morning-routine",

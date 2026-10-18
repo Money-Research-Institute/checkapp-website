@@ -18,6 +18,7 @@ Download: https://checkapp.today/download/
 
 ## Blog
 
+- [4P Personalized Prevention: Moving From Generic Advice to Your Data](https://checkapp.today/blog/4p-personalized-prevention/)
 - [AI Daily Check-Ins: Why Proactive Wellness Beats Reactive Apps](https://checkapp.today/blog/ai-daily-check-in-benefits/)
 - [AI Health Companion vs Fitness Tracker: Which Fits Your Wellness Goals?](https://checkapp.today/blog/ai-health-companion-vs-fitness-tracker/)
 - [Bio-Tracking Without the Stress: The Psychology of Gamified Health](https://checkapp.today/blog/gamified-health-psychology/)
