@@ -348,35 +348,6 @@
     "language": "EN"
   },
   {
-    "id": 34,
-    "cluster": "Habits",
-    "slug": "longevity-morning-routine",
-    "titleDe": "The Longevity Morning Routine: Five Minutes That Compound Over Years",
-    "titleEn": "The Longevity Morning Routine: Five Minutes That Compound Over Years",
-    "keywordDe": "longevity morning routine",
-    "keywordEn": "longevity morning routine",
-    "lsiKeywords": [
-      "morning wellness ritual",
-      "longevity habits",
-      "healthy morning start",
-      "preventive morning routine"
-    ],
-    "format": "Howto",
-    "category": "Daily Habits",
-    "unsplashQuery": "longevity morning routine sunrise wellness",
-    "status": "pending",
-    "priority": "high",
-    "searchVolDe": 1400,
-    "kd": 22,
-    "searchVolEn": 2800,
-    "targetLength": 1500,
-    "taSegments": [
-      "beginners"
-    ],
-    "plannedDate": "2026-11-12",
-    "language": "EN"
-  },
-  {
     "id": 35,
     "cluster": "4P Medicine",
     "slug": "wellness-data-ownership",
