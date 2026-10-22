@@ -5,6 +5,7 @@
  *   < 540    brand on top; Product | Company side by side; Connect on its own row; no duplicate legal links
  *   540-879  brand on top, then three equal columns; legal links return (stacked under the copyright below 720)
  *   >= 880   the Figma composition: brand | Product | Company | Connect
+ *   >= 1000  the disclaimer and the region switcher share one row (stacked below it)
  * The Figma-literal 28px link rhythm exists only from 1100px with a fine pointer; every other link is 44px tall.
  *
  * Stacking: .glow (back) < .inner (text). Nothing in .glow takes pointer events or carries meaning.
@@ -17,7 +18,13 @@
   --f-tag: rgb(255 255 255 / 0.66);
   --f-link: rgb(255 255 255 / 0.7);
   --f-quiet: rgb(255 255 255 / 0.76);
-  --f-rule: rgb(255 255 255 / 0.1);
+  --f-rule: rgb(255 255 255 / 0.08); /* Figma's hairline */
+  --f-pill: rgb(255 255 255 / 0.16); /* the outline of a region pill, a little firmer than the hairline */
+  /* Type scale. Figma is 14 / 20 with 12px headings and an 18px wordmark; ultrawide screens get a small bump below. */
+  --f-fs: 14px;
+  --f-lh: 20px;
+  --f-fs-head: 12px;
+  --f-fs-mark: 18px;
   /* Space above the first row and below the last one (Figma: 64 and 44). */
   --f-pt: 40px;
   --f-pb: 44px;
@@ -66,6 +73,21 @@
     --f-pb: 40px;
   }
 }
+/* Ultrawide: the page keeps its 1320px column, so the type grows a notch instead. */
+@media (min-width: 2560px) {
+  .footer {
+    --f-fs: 15px;
+    --f-lh: 22px;
+    --f-fs-head: 13px;
+    --f-fs-mark: 20px;
+  }
+}
+@media (min-width: 3000px) {
+  .footer {
+    --f-fs: 16px;
+    --f-lh: 24px;
+  }
+}
 
 .sr {
   position: absolute;
@@ -85,10 +107,12 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  /* 48px of bleed each side for the pointer sway, and never narrower than 900px (+ bleed): a 390px phone looks at the
-     middle of the glow, where the light is. Equal left and right keeps it centred. */
-  left: min(-48px, calc((100% - 996px) / 2));
-  right: min(-48px, calc((100% - 996px) / 2));
+  /* 48px of bleed each side for the pointer sway, and never narrower than 996px (900 + bleed): a 390px phone looks at the
+     middle of the glow, where the light is. Past 2500px (the width of Figma's own glow frame) the layer stops growing and
+     stays centred, so a 3440px screen gets a fade to black instead of a long, stretched bar. Equal left and right keeps
+     it centred in every case. */
+  left: max(min(-48px, calc((100% - 996px) / 2)), calc((100% - 2500px) / 2));
+  right: max(min(-48px, calc((100% - 996px) / 2)), calc((100% - 2500px) / 2));
   pointer-events: none;
 }
 
@@ -145,11 +169,27 @@
   }
 }
 
-/* Ultrawide: beyond about 2200px the poster is stretched past 1.5x, so the far edges fall to black instead of a long dim bar. */
+/* Ultrawide: from 2200px the poster is stretched past 1.5x, so its sides ease out to black (a long, even ramp: a short one
+   leaves the poster's own bright corners standing as two lobes) instead of ending in a hard edge. */
 @media (min-width: 2200px) {
   .glow {
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    --f-fade: linear-gradient(
+      90deg,
+      transparent 0,
+      rgb(0 0 0 / 0.1) 6%,
+      rgb(0 0 0 / 0.32) 14%,
+      rgb(0 0 0 / 0.64) 24%,
+      rgb(0 0 0 / 0.9) 34%,
+      #000 44%,
+      #000 56%,
+      rgb(0 0 0 / 0.9) 66%,
+      rgb(0 0 0 / 0.64) 76%,
+      rgb(0 0 0 / 0.32) 86%,
+      rgb(0 0 0 / 0.1) 94%,
+      transparent 100%
+    );
+    -webkit-mask-image: var(--f-fade);
+    mask-image: var(--f-fade);
   }
 }
 @media (prefers-contrast: more) {
@@ -209,7 +249,7 @@
 
 .wordmark {
   font-family: var(--font-bricolage), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  font-size: 18px;
+  font-size: var(--f-fs-mark);
   font-weight: 700;
   line-height: 28px;
   color: var(--c-fg);
@@ -218,8 +258,8 @@
 .tagline {
   max-width: 34ch;
   margin: 16px 0 0;
-  font-size: 14px;
-  line-height: 22.75px;
+  font-size: var(--f-fs);
+  line-height: 1.625; /* Figma: 22.75 on 14 */
   color: var(--f-tag);
   text-wrap: pretty;
 }
@@ -227,7 +267,7 @@
 .heading {
   margin: 0 0 4px;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--f-fs-head);
   font-weight: 600;
   line-height: 16px;
   letter-spacing: 0.04em;
@@ -247,8 +287,8 @@
   align-items: center;
   min-height: var(--tap, 44px);
   border-radius: 4px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--f-fs);
+  line-height: var(--f-lh);
   color: var(--f-link);
   text-decoration: none;
   overflow-wrap: anywhere; /* hello@checkapp.today must never push a column wider than the screen */
@@ -267,18 +307,27 @@
   color: var(--c-fg);
 }
 
+/* ------------------------------------------------------------------ disclaimer and region switcher */
+
+/* Phones and tablets: the switcher, then the disclaimer, each on its own row. From 1000px they share one (below). */
+.meta {
+  display: grid;
+  row-gap: 28px;
+  margin-top: 36px;
+}
+
 /* Region switcher (landing pages): real links to the four landing pages, the current one marked aria-current="page". */
 .regions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 16px;
-  margin-top: 28px;
+  min-width: 0;
 }
 
 .regionHeading {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--f-fs-head);
   font-weight: 600;
   line-height: 16px;
   letter-spacing: 0.04em;
@@ -302,10 +351,10 @@
   min-height: var(--tap, 44px);
   min-width: var(--tap, 44px);
   padding-inline: 14px;
-  border: 1px solid var(--f-rule);
+  border: 1px solid var(--f-pill);
   border-radius: 999px;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--f-fs);
+  line-height: var(--f-lh);
   color: var(--f-link);
   text-decoration: none;
   transition:
@@ -345,8 +394,8 @@
 /* The medical disclaimer: quiet, but real text at a readable size and contrast. */
 .note {
   max-width: 64rem;
-  margin: 36px 0 0;
-  font-size: 12px;
+  margin: 0;
+  font-size: calc(var(--f-fs) - 2px);
   line-height: 1.6;
   color: var(--f-quiet);
   text-wrap: pretty;
@@ -367,8 +416,8 @@
 /* "For wellness guidance only · Not a medical device" carries regulatory wording: it wraps, it never disappears. */
 .copy {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--f-fs);
+  line-height: var(--f-lh);
   color: var(--f-quiet);
   text-wrap: balance;
 }
@@ -412,7 +461,7 @@
   .legal {
     display: block;
   }
-  .note {
+  .meta {
     margin-top: 44px;
   }
   .bar {
@@ -450,8 +499,26 @@
   .tagline {
     max-width: 17rem;
   }
-  .note {
+  .meta {
     margin-top: 40px;
+  }
+}
+
+/* The disclaimer on the left, the region switcher on the right edge (where the legal links end), on one row. Without a
+   region (inner pages) there is only the disclaimer and it takes the whole row. */
+@container (min-width: 1000px) {
+  .meta {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'note regions';
+    align-items: center;
+    column-gap: 48px;
+  }
+  .note {
+    grid-area: note;
+  }
+  .regions {
+    grid-area: regions;
+    justify-content: flex-end;
   }
 }
 
@@ -461,8 +528,11 @@
     margin-bottom: 12px;
   }
   .link {
-    min-height: 28px;
+    min-height: calc(var(--f-lh) + 8px);
     padding-block: 4px;
+  }
+  .regionLink {
+    min-height: 36px;
   }
   .bar {
     padding-top: 28px;
@@ -472,7 +542,7 @@
     margin: 0;
   }
   .legalLink {
-    min-height: 28px;
+    min-height: calc(var(--f-lh) + 8px);
     min-width: 0;
     padding: 4px 0;
   }
@@ -495,6 +565,7 @@
     --f-link: rgb(255 255 255 / 0.9);
     --f-quiet: rgb(255 255 255 / 0.92);
     --f-rule: rgb(255 255 255 / 0.3);
+    --f-pill: rgb(255 255 255 / 0.5);
   }
 }
 

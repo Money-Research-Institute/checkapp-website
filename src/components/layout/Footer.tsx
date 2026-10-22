@@ -3,13 +3,16 @@
  * the root layout; the landing page is the context Figma designs, the other routes inherit it with a shorter runway.
  *
  * Plain DOM over a baked, dithered glow poster. Nothing here is a canvas and nothing moves the text:
- *  - the glow is one AVIF/WebP (public/landing/footer, flipped X and cropped to the part Figma shows), a black veil that
- *    reproduces Figma's 179.96deg black-to-transparent overlay, and the runtime `.fx-dither` noise tile (AVIF smooths
- *    baked-in noise away, so the dither lives in CSS);
+ *  - the glow is one AVIF/WebP (public/landing/footer: Figma's 1586x992 fill, flipped X and cropped to the 1097x564 window
+ *    Figma shows, 10-bit AVIF 6.6 KB), a black veil that reproduces Figma's 179.96deg black-to-transparent overlay, and the
+ *    runtime `.fx-dither` noise tile (AVIF smooths baked-in noise away, so the dither lives in CSS);
  *  - a scroll-linked rise (view() timeline, compositor-only) brings the glow from 64px low and 30 % dimmer to exactly
  *    Figma's resting frame as the page ends, so the brightest the glow ever gets is the sampled #2E7034 peak and text
  *    contrast is the same at the end state as in the design. Without view() timelines, or under reduced motion, the
  *    page simply shows that resting frame. On a fine pointer the engine's [data-depth] sways it by at most 40px.
+ *  - ultrawide: the layer stops growing at 2500px (the width of Figma's own glow frame) and its sides ease out to black
+ *    with a long mask, so a 3440px screen gets a soft pool of light, never a stretched bar. The row of links stays in the
+ *    centred 1320px column and the type grows a notch (15px from 2560, 16px from 3000).
  *
  * Deviations from Figma, all on purpose (docs/landing-decisions.md):
  *  - D1: the tagline says only what the app does today (Figma: "monitors hydration signals"), and the medical
@@ -193,12 +196,15 @@ export function Footer({ locale, region }: { locale: Locale; region?: Region }) 
           <LinkGroup id="footer-connect" title={dict.connect} items={CONNECT_LINKS} ctx={ctx} className={styles.connect} />
         </div>
 
-        {region ? <RegionSwitcher current={region} dict={dict} /> : null}
+        {/* One row from 1000px (the disclaimer left, the region switcher right, as the legal links are), stacked below it. */}
+        <div className={styles.meta}>
+          {region ? <RegionSwitcher current={region} dict={dict} /> : null}
 
-        {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
-        <p data-disclaimer className={styles.note}>
-          {disclaimer}
-        </p>
+          {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
+          <p data-disclaimer className={styles.note}>
+            {disclaimer}
+          </p>
+        </div>
 
         <div className={styles.bar}>
           <p className={styles.copy}>

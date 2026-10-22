@@ -1,0 +1,87 @@
+.row {
+  display: grid;
+  gap: clamp(28px, 5vw, 48px);
+  align-items: center;
+}
+.copy {
+  display: grid;
+  gap: 16px;
+  align-content: center;
+  min-width: 0;
+}
+.eyebrow {
+  justify-self: start;
+  margin-bottom: 4px;
+}
+.title {
+  margin: 0;
+  color: var(--c-fg);
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.copy .sectionTitle {
+  font-size: clamp(1.875rem, 1.2rem + 2.2vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.text {
+  max-width: 52ch;
+  color: var(--c-fg-70);
+  font-size: var(--fs-lede);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.text > * {
+  margin: 0;
+}
+.text > * + * {
+  margin-top: 14px;
+}
+.text a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--c-mint);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.points {
+  display: grid;
+  gap: 12px;
+  max-width: 52ch;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--c-fg-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.check {
+  flex: none;
+  margin-top: 1px;
+  color: var(--c-mint);
+}
+.visual {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(48px, 7vw, 112px);
+  }
+  .row[data-reversed] .visual {
+    order: -1;
+  }
+}

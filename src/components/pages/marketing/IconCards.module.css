@@ -1,0 +1,58 @@
+.grid {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  display: flex;
+  min-width: 0;
+}
+.card {
+  flex: 1;
+  min-width: 0;
+}
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+  border: 1px solid rgb(72 203 59 / 0.35);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgb(72 203 59 / 0.16), rgb(72 203 59 / 0.04));
+  color: var(--c-mint);
+}
+.title {
+  margin: 0;
+  color: var(--c-fg);
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.text {
+  margin: 0;
+  color: var(--c-fg-70);
+  font-size: 16px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.text a {
+  color: var(--c-mint);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 800px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

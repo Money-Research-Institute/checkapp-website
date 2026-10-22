@@ -34,7 +34,7 @@
   z-index: -1;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: var(--radius-pill);
-  background: rgb(0 0 0 / 0.55);
+  background: rgb(0 0 0 / 0.78); /* dense enough that article text never prints through the logo */
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   backdrop-filter: blur(16px) saturate(1.2);
   opacity: 0;
@@ -77,6 +77,7 @@
   font-size: 16px;
   line-height: 27px;
   letter-spacing: -0.2px;
+  white-space: nowrap; /* the Russian labels are longer: never wrap inside the 56px bar */
   text-decoration: none;
   transition: color var(--dur-fast) var(--ease-out);
 }

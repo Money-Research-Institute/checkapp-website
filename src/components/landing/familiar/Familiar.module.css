@@ -1,0 +1,643 @@
+/*
+ * 03 · Meet DiDi (Figma node 2601:12718, 1440 x 1226). Section-scoped values live here; tokens come from tokens.css.
+ *
+ * Layout, by width (the gate samples 320 ... 3440):
+ *   >= 900   four columns on a grid of minmax(0, 280px) tracks, space-between, in the Figma zig-zag. The row offsets are
+ *            percentages of the column width (a grid item's percentage margin resolves against its grid area), so the
+ *            zig-zag scales with the phone: 0, .493W, .071W, .571W.
+ *   600-899  2 x 2 with the stagger (every second phone sits 56px lower).
+ *   strip    < 600, and landscape phones (short and not wide): a native scroll-snap "day strip". The wrapper scrolls,
+ *            the next slide peeks. The strip block is written after the others and overrides them.
+ * Under the phones sits the client's "what it does now" line with the three scan chips (.scope): one row from 1024, stacked below.
+ * Russian runs 15-30% longer: nothing here has a fixed height, and the lede / h2 / captions are checked in /ru/ at every width.
+ *
+ * Every default style below is the finished frame. Motion is an enhancement inside
+ * @media (prefers-reduced-motion: no-preference) and @supports (animation-timeline: view()), so no-JS, Firefox, older
+ * Safari, print and reduced motion all show the page fully on. Only transform / opacity are animated. `translate` is left
+ * free on .device: the experience engine writes the pointer sway there (data-depth).
+ */
+
+.root {
+  --fam-gap: clamp(12px, 1.5vw, 24px); /* minimum gap between the four columns */
+  --fam-side: var(--gutter); /* page gutter beside the content */
+  --fam-pad: 20px; /* card padding */
+  --fam-line: 60px; /* connector length */
+  --fam-s: min(280px, 78vw); /* slide width on the strip */
+  position: relative;
+  isolation: isolate;
+  /* 40px, not Figma's 0: the pill sits in the last 53px of the usual-way frame there, and that overlap stays out of the DOM. */
+  padding: 40px 0 clamp(32px, 3vw, 40px);
+  background: var(--c-bg);
+}
+
+/* ------------------------------------------------------------------ atmosphere (decorative, behind everything) */
+
+.atmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: clip; /* clip, not hidden: the scale drift must not leak, and nothing here is a scroller */
+  pointer-events: none;
+}
+
+/* The silk box. Figma: 1440 x 720 at y 120 (here +40). The node is rotated 180 degrees in the design and the encoded
+   bitmap is already turned the same way, so the ribbons cross at 47.5% / 47.5% of it (not 53 / 52 as in the raw export). */
+.silkWrap {
+  --silk-h: 720px;
+  --silk-top: 160px;
+  position: absolute;
+  top: var(--silk-top);
+  left: 0;
+  right: 0;
+  width: min(100%, 2560px); /* 1774 px source: never stretched past 1.44x */
+  height: var(--silk-h);
+  margin-inline: auto;
+}
+
+/* The bottom fade (Figma's transparent-to-black overlay, from 50%) plus a soft top edge, because the bitmap's first rows
+   are not pure black. A mask instead of an overlay, so the page behind stays pure #000. */
+.silk {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 12%, #000 50%, transparent 100%);
+}
+
+.silkScale {
+  position: absolute;
+  inset: 0;
+  transform-origin: 47.5% 47.5%;
+}
+
+.silkFrame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.silkFrame picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.silkImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 47.5% 50%;
+  opacity: 0.8; /* Figma's image opacity; kept in CSS so a future shader poster matches */
+}
+
+/* A focal glow where the two ribbons cross, on top of the bitmap's own. Faint at rest so the still frame is Figma's;
+   with scroll it peaks while the phones are centred (see the timeline block). */
+.glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle min(34vw, 520px) at 47.5% 47.5%,
+    rgb(138 238 128 / 0.26) 0%,
+    rgb(65 119 60 / 0.12) 45%,
+    transparent 100%
+  );
+  opacity: 0.2;
+}
+
+/* ------------------------------------------------------------------ content */
+
+.inner {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: calc(var(--measure) + 2 * var(--fam-side));
+  margin-inline: auto;
+  padding-inline: var(--fam-side);
+}
+
+/* SectionIntro (eyebrow, gradient h2, bracketed lede). Figma: 678px h2 in two lines, 52 / 68, lede 690 wide. */
+.intro {
+  max-width: var(--measure-narrow);
+  margin-inline: auto;
+}
+.intro h2 {
+  max-width: 678px;
+  font-size: clamp(30px, calc(2.2vw + 22px), 52px);
+  line-height: 1.31;
+  text-wrap: pretty; /* the design breaks after "assistant"; balance would move it, and pretty never leaves "future." alone */
+}
+.intro h2:lang(ru) {
+  text-wrap: balance; /* no Figma break to keep: two even lines instead of "... помощник из / будущего." */
+}
+.intro > div {
+  width: 100%;
+  max-width: 690px;
+}
+.intro > div > p {
+  padding-block: 0;
+  font-size: 15px;
+  line-height: 25.5px;
+}
+/* Figma draws the brackets with 2px strokes and 4px corner radii. */
+.intro > div > span {
+  border-width: 2px;
+  border-radius: 4px 0 0 4px;
+}
+.intro > div > span:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+/* The phone row. Below 1400 it starts 24px under the header so phone 1 never touches the left bracket and phone 3 keeps
+   at least 32px clear of the lede; from 1400 it is Figma's -12px (phone 1 beside the lede). */
+.strip {
+  display: contents; /* a plain wrapper above 599px, so its tab stop and scrollbar only exist where it scrolls */
+}
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 280px));
+  justify-content: space-between;
+  column-gap: var(--fam-gap);
+  align-items: start;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.day:nth-child(2) {
+  margin-top: 49.3%; /* % of the column width: 138px at 280 */
+}
+.day:nth-child(3) {
+  margin-top: 7.1%;
+}
+.day:nth-child(4) {
+  margin-top: 57.1%;
+}
+
+/* ------------------------------------------------------------------ the phone */
+
+.device {
+  position: relative;
+  width: 100%;
+}
+.device picture {
+  display: block;
+}
+.phone {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 280 / 570.24; /* whole-device export: 280 x 570.24 at 1x, 840 x 1711 at 3x */
+}
+/* The screen "power-on" overlay. Black on the (black) bezel, so it can overshoot the screen by a hair; opacity 0 at rest.
+   Elliptical radii in %, so the corners are true circles (about 37px at 280) at every size. */
+.device::after {
+  content: '';
+  position: absolute;
+  left: 4.2%;
+  top: 1.6%;
+  width: 91.6%;
+  height: 96.8%;
+  border-radius: 14.4% / 6.7%;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ connector + caption card */
+
+.cap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px; /* the connector hangs 32px under its phone */
+}
+/* Figma's Line 26: a 60 x 4 round-capped bar, black at the top to white at the bottom (the SVG's gradient, as CSS). */
+.line {
+  flex: none;
+  width: 4px;
+  height: var(--fam-line);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #000 0%, #fff 100%);
+  transform-origin: 50% 0;
+}
+.card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--fam-pad);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--c-surface-a) 0%, var(--c-surface-b) 100%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); /* Figma strokes inside, so the text box stays 240 wide */
+}
+.title {
+  margin: 0;
+  color: var(--c-fg);
+  font-size: clamp(16px, 1.75vw, 20px);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.text {
+  margin: 12px 0 0;
+  color: var(--c-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-wrap: pretty; /* never a lone word on the last line */
+}
+
+/* ------------------------------------------------------------------ "what it does now": the client's line + the three scans */
+
+.scope {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 960px;
+  margin: clamp(28px, 3vw, 36px) auto 0;
+  text-align: center;
+}
+.chips {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* The eyebrow's language (faint green fill, green hairline), smaller, with a mint dot. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--c-accent) 48%, transparent);
+  border-radius: var(--radius-eyebrow);
+  background: linear-gradient(119.5deg, rgb(72 203 59 / 0.048), rgb(72 203 59 / 0.008));
+  color: var(--c-fg);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.chip::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-mint);
+}
+.scopeText {
+  max-width: 600px;
+  margin: 0;
+  color: var(--c-fg-body);
+  font-size: 15px;
+  line-height: 25.5px;
+  text-wrap: balance; /* two even lines, not "...Nothing runs in / the background." */
+}
+/* Wide enough: the chips and the sentence share one row, split by a hairline, so the section stays close to Figma's height. */
+@media (min-width: 1024px) {
+  .scope {
+    flex-direction: row;
+    justify-content: center;
+    gap: 24px;
+    text-align: left;
+  }
+  .chips {
+    padding-right: 24px;
+    border-right: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .scopeText {
+    flex: 0 1 600px; /* a width here, because the row is horizontal (in a column it would be a height) */
+    min-width: 0;
+  }
+}
+
+/* From 1280 the columns are the full 280 and the card is Figma's: 20px padding, 12px description. */
+@media (min-width: 1280px) {
+  .text {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}
+@media (min-width: 1400px) {
+  .row {
+    margin-top: -12px;
+  }
+}
+/* Narrower desktops keep the composition, scaled by column width. */
+@media (max-width: 1279.98px) {
+  .root {
+    --fam-pad: 16px;
+  }
+}
+
+/* The crossing stays level with the phones' upper third and beside phones 2 and 3: top = row top + .662 W - .475 H. */
+@media (min-width: 900px) and (max-width: 1399.98px) {
+  .silkWrap {
+    --w: clamp(196px, calc((100vw - 2 * var(--gutter) - 3 * var(--fam-gap)) / 4), 280px);
+    --silk-h: min(720px, 62vw);
+    --silk-top: calc(352px + 0.662 * var(--w) - 0.475 * var(--silk-h));
+  }
+}
+
+/* ------------------------------------------------------------------ 600-899: 2 x 2 with the stagger */
+
+@media (min-width: 600px) and (max-width: 899.98px) {
+  .root {
+    --fam-line: 40px;
+    --fam-pad: 16px;
+    --fam-col: clamp(24px, 8vw, 72px);
+    --fam-side: max(var(--gutter), 24px);
+  }
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 280px));
+    justify-content: center;
+    column-gap: var(--fam-col);
+    row-gap: 56px;
+    margin-top: 40px;
+  }
+  .day:nth-child(n) {
+    margin-top: 0;
+  }
+  .day:nth-child(even) {
+    margin-top: 56px;
+  }
+  .silkWrap {
+    --w: min(280px, calc((100vw - 2 * var(--fam-side) - var(--fam-col)) / 2));
+    --silk-h: min(720px, 62vw);
+    --silk-top: calc(398px + 0.662 * var(--w) - 0.475 * var(--silk-h));
+  }
+}
+
+/* ------------------------------------------------------------------ the day strip: < 600 and landscape phones */
+
+@media (max-width: 599.98px), (orientation: landscape) and (max-height: 500px) and (max-width: 940px) {
+  .root {
+    --fam-line: 40px;
+    --fam-pad: 16px;
+    --fam-side: var(--gutter);
+  }
+  .silkWrap {
+    --silk-top: 190px;
+    --silk-h: 520px;
+  }
+
+  /* The scroller: focusable and named (axe: scrollable-region-focusable), bleeding to both screen edges. */
+  .strip {
+    display: block;
+    margin: 32px calc(var(--fam-side) * -1) 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.28) transparent;
+  }
+  .strip:focus-visible {
+    outline-offset: -4px;
+  }
+  .row {
+    display: flex;
+    justify-content: flex-start;
+    width: max-content;
+    min-width: 100%;
+    gap: 16px;
+    margin: 0;
+    /* Slide 1 centred; the next one peeks. */
+    padding-inline: max(16px, env(safe-area-inset-left, 0px), calc((100vw - var(--fam-s)) / 2));
+    padding-bottom: 16px;
+  }
+  .day {
+    flex: 0 0 var(--fam-s);
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  .day:nth-child(n) {
+    margin-top: 0;
+  }
+  .day:nth-child(even) {
+    margin-top: 24px; /* the zig-zag, as a small rhythm */
+  }
+  .cap {
+    gap: 12px;
+  }
+  .title {
+    font-size: clamp(17px, 5vw, 20px);
+  }
+  .text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+}
+
+/* Portrait phones only: the brackets stretch badly beside a 4-line lede, and the connector shrinks on the narrowest. */
+@media (max-width: 599.98px) {
+  .intro > span:first-child {
+    min-height: 44px; /* the pill is 51px on desktop (Figma), 44px on phones */
+  }
+  .intro > div > span {
+    display: none;
+  }
+  .intro > div > p {
+    line-height: 1.7;
+  }
+}
+@media (max-width: 340px) {
+  .root {
+    --fam-line: 24px;
+  }
+}
+/* Landscape phones: the header is only a cap on the viewport height, nothing is sized from it. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 940px) {
+  .intro h2 {
+    font-size: min(clamp(30px, calc(2.2vw + 22px), 52px), 9.5svh);
+  }
+}
+
+/* ------------------------------------------------------------------ ultrawide: the bitmap ends softly */
+
+@media (min-width: 2561px) {
+  .silkWrap {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+  }
+}
+
+/* ------------------------------------------------------------------ preferences */
+
+@media (prefers-contrast: more) {
+  .card {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.5);
+  }
+  .chip {
+    border-color: rgb(255 255 255 / 0.5);
+  }
+  .text {
+    color: var(--c-fg-70);
+  }
+}
+@media (forced-colors: active) {
+  .card {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  .chip {
+    border-color: CanvasText;
+  }
+  .chip::before {
+    background: CanvasText;
+  }
+  .line {
+    background: CanvasText;
+  }
+  .atmos {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ motion (an enhancement; the default is fully on) */
+
+/* Longhands only, never `animation:` + `animation-timeline:`. lightningcss folds that pair into
+   `animation: ... name view()`, which no browser parses yet (CSS.supports('animation', '1ms foo view()') is false), so
+   the whole declaration would be dropped. Leaving iteration-count / delay / direction unset keeps the longhands apart. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes silk-drift {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
+    }
+    /* Peaks at ~57%: the point of the section's pass where the phone row is centred in the viewport. */
+    @keyframes glow-peak {
+      0% { opacity: 0.08; }
+      57% { opacity: 0.8; }
+      100% { opacity: 0.08; }
+    }
+    @keyframes screen-on {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    @keyframes line-draw {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+    @keyframes card-rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Net travel across the pass: columns 1 and 3 -28px, columns 2 and 4 +36px, zero at the middle of the pass so the
+       zig-zag is exactly the design when a column is centred. */
+    @keyframes drift-up {
+      from { transform: translateY(14px); }
+      to { transform: translateY(-14px); }
+    }
+    @keyframes drift-down {
+      from { transform: translateY(-18px); }
+      to { transform: translateY(18px); }
+    }
+
+    /* The section's own timeline, shared by the bitmap and the glow. */
+    .root {
+      view-timeline: --familiar block;
+    }
+    .silkScale {
+      animation-name: silk-drift;
+      animation-duration: 1ms;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --familiar;
+      animation-range: cover 0% cover 100%;
+    }
+    .glow {
+      animation-name: glow-peak;
+      animation-duration: 1ms;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --familiar;
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* >= 600: a day, in order, scrubbed by scroll in both directions: each phone powers on, its connector draws, its
+       caption rises; the columns breathe against each other. Each piece uses its own view() timeline, so the order
+       (phone, then connector, then card) follows from where they sit, and --i staggers the columns left to right. */
+    @media (min-width: 600px) {
+      .device::after {
+        animation-name: screen-on;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry calc(15% + var(--i, 0) * 5%) entry calc(80% + var(--i, 0) * 5%);
+      }
+      .line {
+        animation-name: line-draw;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover calc(var(--i, 0) * 3%) cover calc(20% + var(--i, 0) * 3%);
+      }
+      .card {
+        animation-name: card-rise;
+        animation-duration: 1ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover calc(4% + var(--i, 0) * 3%) cover calc(26% + var(--i, 0) * 3%);
+      }
+      .day:nth-child(odd) {
+        animation-name: drift-up;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+      .day:nth-child(even) {
+        animation-name: drift-down;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+    }
+
+    /* The strip: the same three beats, keyed to each slide's entrance along it (no vertical parallax, so the drift is
+       off). Slide 1 is centred at rest, so it starts fully on; the peeking slide wakes up as it is swiped in. */
+    @media (max-width: 599.98px), (orientation: landscape) and (max-height: 500px) and (max-width: 940px) {
+      .device::after {
+        animation-name: screen-on;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view(inline);
+        animation-range: entry 0% entry 55%;
+      }
+      .line {
+        animation-name: line-draw;
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view(inline);
+        animation-range: entry 5% entry 70%;
+      }
+      .card {
+        animation-name: card-rise;
+        animation-duration: 1ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: both;
+        animation-timeline: view(inline);
+        animation-range: entry 10% entry 80%;
+      }
+      .day:nth-child(n) {
+        animation-name: none;
+      }
+    }
+  }
+}

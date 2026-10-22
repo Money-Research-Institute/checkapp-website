@@ -1,20 +1,56 @@
-import { Section } from '@/components/ui/Section';
-import { Button } from '@/components/ui/Button';
+import { Button, CtaButton, GlassCard, PageHero, PageShell, Section } from '@/components/ds';
 import { JsonLd } from '@/components/layout/JsonLd';
-import { createMetadata, breadcrumbSchema } from '@/lib/seo';
-import { ANDROID_APK_URL, ANDROID_APK_AVAILABLE, PLAY_STORE_URL } from '@/lib/constants';
-import { Smartphone, ShieldAlert, Download } from 'lucide-react';
+import { ANDROID_APK_AVAILABLE, ANDROID_APK_URL, PLAY_STORE_URL, SOCIAL_LINKS } from '@/lib/constants';
+import { breadcrumbSchema, createMetadata } from '@/lib/seo';
+import styles from './download.module.css';
+import { PhoneIcon, ShieldIcon } from './icons';
 
 export const metadata = createMetadata({
   title: 'Download CheckApp for Android',
   description:
-    'Download the CheckApp Android APK and start daily check-ins with DIDI, your AI wellness companion.',
+    'Download the CheckApp Android APK and start daily check-ins with DiDi, your AI wellness companion.',
   path: '/download',
 });
 
 export default function DownloadPage() {
+  /*
+   * The APK flow is Play-critical and unchanged: the button only exists while ANDROID_APK_AVAILABLE is true (otherwise
+   * the "coming shortly" notice stands in), the Play Store button only while PLAY_STORE_URL is set, and both open in a
+   * new tab with the same tracking positions as before. `data-hides-cta-bar` keeps the phone's sticky "Get checkapp"
+   * bar from sitting over the page's own download button.
+   */
+  const actions =
+    ANDROID_APK_AVAILABLE || PLAY_STORE_URL ? (
+      <>
+        {ANDROID_APK_AVAILABLE ? (
+          <CtaButton
+            href={ANDROID_APK_URL}
+            external
+            size="lg"
+            trackingPage="download"
+            trackingPosition="hero_apk"
+            data-hides-cta-bar
+          >
+            Download APK
+          </CtaButton>
+        ) : null}
+        {PLAY_STORE_URL ? (
+          <Button
+            href={PLAY_STORE_URL}
+            external
+            variant="secondary"
+            trackingPage="download"
+            trackingPosition="hero_play"
+            data-hides-cta-bar
+          >
+            Get it on Google Play
+          </Button>
+        ) : null}
+      </>
+    ) : null;
+
   return (
-    <>
+    <PageShell>
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -22,90 +58,68 @@ export default function DownloadPage() {
         ])}
       />
 
-      <Section className="pt-16 pb-8 md:pt-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">Android</p>
-          <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-text-primary md:text-5xl">
-            Download CheckApp
-          </h1>
-          <p className="mt-4 text-lg text-text-secondary">
-            Direct APK for Android. Free for the August launch — no account fees, no in-app purchases
-            required.
-          </p>
-
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            {ANDROID_APK_AVAILABLE ? (
-              <Button
-                href={ANDROID_APK_URL}
-                external
-                trackingPage="download"
-                trackingPosition="hero_apk"
-                className="inline-flex items-center gap-2 px-8 py-3.5 text-base"
-              >
-                <Download className="h-5 w-5" aria-hidden />
-                Download APK
-              </Button>
-            ) : (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4 text-left text-sm text-amber-950">
-                <p className="font-semibold">APK coming shortly</p>
-                <p className="mt-1 text-amber-900/80">
-                  We&apos;re preparing the production Android build. This page will unlock the
-                  download as soon as the file is published. Check back soon, or email{' '}
-                  <a className="underline" href="mailto:hello@checkapp.today">
-                    hello@checkapp.today
-                  </a>
-                  .
+      <PageHero
+        eyebrow="Android"
+        title="Download CheckApp"
+        lede="Direct APK for Android."
+        actions={
+          <>
+            {actions}
+            {!ANDROID_APK_AVAILABLE ? (
+              <div className={styles.notice} data-hides-cta-bar>
+                <p className={styles.noticeTitle}>APK coming shortly</p>
+                <p className={styles.noticeText}>
+                  We&apos;re preparing the production Android build. This page will unlock the download as soon as the
+                  file is published. Check back soon, or email{' '}
+                  <a href={SOCIAL_LINKS.contact}>hello@checkapp.today</a>.
                 </p>
               </div>
-            )}
-
-            {PLAY_STORE_URL ? (
-              <Button
-                href={PLAY_STORE_URL}
-                external
-                variant="secondary"
-                trackingPage="download"
-                trackingPosition="hero_play"
-                className="px-8 py-3.5 text-base"
-              >
-                Get it on Google Play
-              </Button>
             ) : null}
-          </div>
-        </div>
-      </Section>
+          </>
+        }
+      />
 
-      <Section className="pb-20">
-        <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
-          <div className="surface p-6">
-            <Smartphone className="h-8 w-8 text-primary" aria-hidden />
-            <h2 className="mt-4 font-display text-xl font-bold">Install on Android</h2>
-            <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-text-secondary">
-              <li>Tap <strong>Download APK</strong> on this page (from your phone).</li>
+      <Section size="narrow" tight>
+        <div className={styles.grid}>
+          <GlassCard as="section" className={styles.card} aria-labelledby="download-install">
+            <span className={styles.mark}>
+              <PhoneIcon />
+            </span>
+            <h2 id="download-install" className={styles.cardTitle}>
+              Install on Android
+            </h2>
+            <ol className={styles.steps}>
               <li>
-                If prompted, allow installs from this browser under{' '}
-                <em>Install unknown apps</em>.
+                Tap <strong>Download APK</strong> on this page (from your phone).
               </li>
-              <li>Open the downloaded file and tap <strong>Install</strong>.</li>
+              <li>
+                If prompted, allow installs from this browser under <em>Install unknown apps</em>.
+              </li>
+              <li>
+                Open the downloaded file and tap <strong>Install</strong>.
+              </li>
               <li>Open CheckApp and create your account.</li>
             </ol>
-          </div>
+          </GlassCard>
 
-          <div className="surface p-6">
-            <ShieldAlert className="h-8 w-8 text-primary" aria-hidden />
-            <h2 className="mt-4 font-display text-xl font-bold">Before you install</h2>
-            <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+          <GlassCard as="section" className={styles.card} aria-labelledby="download-before">
+            <span className={styles.mark}>
+              <ShieldIcon />
+            </span>
+            <h2 id="download-before" className={styles.cardTitle}>
+              Before you install
+            </h2>
+            <ul className={styles.points}>
               <li>Android 8.0 or newer recommended.</li>
-              <li>
-                CheckApp and DIDI are wellness companions — not a medical device or diagnosis tool.
+              {/* D1: the regulatory wording stays, and the gate exempts disclaimers marked data-disclaimer. */}
+              <li data-disclaimer>
+                CheckApp and DiDi are wellness companions — not a medical device or diagnosis tool.
               </li>
-              <li>
-                Google Play listing is in progress; the APK here is the official direct download.
-              </li>
+              <li>Google Play listing is in progress; the APK here is the official direct download.</li>
             </ul>
-          </div>
+          </GlassCard>
         </div>
       </Section>
-    </>
+    </PageShell>
   );
 }

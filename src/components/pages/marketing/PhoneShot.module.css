@@ -1,0 +1,32 @@
+.stage {
+  --dither-a: 0.05;
+  /* The noise belongs to the glow only, not to the whole box (a faint rectangle would show on black). */
+  --dither-mask: radial-gradient(ellipse 50% 46% at 50% 54%, #000, transparent);
+  position: relative;
+  /* flex, not a grid with an auto track: a percentage width on the phone then resolves against the stage even before the
+     lazy image has loaded, so nothing resizes (and shifts) when it arrives */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding-block: 8px;
+  overflow: clip;
+  border-radius: var(--radius-card);
+}
+/* The green light behind the phone: an ellipse that is fully transparent at its edge, so the stage never shows a box. */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 50% 46% at 50% 54%, rgb(39 98 33 / 0.62), transparent);
+  pointer-events: none;
+}
+.phone {
+  width: min(100%, 300px); /* the Figma phones are 280 wide */
+}
+.img {
+  display: block;
+  width: 100%;
+  height: auto;
+}

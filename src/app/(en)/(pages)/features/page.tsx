@@ -1,129 +1,170 @@
+import Link from 'next/link';
 import { JsonLd } from '@/components/layout/JsonLd';
-import { Section } from '@/components/ui/Section';
-import { FaqAccordion } from '@/components/ui/FaqAccordion';
+import { Button, CtaBanner, CtaButton, Faq, PageHero, PageShell, Section, SectionIntro } from '@/components/ds';
 import {
+  AnswerBlock,
+  CLIENT,
+  ComparisonTable,
+  Disclaimer,
   FeatureRow,
-  ChatBubbleVisual,
-  HydrationMeterVisual,
-  VideoCircleVisual,
-  StreakVisual,
-  NotificationVisual,
-  TimelineVisual,
-} from '@/components/marketing/FeatureRow';
-import { ComparisonTable } from '@/components/marketing/ComparisonTable';
-import { PricingCards } from '@/components/marketing/PricingCards';
-import { AnswerBlock } from '@/components/marketing/AnswerBlock';
-import { createMetadata, breadcrumbSchema, faqSchema } from '@/lib/seo';
+  IconCards,
+  LockIcon,
+  PAGES,
+  PhoneShot,
+  ScanCards,
+  TapIcon,
+  TrashIcon,
+} from '@/components/pages/marketing';
+import { APP_DOWNLOAD_URL } from '@/lib/constants';
+import { breadcrumbSchema, createMetadata, faqSchema } from '@/lib/seo';
+import styles from './page.module.css';
+
+const copy = PAGES.features;
 
 export const metadata = createMetadata({
-  title: 'CheckApp Features — AI Health Companion, Tongue Analysis',
-  description:
-    'Explore all CheckApp features: AI chat with DIDI, tongue dehydration analysis, video messages, hydration streaks, push notifications, and more.',
-  path: '/features',
+  title: copy.title,
+  description: copy.description,
+  path: '/features/',
 });
 
-const FEATURES_FAQ = [
-  {
-    question: 'What makes CheckApp different from other hydration apps?',
-    answer:
-      'CheckApp uses DIDI, an AI companion that proactively messages you, analyzes tongue photos, and responds to video messages — not just passive water tracking.',
-  },
-  {
-    question: 'Is the tongue scan medically accurate?',
-    answer:
-      'Tongue analysis provides wellness guidance based on visual indicators. It is not a medical device and should not replace professional medical advice.',
-  },
-  {
-    question: 'Is there a free tier?',
-    answer:
-      'Yes. CheckApp is free — we believe everyone deserves access to quality tools for taking care of their health. No credit card required.',
-  },
-  {
-    question: 'What are short video messages?',
-    answer:
-      'Short video messages are circular video clips you send to DIDI — like voice notes, but visual. DIDI watches and responds with personalised feedback.',
-  },
-];
+/**
+ * The FAQ is the client's own five questions (src/content/copy/us.ts). The price question appears only once the client gives a
+ * price (docs/landing-copy.md H2), so today there are four. D5: nothing is for sale in the app yet, so there is no plan
+ * question and no "free" claim either.
+ */
+const FAQ = CLIENT.faq.map(({ question, answer }) => ({ question, answer }));
 
 export default function FeaturesPage() {
   return (
-    <>
+    <PageShell>
       <JsonLd
         data={[
           breadcrumbSchema([
             { name: 'Home', path: '/' },
-            { name: 'Features', path: '/features' },
+            { name: 'Features', path: '/features/' },
           ]),
-          faqSchema(FEATURES_FAQ),
+          faqSchema(FAQ),
         ]}
       />
 
-      <Section variant="dark" className="pt-24 md:pt-28">
-        <h1 className="font-display text-4xl font-bold md:text-5xl">
-          Everything you need to actually stay healthy.
-        </h1>
-        <p className="mt-4 text-xl text-white/70">Not just tracked. Guided.</p>
-        <div className="mt-8">
-          <AnswerBlock variant="dark">
-            CheckApp combines AI daily check-ins, tongue dehydration analysis, short video
-            messages, hydration streaks, smart notifications, and health memory — all through a
-            conversational interface with DIDI, your personal health companion.
-          </AnswerBlock>
+      <PageHero
+        eyebrow={copy.hero.eyebrow}
+        title={copy.hero.title}
+        lede={CLIENT.whatItDoes}
+        actions={
+          <>
+            <CtaButton
+              href={APP_DOWNLOAD_URL}
+              size="lg"
+              trackingPage="features"
+              trackingPosition="hero"
+              data-critical="primary-cta"
+              data-hides-cta-bar
+            >
+              {CLIENT.cta}
+            </CtaButton>
+            <Button href="/how-it-works/" variant="secondary" trackingPage="features" trackingPosition="hero-how">
+              {copy.hero.secondary}
+            </Button>
+          </>
+        }
+      />
+
+      <Section size="narrow" tight>
+        <AnswerBlock>{copy.answer}</AnswerBlock>
+      </Section>
+
+      <Section labelledBy="scans">
+        <SectionIntro eyebrow={copy.scans.eyebrow} headingId="scans" title={copy.scans.title} lede={copy.scans.lede} />
+        <div className={styles.gap}>
+          <ScanCards />
         </div>
       </Section>
 
-      <Section variant="warm">
-        <div className="space-y-20">
+      <Section labelledBy="inside">
+        <SectionIntro
+          eyebrow={copy.inside.eyebrow}
+          headingId="inside"
+          title={copy.inside.title}
+          lede={copy.inside.lede}
+        />
+        <div className={`${styles.gap} ${styles.rows}`}>
+          <FeatureRow title={copy.inside.daily.title} points={copy.inside.daily.points} visual={<PhoneShot name="home" />}>
+            <p>{copy.inside.daily.text}</p>
+          </FeatureRow>
+
           <FeatureRow
-            title="AI Daily Check-ins"
-            description="DIDI messages you proactively — morning, afternoon, evening. Not a notification. A real question that waits for your answer."
-            visual={<ChatBubbleVisual />}
-          />
-          <FeatureRow
-            title="Tongue Scan Analysis"
-            description="Point camera. Tap. Get results in 3 seconds. Powered by Claude Vision AI — analyzes color, texture, moisture."
-            visual={<HydrationMeterVisual />}
+            title={copy.inside.insight.title}
+            points={copy.inside.insight.points}
+            visual={<PhoneShot name="scan" />}
             reversed
-          />
-          <FeatureRow
-            title="Short Video Messages"
-            description="Send a short circular video — like a Telegram video note. DIDI sees you, not just your words."
-            visual={<VideoCircleVisual />}
-          />
-          <FeatureRow
-            title="Hydration Streaks"
-            description="Build your streak. DIDI celebrates every milestone. Break it? He doesn't judge — he just asks what happened."
-            visual={<StreakVisual />}
-            reversed
-          />
-          <FeatureRow
-            title="Smart Push Notifications"
-            description="DIDI knows when you've been quiet. At 22 hours, he checks in. Never annoying. Always caring."
-            visual={<NotificationVisual />}
-          />
-          <FeatureRow
-            title="Health Memory"
-            description="DIDI remembers last week's headache, yesterday's water count, and your mood patterns. Getting smarter every day."
-            visual={<TimelineVisual />}
-            reversed
+          >
+            <p>{copy.inside.insight.text}</p>
+          </FeatureRow>
+        </div>
+      </Section>
+
+      <Section labelledBy="terms">
+        <SectionIntro eyebrow={copy.terms.eyebrow} headingId="terms" title={copy.terms.title} lede={copy.terms.lede} />
+        <div className={styles.gap}>
+          <IconCards
+            items={[
+              {
+                title: 'Only when you ask',
+                icon: <TapIcon />,
+                text: 'checkapp only scans when you take a photo. Nothing runs in the background.',
+              },
+              {
+                title: 'Permission first',
+                icon: <LockIcon />,
+                text: 'Your photos are processed in the cloud only with your permission. Face and iris images are biometric data, so we ask first.',
+              },
+              {
+                title: 'Delete anytime',
+                icon: <TrashIcon />,
+                text: (
+                  <>
+                    You can delete your data anytime. Read how we handle it in the <Link href="/privacy/">privacy policy</Link>.
+                  </>
+                ),
+              },
+            ]}
           />
         </div>
       </Section>
 
-      <Section variant="light">
-        <h2 className="mb-8 font-display text-3xl font-bold">How CheckApp compares</h2>
-        <ComparisonTable />
+      <Section labelledBy="compare">
+        <SectionIntro
+          eyebrow={copy.compare.eyebrow}
+          headingId="compare"
+          title={copy.compare.title}
+          lede={copy.compare.lede}
+        />
+        <div className={styles.gap}>
+          <ComparisonTable />
+        </div>
       </Section>
 
-      <Section variant="warm">
-        <h2 className="mb-8 font-display text-3xl font-bold">Simple, transparent pricing</h2>
-        <PricingCards />
+      <Section size="narrow" labelledBy="faq">
+        <SectionIntro eyebrow={copy.faq.eyebrow} headingId="faq" title={copy.faq.title} />
+        <div className={styles.gap}>
+          <Faq items={FAQ} page="features" group="features-faq" />
+        </div>
       </Section>
 
-      <Section variant="light">
-        <h2 className="mb-6 font-display text-2xl font-bold">Frequently asked questions</h2>
-        <FaqAccordion items={FEATURES_FAQ} page="features" />
+      <Section size="narrow" tight>
+        <Disclaimer />
       </Section>
-    </>
+
+      <Section size="narrow">
+        <CtaBanner
+          headline={PAGES.closing.headline}
+          subheadline={PAGES.closing.subheadline}
+          label={CLIENT.cta}
+          page="features"
+          position="bottom"
+        />
+      </Section>
+    </PageShell>
   );
 }

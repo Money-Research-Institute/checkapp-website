@@ -1,0 +1,594 @@
+/*
+ * Projects (the 4P pillars). Figma node 2601:12989, 1440 x 810.
+ *
+ * Layout, three families:
+ *   >= 1120   three columns, areas 'title p1 p2' / 'comp p3 p4'. This is the Figma layout; it scales, it never reflows.
+ *   768-1119  two columns: the title tile and DiDi on top, the four pillars as a 2 x 2 below.
+ *   < 768     one column: title, DiDi, 01..04. Tiles below 480px wide are stacked; a wider one (a foldable, a landscape
+ *             phone) puts the numeral beside the text instead.
+ *
+ * Rules this file keeps:
+ *   - tiles use min-height, never a fixed height (200 % zoom, large system fonts, one more wrapped line); only the
+ *     decorative art layer is clipped, text never is;
+ *   - the default style of every element is its finished, visible state. Motion lives at the bottom, inside
+ *     prefers-reduced-motion: no-preference and (for scroll timelines) @supports (animation-timeline: view());
+ *   - section-only values are custom properties on .section (--pj-*), never edits to the shared tokens;
+ *   - Geist becomes Manrope (docs/landing-decisions.md D4): numerals 500, titles and copy 400.
+ */
+
+.section {
+  /* ---- colour (Figma values; the three tile tokens come from tokens.css) ---- */
+  --pj-tile-outer: var(--c-tile-outer, #070808);
+  --pj-tile-border: var(--c-tile-border, #1b1c1c);
+  --pj-tile-inner: var(--c-tile-inner, #0d0f0e);
+  --pj-title-edge: #101111;
+  --pj-title-fill: #0b0d0c; /* behind the art, before it decodes */
+  --pj-num: #e7e9e8;
+  --pj-name: #e3e3e3;
+  --pj-desc: #929594; /* 6.3:1 on #0d0f0e */
+  --pj-lede: #b4b7b6; /* the statement sits on pure black: 10:1 */
+  --pj-glow-rgb: 6 75 40;
+
+  /* ---- phone defaults (< 768); the media queries below only override what changes ---- */
+  --pj-gutter: clamp(16px, 4.2vw, 20px);
+  --pj-pad-top: 48px;
+  --pj-pad-bottom: 48px;
+  --pj-gap-x: 12px;
+  --pj-gap-y: 12px;
+  --pj-tile-min: 240px;
+  --pj-title-min: 200px;
+  --tile-bw: 2px;
+  --tile-pad: 8px; /* border + padding = 10px from the tile's outer edge to the surface */
+  --tile-r: 24px;
+  --surface-r: 18px;
+  --pj-surface-pad: 20px;
+  --pj-detail-gap: 10px;
+  --pj-num-fs: clamp(52px, 15cqi, 64px);
+  --pj-num-lh: 1;
+  --pj-name-fs: clamp(20px, 6.4cqi, 26px);
+  --pj-name-lh: 1.1;
+  --pj-desc-fs: 16px;
+  --pj-desc-lh: 1.4;
+  --pj-h2-fs: clamp(28px, 8.6vw, 36px);
+  --pj-h2-lh: 1.25;
+  --pj-h2-box: 100%;
+  --pj-h2-boxpx: 9999px; /* the same cap in pixels, for the Russian fit below (a percentage means something else in font-size) */
+  --pj-lede-fs: 16px;
+  --pj-lede-lh: 1.5;
+  --pj-lede-gap: 24px;
+  --pj-lede-measure: 60ch;
+  --pj-shadow: none;
+
+  /* ambient glow: the ellipse centre (x, y) inside whichever box is positioned, and its radii */
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-rx: min(70vw, 480px);
+  --glow-ry: min(55vw, 380px);
+
+  position: relative;
+  isolation: isolate; /* one stacking context: glow (0) < tiles (1) < mascot (2) */
+  overflow: clip; /* clip, not hidden: the view() timelines below must keep working */
+  padding-block: var(--pj-pad-top) var(--pj-pad-bottom);
+  padding-inline: max(var(--pj-gutter), env(safe-area-inset-left, 0px)) max(var(--pj-gutter), env(safe-area-inset-right, 0px));
+  background: var(--c-bg, #000);
+  color: var(--pj-num);
+}
+
+/* ------------------------------------------------------------------ stage and statement */
+
+/* Deliberately NOT positioned: on desktop the glow anchors to the section, and a positioned stage would take that job. */
+.stage {
+  inline-size: min(100%, 1320px);
+  margin-inline: auto; /* ultrawide: the stage stays 1320 wide and centred; only the atmosphere extends */
+}
+
+/* The client's 4P statement, verbatim, above the tiles. It is the one block Figma does not have, so it is kept quiet: small,
+   left-aligned with the first tile, on a measure that holds two lines at 1440 and three in Russian. */
+.lede {
+  position: relative; /* paints above the glow (z-index 0), like the tiles */
+  z-index: 1;
+  margin: 0 0 var(--pj-lede-gap);
+  max-inline-size: var(--pj-lede-measure);
+  font-size: var(--pj-lede-fs);
+  font-weight: 400;
+  line-height: var(--pj-lede-lh);
+  letter-spacing: -0.005em;
+  color: var(--pj-lede);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+/* ------------------------------------------------------------------ grid */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    'title'
+    'comp'
+    'pillars';
+  gap: var(--pj-gap-y) var(--pj-gap-x);
+}
+
+.titleTile {
+  grid-area: title;
+  min-block-size: var(--pj-title-min);
+}
+
+.companion {
+  grid-area: comp;
+  position: relative; /* phones and tablet: the glow anchors to DiDi */
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  min-inline-size: 0;
+}
+
+.pillars {
+  grid-area: pillars;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pj-gap-y) var(--pj-gap-x);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ------------------------------------------------------------------ tile */
+
+.tile {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-block-size: var(--pj-tile-min);
+  margin: 0;
+  padding: var(--tile-pad);
+  border: var(--tile-bw) solid var(--pj-tile-border);
+  border-radius: var(--tile-r);
+  background: var(--pj-tile-outer);
+  box-shadow: var(--pj-shadow); /* invisible on black; kept where the tile crosses the glow */
+  container-type: inline-size; /* type on a phone follows the tile's width (cqi), not the viewport's */
+}
+
+.titleTile.tile {
+  min-block-size: var(--pj-title-min);
+}
+
+.surface {
+  position: relative;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center; /* the details block is centred both ways, so tile 01 (taller block) sits ~9px higher */
+  justify-content: center;
+  min-inline-size: 0;
+  padding: var(--pj-surface-pad);
+  border-radius: var(--surface-r);
+  background: var(--pj-tile-inner);
+  overflow: clip;
+}
+
+/* ---- title tile ---- */
+
+.titleSurface {
+  padding-inline: var(--pj-title-pad, var(--pj-surface-pad));
+  border: 2px solid var(--pj-title-edge);
+  background: var(--pj-title-fill);
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  container-type: size; /* the window maths below reads the surface's own width and height */
+  overflow: clip;
+  border-radius: inherit;
+}
+
+/*
+ * The art is a SQUARE raster (S x S) seen through a window: x 9.04 to 90.96 % and y 3.73 to 69.94 % of the image. That is
+ * what Figma shows at 1440 (left -11.04 %, top -5.64 %, width 122.09 %, height 151.04 % of the surface). The window
+ * must always cover the surface, and the arc sits near its bottom, so the image is centred horizontally and pinned to the
+ * window's bottom edge:
+ *     S = max(w / 0.8192, h / 0.6621) = max(122.07 cqw, 151.03 cqh)
+ *     left = (w - S) / 2          top = h - 0.6994 S
+ * That is `cover` over a safe window, so the baked frame at the edges of the raster is never shown and the arc stays on the
+ * lower edge at every tile size. The percentages first are the Figma numbers, for a browser without container units.
+ */
+.artImg {
+  position: absolute;
+  display: block;
+  max-width: none;
+  width: 122.09%;
+  height: 151.04%;
+  left: -11.04%;
+  top: -5.64%;
+  user-select: none;
+}
+
+@supports (width: 1cqw) {
+  .artImg {
+    --s: max(122.07cqw, 151.03cqh);
+    width: var(--s);
+    height: var(--s);
+    left: calc((100cqw - var(--s)) / 2);
+    top: calc(100cqh - 0.6994 * var(--s));
+  }
+}
+
+.heading {
+  position: relative;
+  z-index: 1;
+  inline-size: min(100%, var(--pj-h2-box));
+  margin: 0;
+  font-size: var(--pj-h2-fs);
+  font-weight: 500;
+  line-height: var(--pj-h2-lh);
+  letter-spacing: -0.02em;
+  color: var(--pj-num);
+  text-align: start;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+/*
+ * Russian runs about 15-30 % longer, and its longest word ("повседневного", 7.2em at this weight and tracking) must never be
+ * cut in the middle. So the Russian heading is also capped by what fits the title tile's text box: the tile's content width
+ * (cqi, the tile is the inline-size container) less the surface border and padding, capped at the 351px box on a wide screen.
+ * It is never larger than the size the breakpoint asks for, so at 1440 it is within a pixel of the English 48px.
+ */
+@supports (width: 1cqi) {
+  .section:lang(ru) .heading {
+    font-size: min(
+      var(--pj-h2-fs),
+      calc(min(100cqi - 4px - 2 * var(--pj-title-pad, var(--pj-surface-pad)), var(--pj-h2-boxpx)) / 7.5)
+    );
+  }
+}
+
+/* ---- pillar tiles ---- */
+
+.details {
+  inline-size: min(100%, 350px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pj-detail-gap);
+  min-inline-size: 0;
+}
+
+.num {
+  display: block;
+  font-size: var(--pj-num-fs);
+  font-weight: 500;
+  line-height: var(--pj-num-lh);
+  letter-spacing: -0.02em;
+  color: var(--pj-num);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--pj-name-fs);
+  font-weight: 400;
+  line-height: var(--pj-name-lh);
+  letter-spacing: -0.01em;
+  color: var(--pj-name);
+  overflow-wrap: anywhere; /* last resort at 320px with a large system font */
+}
+
+.text {
+  margin: 0;
+  font-size: var(--pj-desc-fs);
+  font-weight: 400;
+  line-height: var(--pj-desc-lh);
+  color: var(--pj-desc);
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+/* ------------------------------------------------------------------ DiDi on a cloud */
+
+/* phones: centred, 3:2 reserved by the width/height attributes, the cloud tucks against the tile edges */
+.lean {
+  position: relative;
+  z-index: 2;
+  inline-size: clamp(220px, 64vw, 300px);
+  margin-block: -8px;
+}
+
+.float {
+  display: block;
+}
+
+.mascot {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-inline-size: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------------ ambient glow */
+
+/*
+ * One deep-green radial glow, rgba(6,75,40,.7) to 0, drawn as a plain CSS gradient (no blur filter) with the shared
+ * noise tile on top, because it spans only 0-52 levels in G and 0-4 in R/B and bands visibly on an 8-bit panel.
+ * It is a full ellipse (radii --glow-rx x --glow-ry) centred on (--glow-x, --glow-y) inside the nearest positioned box:
+ * the section on desktop (so Figma's bottom-left corner glow is just this ellipse centred on the left edge, and the
+ * section's overflow clips the half that is off-screen), the companion cell everywhere else.
+ */
+.glow {
+  position: absolute;
+  z-index: 0;
+  left: calc(var(--glow-x) - var(--glow-rx));
+  top: calc(var(--glow-y) - var(--glow-ry));
+  width: calc(var(--glow-rx) * 2);
+  height: calc(var(--glow-ry) * 2);
+  background: radial-gradient(ellipse closest-side at 50% 50%, rgb(var(--pj-glow-rgb) / 0.7), rgb(var(--pj-glow-rgb) / 0));
+  pointer-events: none;
+  /* noise only where the glow is, and strongest in its body, so the rest of the section stays pure #000 */
+  --dither-a: 0.04;
+  --dither-mask: radial-gradient(ellipse closest-side at 50% 50%, #000 55%, transparent 100%);
+}
+
+.wash {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ tablet and up */
+
+@media (min-width: 600px) and (max-width: 767.98px) {
+  .section {
+    --pj-tile-min: 220px;
+    --pj-title-min: 220px;
+    --pj-h2-fs: clamp(32px, 5.4vw, 40px);
+    --pj-surface-pad: 24px;
+    --pj-detail-gap: 12px;
+    --pj-gap-x: 16px;
+    --pj-gap-y: 16px;
+    --glow-rx: min(60vw, 420px);
+    --glow-ry: min(40vw, 300px);
+  }
+}
+
+/* A tile this wide (foldable inner screen, landscape phone) puts the numeral beside the text, at the Figma 350px measure.
+   The numeral column has one fixed width, so the text of 01..04 starts at the same x. */
+@media (max-width: 767.98px) {
+  @container (min-width: 480px) {
+    .details {
+      --pj-hnum: clamp(64px, 14cqi, 84px);
+      display: grid;
+      grid-template-columns: calc(var(--pj-hnum) * 1.3) minmax(0, 350px);
+      grid-template-rows: auto auto;
+      column-gap: 22px;
+      row-gap: 8px;
+      align-items: center;
+      justify-content: center;
+      inline-size: 100%;
+    }
+    .num {
+      grid-row: 1 / span 2;
+      font-size: var(--pj-hnum);
+    }
+    .name {
+      align-self: end;
+    }
+    .text {
+      align-self: start;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .section {
+    --pj-gutter: clamp(24px, 3.6vw, 40px);
+    --pj-pad-top: 48px;
+    --pj-pad-bottom: 56px;
+    --pj-gap-x: clamp(16px, 2.2vw, 20px);
+    --pj-gap-y: clamp(16px, 2.2vw, 20px);
+    --pj-tile-min: clamp(260px, 30vw, 330px);
+    --pj-title-min: clamp(260px, 30vw, 330px);
+    --tile-bw: 3px;
+    --tile-pad: 11px;
+    --tile-r: 28px;
+    --surface-r: 21px;
+    --pj-surface-pad: 20px;
+    --pj-detail-gap: 16px;
+    --pj-num-fs: clamp(64px, 8.3vw, 76px);
+    --pj-num-lh: 1.05;
+    --pj-name-fs: clamp(24px, 3.2vw, 30px);
+    --pj-name-lh: 1;
+    --pj-desc-fs: clamp(16px, 2.1vw, 18px);
+    --pj-desc-lh: 1.4;
+    --pj-h2-fs: clamp(32px, 4.4vw, 44px);
+    --pj-h2-lh: 1.25;
+    --pj-lede-fs: 17px;
+    --pj-lede-gap: 28px;
+    --pj-lede-measure: min(100%, 52rem);
+    --pj-shadow: 0 5px 9px rgb(0 0 0 / 0.44);
+    --glow-rx: min(46vw, 440px);
+    --glow-ry: calc(var(--pj-title-min) / 2 + 40px); /* the ellipse stays inside the section: no seam against the section above */
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'title comp'
+      'pillars pillars';
+  }
+
+  .pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lean {
+    inline-size: min(100%, 360px);
+    margin-block: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ desktop: the Figma layout */
+
+@media (min-width: 1120px) {
+  .section {
+    --pj-gutter: var(--gutter, clamp(16px, 4.17vw, 60px));
+    --pj-pad-top: 40px;
+    --pj-pad-bottom: 53px;
+    --pj-gap-x: clamp(16px, 1.8vw, 26px);
+    --pj-gap-y: clamp(16px, 1.6vw, 23px);
+    --pj-tile-min: clamp(300px, 24.1vw, 347px);
+    --pj-title-min: clamp(300px, 24.1vw, 347px);
+    --tile-r: 30px;
+    --surface-r: 23px;
+    --pj-surface-pad: clamp(14px, 1.53vw, 22px);
+    --pj-detail-gap: 22px;
+    --pj-num-fs: clamp(64px, 5.83vw, 84px);
+    --pj-num-lh: 1.0476; /* 88 / 84 */
+    --pj-name-fs: clamp(24px, 2.22vw, 32px);
+    --pj-name-lh: 0.9375; /* 30 / 32 */
+    --pj-desc-fs: clamp(16px, 1.39vw, 20px);
+    --pj-desc-lh: 1.3; /* 26 / 20 */
+    --pj-h2-fs: clamp(36px, 3.33vw, 48px);
+    --pj-h2-lh: 1.396; /* 67 / 48 */
+    --pj-lede-fs: clamp(16px, 1.25vw, 18px);
+    --pj-lede-gap: clamp(24px, 1.94vw, 28px);
+    --pj-lede-measure: min(100%, 55rem);
+
+    /* Figma: 620 x 460 pinned bottom-left, centred (0, 437), radii 465 x 437. As a full ellipse anchored to the 1440 frame's
+       left edge, so on ultrawide it keeps its relation to DiDi instead of sticking to the viewport edge. */
+    --glow-rx: 465px;
+    --glow-ry: 437px;
+    --glow-x: max(0px, calc((100% - 1440px) / 2));
+    --glow-y: calc(100% - 23px);
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'title pillars pillars'
+      'comp pillars pillars';
+  }
+
+  /* The four pillars sit in columns 2-3 of the same two rows: a subgrid keeps their tracks (and row heights) the title
+     tile's, so 03 and 04 line up with the companion's row. */
+  .pillars {
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+  }
+
+  /* the glow now anchors to the section, so the companion cell must not be a positioned box */
+  .companion {
+    position: static;
+    z-index: auto;
+    display: grid;
+    place-items: center start;
+    padding-block-end: 4px; /* DiDi sits ~2px above the cell's centre in Figma */
+  }
+
+  /* 95 % of the cell wide, 0.5 % in from the left (401 x 267 in a 422.67 cell) */
+  .lean {
+    inline-size: 95%;
+    margin-inline-start: 0.5%;
+  }
+
+  /* Figma cuts the glow hard at the section's bottom edge; fade it over its last 40px so it does not end on a seam against the next section */
+  .glow {
+    mask-image: linear-gradient(to bottom, #000 calc(var(--glow-ry) + 23px - 40px), transparent calc(var(--glow-ry) + 23px));
+  }
+}
+
+/* 1440 and up: Figma's 351px title box, kept. The English heading reads "The future of / everyday / wellness is 4P", three lines
+   as in Figma (the lone "4P" of the original copy is gone, but "everyday wellness" cannot fit on one line at 48px either way, so a
+   wider box would not change the breaks); the Russian one takes four, with the longest word whole (see the :lang(ru) fit above).
+   No text-wrap: balance here: it would re-break the lines. Below 1440 the heading balances. */
+@media (min-width: 1440px) {
+  .section {
+    --pj-h2-box: 351px;
+    --pj-h2-boxpx: 351px;
+    --pj-title-pad: 18px;
+  }
+  .heading {
+    text-wrap: wrap;
+  }
+}
+
+/* Ultrawide: the stage stays 1320 wide (the .grid cap above), the atmosphere extends. A very faint wide wash along the
+   bottom stops the section ending in a void; it reaches 0 at the section's bottom edge, so it has no hard seam. */
+@media (min-width: 2200px) {
+  .wash {
+    position: absolute;
+    z-index: 0;
+    inset: auto 0 0 0;
+    display: block;
+    block-size: 140px;
+    background: radial-gradient(ellipse 30vw 70px at 50% 70px, rgb(var(--pj-glow-rgb) / 0.12), rgb(var(--pj-glow-rgb) / 0));
+    pointer-events: none;
+    --dither-a: 0.035;
+    --dither-mask: radial-gradient(ellipse 30vw 70px at 50% 70px, #000 50%, transparent 100%);
+  }
+}
+
+/* ------------------------------------------------------------------ user preferences */
+
+@media (prefers-contrast: more) {
+  .section {
+    --pj-tile-border: #4a4d4c;
+    --pj-title-edge: #4a4d4c;
+    --pj-desc: #c4c7c5;
+  }
+}
+
+/* forced colours: borders are real CSS borders so they survive; the decoration (backgrounds) is dropped by the UA */
+@media (forced-colors: active) {
+  .glow,
+  .wash {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ motion */
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * Tiles rise in order and the mascot drifts through the shared vocabulary (src/styles/motion.css: data-fx="rise" and
+   * "drift", with --i and --fx-from / --fx-to set in the markup). One adjustment: those rules fill BOTH ways, which parks a
+   * not-yet-scrolled-to element at its start frame (opacity 0). This section only fills forwards: before its range an element
+   * is simply in its finished state, which is also what a full-page screenshot or a print sees. It is invisible to a
+   * reader, because before the range the element is below the viewport.
+   */
+  @supports (animation-timeline: view()) {
+    .tile[data-fx='rise'],
+    .float[data-fx='drift'] {
+      animation-fill-mode: forwards;
+    }
+
+    /* the glow swells (opacity and scale, compositor only) as the whole section crosses the viewport */
+    .section {
+      view-timeline: --projects block;
+    }
+
+    .glow {
+      animation: swell 1ms linear forwards;
+      animation-timeline: --projects;
+      animation-range: cover 0% cover 100%;
+    }
+
+    @keyframes swell {
+      0% {
+        opacity: 0.55;
+        scale: 0.9;
+      }
+      50% {
+        opacity: 1;
+        scale: 1.06;
+      }
+      100% {
+        opacity: 0.8;
+        scale: 0.96;
+      }
+    }
+  }
+}

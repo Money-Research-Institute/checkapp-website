@@ -1,0 +1,32 @@
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+.title {
+  margin: 0;
+  color: var(--c-fg);
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--c-fg-70);
+  font-size: var(--fs-lede);
+  line-height: 1.5;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.grid > li {
+  min-width: 0;
+}

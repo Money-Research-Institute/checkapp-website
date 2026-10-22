@@ -1,0 +1,403 @@
+/*
+ * Testimonials wall (Figma 2601:13023, 1320 x 954).
+ *
+ * Layout per width (mobile first):
+ *   < 600          one column, ordered Alex, Sofia, Ryan, Emily (Liam and Daniel are display:none; Emily is the faded teaser)
+ *   600 - 959      two columns (Alex+Emily | Sofia+Ryan) plus a full-width Daniel | Liam row, the teaser row, faded
+ *   960 - 1023     three tighter columns
+ *   1024 and up    three columns; 1280 and up is the Figma measure (3 x 424, gap 24 inside 1320)
+ *   landscape phone (<= 500px tall): two columns, no teaser row
+ *
+ * The DOM is three column wrappers of two cards each. Each wrapper is an independent flex stack, vertically centred in the
+ * tallest one: that is what lands the tops at +13.5 / +47 / 0 at 1440 (stacks of 585 / 518 / 612 px in a 612 px box).
+ *
+ * The bottom fade is a mask on the wall plus a resting opacity on the bottom-row cards; both were measured from the Figma
+ * render (text at ~.42 -> .09 of white going down the bottom row), not read from its stops.
+ *
+ * Every effect is CSS only and compositor only (transform, opacity, mask). The DEFAULT style of every card is its final
+ * visible state: no-JS, reduced motion and T0 all show the finished wall.
+ */
+
+.section {
+  /* the design numbers, overridden per width below */
+  --bw: 1.2px; /* the hairline */
+  --pad: 20px; /* card padding, inside the hairline */
+  --gap: 16px; /* between columns and between stacked cards */
+  --fade: 200px; /* the wall dissolves over its last --fade px */
+  --intro-gap: 32px; /* header to wall */
+  --wall-top: 32px; /* mask headroom so the drift never clips the top of a card */
+  --q-size: 15px;
+  --q-lh: 25.5px;
+  --rest-teaser: 0.55; /* resting opacity of the faded cards */
+  --dither-a: 0.02; /* the noise tile adds up to 4/255 at .04: this keeps the card fills from greying */
+
+  position: relative;
+  padding-block: 48px 24px;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.intro {
+  /* nothing to change: SectionIntro draws eyebrow, gradient h2 and the bracketed lede */
+  position: relative;
+}
+.intro p {
+  max-inline-size: 480px; /* the Figma lede is a 464 px column: two lines, the first ending on "signals" */
+}
+
+/* ---------------------------------------------------------------- wall */
+
+.wall {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  margin-top: calc(var(--intro-gap) - var(--wall-top));
+  padding-top: var(--wall-top);
+  /* the dissolve: opaque down to --fade from the bottom, then linear to nothing */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--fade)), transparent 100%);
+}
+
+/* On a phone the wrappers dissolve so the four cards can be ordered across them. */
+.col {
+  display: contents;
+  --fx-from: 0px, 12px;
+  --fx-to: 0px, -12px;
+}
+.col:nth-child(2) {
+  --fx-from: 0px, 24px;
+  --fx-to: 0px, -24px;
+}
+.col:nth-child(3) {
+  display: none; /* Daniel (leftover template quote) and Liam: dropped first */
+}
+.col:nth-child(1) > .card:nth-child(1) {
+  order: 1; /* Alex */
+}
+.col:nth-child(2) > .card:nth-child(1) {
+  order: 2; /* Sofia */
+}
+.col:nth-child(2) > .card:nth-child(2) {
+  order: 3; /* Ryan */
+}
+.col:nth-child(1) > .card:nth-child(2) {
+  order: 4; /* Emily, the faded teaser */
+  --rest: var(--rest-teaser);
+}
+
+/* ---------------------------------------------------------------- card */
+
+.card {
+  --rest: 1; /* resting opacity; the rise animation ends here */
+  --edge-w: var(--bw);
+  /* The hairline, MEASURED from the render (Figma's own #41773c stroke is not what it paints): #222d21 at the top-left corner,
+     falling to #141514 within ~150px, plus a second #222d21 glow at the bottom-right. The glows are 151deg / 331deg gradients,
+     so they run about twice as far along an edge as down the next one, as in the design. #141514 is what a 1.2px stroke placed
+     on a half pixel reads as; a pixel-aligned one reads nearer #1a1a1a, so this is the faint end of the range. */
+  --edge:
+    linear-gradient(151deg, #222d21, rgb(34 45 33 / 0) 28%),
+    linear-gradient(331deg, #222d21, rgb(34 45 33 / 0) 24%),
+    #141514;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: calc(var(--pad) + var(--bw)) calc(var(--pad) + var(--bw)) calc(var(--pad) - 4px + var(--bw));
+  border-radius: 20px;
+  color: var(--c-fg);
+  opacity: var(--rest);
+  background-image: var(--glow, none), linear-gradient(107deg, rgb(65 119 60 / 0.08) 0%, rgb(65 119 60 / 0.024) 100%);
+}
+
+/* the dither layer (.fx-dither) follows the card's rounded corners */
+.card::after {
+  border-radius: inherit;
+}
+
+/* the one lit card: Sofia's glow, baked as a radial falloff that the card clips (no blur filter) */
+.col:nth-child(2) > .card:nth-child(1) {
+  --glow: radial-gradient(
+    circle at 95% 90%,
+    rgb(65 119 60 / 0.21) 0,
+    rgb(65 119 60 / 0.18) 50px,
+    rgb(65 119 60 / 0.11) 100px,
+    rgb(65 119 60 / 0.05) 150px,
+    rgb(65 119 60 / 0) 210px
+  );
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  display: block;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.name {
+  color: var(--c-fg);
+  font-size: 16px;
+  line-height: 27px;
+  letter-spacing: -0.2px;
+}
+.role {
+  color: var(--c-fg-body);
+  font-size: 14px;
+  line-height: 27px;
+  letter-spacing: -0.02em;
+}
+
+.quote {
+  margin: 16px 0 0;
+}
+.quote p {
+  max-inline-size: 359px; /* the Figma text box: wraps the quotes where the design does (card inner width is 373) */
+  margin: 0;
+  color: var(--c-fg);
+  font-size: var(--q-size);
+  line-height: var(--q-lh);
+  letter-spacing: -0.2px;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+/* Daniel's quote is a little wider in the design (378 px, four lines); it is the placeholder that gets replaced anyway */
+.col:nth-child(3) > .card:nth-child(1) .quote p {
+  max-inline-size: none;
+}
+
+/* pinned to the bottom of the card whatever its min-height */
+.date {
+  display: block;
+  margin-top: auto;
+  padding-top: 8px;
+  color: var(--c-fg);
+  font-size: 16px;
+  line-height: 27px;
+  letter-spacing: -0.2px;
+}
+
+/* ---------------------------------------------------------------- 600+: two columns and the teaser row */
+
+@media (min-width: 600px), (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+  .section {
+    --fade: 300px;
+    --intro-gap: 40px;
+    --pad: 20px;
+    --gap: 16px;
+  }
+  .wall {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    min-width: 0;
+  }
+  /* Daniel | Liam: a full-width row under the two columns, the faded teaser */
+  .col:nth-child(3) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: 1 / -1;
+  }
+  /* two columns of equal height would sit level: drop the right one a little, the way the 3-column wall staggers */
+  .col:nth-child(2) {
+    margin-top: 32px;
+  }
+  .col:nth-child(1) > .card:nth-child(2) {
+    --rest: 1; /* Emily is a full card again: only the Daniel | Liam row is the teaser */
+  }
+  .col:nth-child(3) > .card {
+    --rest: var(--rest-teaser);
+  }
+}
+
+@media (min-width: 768px) {
+  .section {
+    --pad: 24px;
+    --q-size: 16px;
+    --q-lh: 27px;
+    padding-block: 64px 40px;
+  }
+}
+
+/* A landscape phone is short: two columns, no teaser row. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 959.98px) {
+  .section {
+    --fade: 160px;
+    --intro-gap: 28px;
+    padding-block: 40px 16px;
+  }
+  .col:nth-child(3) {
+    display: none;
+  }
+  .col:nth-child(1) > .card:nth-child(2),
+  .col:nth-child(2) > .card:nth-child(2) {
+    --rest: var(--rest-teaser);
+  }
+}
+
+/* ---------------------------------------------------------------- 960+: three columns */
+
+@media (min-width: 960px) {
+  .section {
+    --fade: 329px;
+    --intro-gap: 48px;
+    --pad: 20px; /* 960 - 1023 is the tight version */
+    --gap: 16px;
+    --q-size: 15px;
+    --q-lh: 25.5px;
+  }
+  .wall {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .col:nth-child(2) {
+    margin-top: 0; /* three columns stagger by centring */
+  }
+  .col:nth-child(3) {
+    display: flex;
+    grid-column: auto;
+  }
+  /* bottom row (Emily, Ryan, Liam) rests at .55; the top row is full. Same specificity as the rules above, so order wins. */
+  .col:nth-child(1) > .card:nth-child(2),
+  .col:nth-child(2) > .card:nth-child(2),
+  .col:nth-child(3) > .card:nth-child(2) {
+    --rest: var(--rest-teaser);
+  }
+  .col:nth-child(3) > .card:nth-child(1) {
+    --rest: 1;
+  }
+  /* the Figma card heights; the date sits on margin-top:auto, so a longer quote simply grows its card */
+  .col:nth-child(1) > .card:nth-child(1) {
+    min-height: 294px;
+  }
+  .col:nth-child(1) > .card:nth-child(2) {
+    min-height: 267px;
+  }
+  .col:nth-child(2) > .card:nth-child(1) {
+    min-height: 236px;
+  }
+  .col:nth-child(2) > .card:nth-child(2) {
+    min-height: 258px;
+  }
+  .col:nth-child(3) > .card {
+    min-height: 294px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    --pad: 22px;
+    --gap: 20px;
+    --q-size: 16px;
+    --q-lh: 27px;
+  }
+  /* the Figma heading breaks after "off": 634 wide at 52px */
+  .intro h2 {
+    max-inline-size: 12.2em;
+    text-wrap: wrap;
+  }
+}
+
+@media (min-width: 1280px) {
+  .section {
+    --pad: 24px;
+    --gap: 24px;
+  }
+}
+
+/* ---------------------------------------------------------------- motion (CSS only, never required) */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: var(--rest, 1);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Staggered rise: [data-once] is armed by the experience core, played on first view; absent attribute = final frame.
+     The animation ends at the card's resting opacity (.55 for the faded cards), not at 1. */
+  .card[data-once-state='armed'] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .card[data-once-state='played'] {
+    animation: rise var(--dur-slow) var(--ease-out) both;
+  }
+  .col:nth-child(2) > .card[data-once-state='played'] {
+    animation-delay: 80ms;
+  }
+  .col:nth-child(3) > .card[data-once-state='played'] {
+    animation-delay: 160ms;
+  }
+}
+
+/* Column drift on the scroll position (data-fx="drift" is defined in motion.css, behind @supports view()). The outer columns
+   travel +-12px, the centre +-24px, and the wall is at rest when it is centred in the viewport. Half the travel on touch. */
+@media (pointer: coarse) {
+  .col {
+    --fx-from: 0px, 6px;
+    --fx-to: 0px, -6px;
+  }
+  .col:nth-child(2) {
+    --fx-from: 0px, 12px;
+    --fx-to: 0px, -12px;
+  }
+}
+
+/* ---------------------------------------------------------------- accessibility fallbacks */
+
+/* More contrast: no dissolve, no dimming, solid cards with a 40 % white border. */
+@media (prefers-contrast: more) {
+  .section {
+    --rest-teaser: 1;
+  }
+  .wall {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .card::after {
+    display: none;
+  }
+  .card {
+    --edge: linear-gradient(rgb(255 255 255 / 0.4), rgb(255 255 255 / 0.4));
+    background-image: none;
+    background-color: #0a0f0a;
+  }
+}
+
+/* Forced colours drop backgrounds and gradients: keep the edge and never dim or mask text. */
+@media (forced-colors: active) {
+  .section {
+    --rest-teaser: 1;
+  }
+  .wall {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .card::after {
+    display: none;
+  }
+  .card::before {
+    opacity: 1;
+  }
+}

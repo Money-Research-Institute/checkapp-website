@@ -1,0 +1,510 @@
+/*
+ * 02 · The usual way. Figma 2601:12628, 1440 x 1057 = padding 92 / 80 / 91 around a 1280 column:
+ * header 294 + 48 + a 532 stage (render 752 | 4 statements 480, gap 48).
+ *
+ * The right column drives the height; the render stretches to it and crops (object-fit: cover), so 200 % zoom or a
+ * bigger system font never leaves a gap. Nothing here is a fixed height: cards use min-height only.
+ *
+ * Breakpoints (mobile first):
+ *   < 480   square crop of the render, statements as [number | text] rows
+ *   480     the render is uncropped (752:532)
+ *   600     tablet: 2 x 2 statements, lede brackets on
+ *   1000    two columns (752fr 480fr), tokens step down 1000 > 1200 > 1366
+ *   1280    the exact Figma padding (92 / 91)
+ *   1441    the lattice stops at its native 1440: flanks are plain, feathered into the raster
+ *   1500    two faint green washes on the flanks
+ *   landscape phone (>= 700 wide, <= 520 tall): two columns, compact rows
+ * Everything below is a default that is already the finished frame; motion is an enhancement at the end.
+ *
+ * Regions: the same layout and art for /, /eu/, /gulf/ and /ru/; only the strings change (./copy.ts). Russian runs 15-30 %
+ * longer, so nothing is sized to the English text: the headline wraps to 3 lines on phones, the lede to 3-5, the statement
+ * rows grow (the row track is minmax(min-content, 1fr), so one long statement lifts all four and the figure follows).
+ */
+
+.root {
+  /* section tokens (the page-wide ones live in src/styles/tokens.css) */
+  --uw-bg: #050200; /* the lattice's edge colour once the 40 % black sits on it (measured on the export: 5-6, 1-2, 0) */
+  --uw-gutter: clamp(16px, 5vw, 24px);
+  --uw-pad-top: 56px;
+  --uw-pad-bottom: 56px;
+  --uw-stage-gap: 28px; /* header -> stage */
+  --uw-col-gap: 24px;
+  --uw-row-gap: 12px;
+  --uw-card-pad: 16px;
+  --uw-card-radius: 20px;
+  --uw-card-min: 0px;
+  --uw-card-text: 14px;
+  --uw-card-lh: 1.5;
+  --uw-card-edge: rgb(255 255 255 / 0.06);
+  --uw-glow-x: 34%; /* where the phone base sits in the square crop */
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip; /* clip, never hidden: the view() timelines inside must not lose their scroller */
+  background: var(--uw-bg);
+  color: var(--c-fg);
+  padding-block: var(--uw-pad-top) var(--uw-pad-bottom);
+  padding-inline: max(var(--uw-gutter), env(safe-area-inset-left, 0px)) max(var(--uw-gutter), env(safe-area-inset-right, 0px));
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-inline-size: 1280px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--uw-stage-gap);
+}
+
+/* ------------------------------------------------------------------ atmosphere */
+
+.atmos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* .fx-dither: noise tile over the glow region only, so near-black gradients do not band. */
+  --dither-a: 0.05;
+  --dither-mask: radial-gradient(ellipse 62% 58% at 50% 46%, #000 0%, rgb(0 0 0 / 0) 100%);
+  --uw-feather-x: 0px;
+}
+
+/* The raster at its native 1440 wide, centred; below 1440 it is simply the section's width. */
+.lattice {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0;
+  margin-inline: auto;
+  width: min(100%, 1440px);
+  -webkit-mask-image: linear-gradient(90deg, rgb(0 0 0 / 0) 0, #000 var(--uw-feather-x), #000 calc(100% - var(--uw-feather-x)), rgb(0 0 0 / 0) 100%);
+  mask-image: linear-gradient(90deg, rgb(0 0 0 / 0) 0, #000 var(--uw-feather-x), #000 calc(100% - var(--uw-feather-x)), rgb(0 0 0 / 0) 100%);
+}
+
+/* Top 48 px and bottom 120 px fade into the neighbours: the Figma frame overlaps the next section by 53 px, this one
+   does not, so the bottom has to dissolve instead. */
+.latticeLayer {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(180deg, rgb(0 0 0 / 0) 0, #000 48px, #000 calc(100% - 120px), rgb(0 0 0 / 0) 100%);
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0) 0, #000 48px, #000 calc(100% - 120px), rgb(0 0 0 / 0) 100%);
+}
+
+.latticeImg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 100%; /* bottom-aligned, as in Figma */
+}
+
+/* Figma's second fill: a flat rgba(0,0,0,.4) over the raster. */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+}
+
+/* ------------------------------------------------------------------ header (ds SectionIntro) */
+
+.root .intro {
+  gap: 20px;
+}
+
+/* The pill: 40 px on phones, 46 from 600, 51 from 1000. */
+.intro > span {
+  min-height: 40px;
+  padding: 6px 18px;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.intro > h2 {
+  font-size: clamp(28px, 7.6vw, 52px);
+  /* 15.8em is 822px at 52px: the two lines Figma shows, and 3 lines at 320 on a phone. */
+  max-inline-size: 15.8em;
+}
+
+/* The lede box is 12.5 + 8 + 628 + 8 + 12.5 wide; the ds brackets follow the text height at any wrap. */
+.intro > div {
+  width: 100%;
+  max-width: 669px;
+}
+.intro > div > p {
+  padding-block: 0;
+  font-size: 15px;
+  line-height: 25.5px;
+  text-wrap: balance;
+}
+/* Brackets are the first thing cut: on a phone they cost 2 x 20 px of a 288 px measure. */
+.intro > div > span {
+  display: none;
+  border-width: 2px;
+}
+.intro > div > span:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.intro > div > span:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+/* ------------------------------------------------------------------ stage: render + statements */
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--uw-stage-gap);
+  align-items: start;
+}
+
+/* The figure clips the render (radius + overflow: clip) so it can drift inside without ever showing an edge. */
+.figure {
+  position: relative;
+  overflow: clip;
+  border-radius: var(--uw-card-radius);
+  aspect-ratio: 1 / 1; /* reserved: no layout shift when the lazy image arrives */
+  background: #030904; /* the render's own edge colour, a few levels darker than the page */
+  isolation: isolate;
+}
+
+/* 24 px taller than the clip so the +/-12 px drift (data-fx="drift") never uncovers it. */
+.render {
+  position: absolute;
+  inset: -12px 0;
+  display: block;
+  width: 100%;
+  height: calc(100% + 24px);
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+.figure picture {
+  display: contents;
+}
+
+/* The green light at the phone base. A static glow by default; scroll ramps it (enhancement at the end of the file). */
+.glow {
+  position: absolute;
+  left: calc(var(--uw-glow-x) - 33%);
+  bottom: -9%;
+  width: 66%;
+  aspect-ratio: 2.4 / 1;
+  background: radial-gradient(
+    closest-side,
+    rgb(132 255 96 / 0.5) 0%,
+    rgb(72 203 59 / 0.22) 38%,
+    rgb(34 120 40 / 0.07) 70%,
+    rgb(34 120 40 / 0) 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 1;
+  pointer-events: none;
+  transform-origin: 50% 60%;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--uw-row-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Phones: [ number | text ] rows. */
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: baseline;
+  min-height: var(--uw-card-min);
+  padding: var(--uw-card-pad);
+  border-radius: var(--uw-card-radius);
+  background: linear-gradient(180deg, var(--c-surface-a), var(--c-surface-b));
+  /* an inset ring, not a border: it adds nothing to the box, so 4 x 118 + 3 x 20 stays exactly the render's 532 */
+  box-shadow: inset 0 0 0 1px var(--uw-card-edge);
+}
+
+.num {
+  color: var(--c-fg);
+  font-size: 20px;
+  font-weight: 700; /* Manrope Bold replaces Geist Bold (docs/landing-decisions.md D4) */
+  line-height: 26px;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.text {
+  margin: 0;
+  color: var(--c-muted);
+  font-size: var(--uw-card-text);
+  line-height: var(--uw-card-lh);
+  text-wrap: pretty;
+}
+
+/* ------------------------------------------------------------------ 480: the render is uncropped */
+@media (min-width: 480px) {
+  .root {
+    --uw-glow-x: 46%; /* the phone base in the full 752:532 composition */
+  }
+  .figure {
+    aspect-ratio: 752 / 532;
+    border-radius: 24px;
+  }
+}
+
+/* ------------------------------------------------------------------ 600: tablet */
+@media (min-width: 600px) {
+  .root {
+    --uw-gutter: clamp(32px, 5.5vw, 56px);
+    --uw-pad-top: 72px;
+    --uw-pad-bottom: 72px;
+    --uw-stage-gap: 40px;
+    --uw-row-gap: 16px;
+    --uw-card-pad: 24px;
+    --uw-card-radius: 24px;
+    --uw-card-text: 13px;
+    --uw-card-lh: 1.45;
+  }
+
+  .root .intro {
+    gap: 24px;
+  }
+  .intro > span {
+    min-height: 46px;
+    padding: 8px 22px;
+    font-size: 16px;
+    line-height: 27px;
+  }
+  .intro > h2 {
+    font-size: clamp(36px, 5.4vw, 52px);
+  }
+  .intro > div > span {
+    display: block;
+  }
+  /* Greedy wrapping, as Figma: balance would narrow the text and strand the brackets at the edge of the 669 box. */
+  .intro > div > p {
+    text-wrap: wrap;
+  }
+
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* number over text, as on the desktop */
+  .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* numbers line up across a row even when one text wraps */
+    gap: 12px;
+  }
+}
+
+/* The Figma two-line headline wraps naturally from about 700; below that balance keeps three even lines. */
+@media (min-width: 700px) {
+  .intro > h2 {
+    text-wrap: wrap;
+  }
+}
+
+/* ------------------------------------------------------------------ 1000: two columns */
+@media (min-width: 1000px) {
+  .root {
+    --uw-gutter: clamp(40px, 5.55vw, 80px);
+    --uw-pad-top: 80px;
+    --uw-pad-bottom: 80px;
+    --uw-stage-gap: 40px;
+    --uw-col-gap: 32px;
+    --uw-row-gap: 12px;
+    --uw-card-pad: 16px;
+    --uw-card-text: 12px;
+    --uw-card-lh: 1.3334; /* 16px, as in Figma */
+    --uw-card-edge: rgb(0 0 0 / 0.06); /* Figma's own border: invisible on dark, it only keeps the box model honest */
+  }
+
+  .intro > span {
+    min-height: 51px;
+    padding: 8px 24px;
+  }
+
+  .stage {
+    grid-template-columns: minmax(0, 752fr) minmax(0, 480fr);
+    column-gap: var(--uw-col-gap);
+    align-items: stretch;
+  }
+  /* The statements decide the height; the figure follows and crops. */
+  .figure {
+    aspect-ratio: auto;
+    min-height: 280px;
+  }
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(4, minmax(min-content, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .root {
+    --uw-col-gap: 40px;
+    --uw-row-gap: 16px;
+    --uw-card-pad: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .root {
+    --uw-pad-top: 92px;
+    --uw-pad-bottom: 91px; /* Figma's 91, kept: the 53 px overlap with the next section is not copied */
+    --uw-stage-gap: 48px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .root {
+    --uw-col-gap: 48px;
+    --uw-row-gap: 20px;
+    --uw-card-pad: 32px;
+    --uw-card-min: 118px; /* 26 + 12 + 16 + 2 x 32: the floor, never a height */
+  }
+}
+
+/* ------------------------------------------------------------------ ultrawide */
+@media (min-width: 1441px) {
+  .atmos {
+    --uw-feather-x: 200px;
+  }
+}
+
+/* Past the raster the page is plain #050100; two faint green washes keep the atmosphere going. */
+@media (min-width: 1500px) {
+  .atmos::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1600px circle at 18% 62%, rgb(72 203 59 / 0.055), transparent 70%),
+      radial-gradient(1600px circle at 84% 38%, rgb(72 203 59 / 0.045), transparent 70%);
+  }
+}
+
+/* ------------------------------------------------------------------ landscape phone */
+/* Short and wide: keep the two columns, never size anything from the viewport height except the headline. */
+@media (min-width: 700px) and (max-height: 520px) and (orientation: landscape) {
+  .root {
+    --uw-gutter: 24px;
+    --uw-pad-top: 40px;
+    --uw-pad-bottom: 40px;
+    --uw-stage-gap: 24px;
+    --uw-col-gap: 24px;
+    --uw-row-gap: 10px;
+    --uw-card-pad: 12px;
+    --uw-card-radius: 20px;
+    --uw-card-min: 0px;
+    --uw-card-text: 13px;
+    --uw-card-lh: 1.4;
+  }
+
+  .root .intro {
+    gap: 16px;
+  }
+  .intro > h2 {
+    font-size: min(7.6vw, 9svh);
+  }
+
+  .stage {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    column-gap: var(--uw-col-gap);
+    align-items: stretch;
+  }
+  /* Here the render sets the height, uncropped (about 471 x 333), and the four rows stretch to it (about 75 each). */
+  .figure {
+    aspect-ratio: 752 / 532;
+    inline-size: 100%; /* without it a taller list (Russian) stretches the figure and its ratio widens it past its column */
+    min-height: 0;
+    border-radius: 20px;
+  }
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(4, minmax(min-content, 1fr));
+  }
+  .card {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: baseline;
+    align-content: center;
+  }
+  .num {
+    font-size: 18px;
+    line-height: 24px;
+  }
+}
+
+/* ------------------------------------------------------------------ preferences */
+@media (prefers-contrast: more) {
+  .root {
+    --uw-card-edge: rgb(255 255 255 / 0.55);
+  }
+  .text {
+    color: #d0d0d0;
+  }
+  .shade {
+    background: rgb(0 0 0 / 0.7);
+  }
+  .glow {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* Decoration goes; the figure keeps its image. */
+  .atmos,
+  .glow {
+    display: none;
+  }
+  .root {
+    background: Canvas;
+  }
+  .card {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  .num,
+  .text {
+    color: CanvasText;
+  }
+  .intro > div > span {
+    border-color: CanvasText;
+  }
+}
+
+/* ------------------------------------------------------------------ scroll-linked motion (enhancement only) */
+/* The glow ramps with the section's own scroll position: dim as the section enters, full when the render is centred,
+   then it stays. No infinite loop, transform and opacity only. Outside this block (reduced motion, Firefox, older
+   Safari, print) the glow is the static one above and the statements and the render show their finished frames. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes glow-ramp {
+    from {
+      opacity: 0.18;
+      transform: scale(0.84);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    .root {
+      view-timeline: --uw-section block;
+    }
+    .glow {
+      animation: glow-ramp 1ms linear both;
+      animation-timeline: --uw-section; /* after the shorthand, which resets it */
+      animation-range: entry 30% cover 60%;
+    }
+  }
+}

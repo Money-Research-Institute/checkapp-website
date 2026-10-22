@@ -1,0 +1,13 @@
+.card {
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+}
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-block: clamp(8px, 2vw, 16px);
+  text-align: center;
+}

@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: SITE_NAME,
     short_name: SITE_NAME,
-    description: 'A wellness companion that checks in with you every day. Meet DiDi.',
+    description: 'Your digital health companion. Snap a photo of your tongue, face or iris and DiDi shares a short wellness insight.',
     start_url: withBasePath('/'),
     scope: withBasePath('/'),
     display: 'standalone',

@@ -11,8 +11,8 @@ import styles from './CtaBanner.module.css';
  */
 export function CtaBanner({
   headline = 'A small daily check-in with DiDi',
-  subheadline = 'Free to download. DiDi is waiting for you.',
-  label = 'Get CheckApp Free',
+  subheadline = 'DiDi is waiting for you.',
+  label = 'Get checkapp',
   href = APP_DOWNLOAD_URL,
   page = 'unknown',
   position = 'banner',

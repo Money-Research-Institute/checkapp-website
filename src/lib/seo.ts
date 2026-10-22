@@ -118,15 +118,11 @@ export function mobileApplicationSchema(locale: Locale = 'en') {
     name: SITE_NAME,
     inLanguage: locale,
     description:
-      'A wellness companion app: DiDi checks in with you every day and explains what it notices in plain language. Not a medical device.',
+      'A wellness companion app: take a photo of your tongue, face or iris and DiDi shares a short wellness insight, only when you ask. Not a medical device.',
     applicationCategory: 'HealthApplication',
     operatingSystem: 'Android',
     image: LOGO_URL,
-    offers: {
-      '@type': 'Offer',
-      price: '0',
-      priceCurrency: 'USD',
-    },
+    // No `offers`: no price is set yet (docs/landing-copy.md), so none is declared.
     // No aggregateRating and no Review markup: there are no verified ratings or testimonials yet
     // (docs/landing-decisions.md D1, D2).
   };
@@ -201,6 +197,6 @@ export function articleSchema(post: {
         url: LOGO_URL,
       },
     },
-    mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
+    mainEntityOfPage: `${SITE_URL}/blog/${post.slug}/`,
   };
 }

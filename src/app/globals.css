@@ -33,28 +33,6 @@
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-ui: var(--font-inter), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-brand: var(--font-bricolage), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-
-  /*
-   * LEGACY ALIASES. The old light-theme class names, pointed at dark values so the not-yet-migrated pages
-   * (src/components/ui/*, src/components/marketing/*) stay readable on the black page until their page task
-   * moves them onto src/components/ds. Delete this block (and the two legacy rules at the end of this file)
-   * in the final cleanup task.
-   */
-  --color-primary: var(--c-brand);
-  --color-primary-light: var(--c-mint);
-  --color-primary-dark: var(--c-brand-deep);
-  --color-forest: var(--c-bg);
-  --color-forest-mid: var(--c-surface-a);
-  --color-bg-warm: var(--c-bg);
-  --color-card: var(--c-surface-b);
-  --color-text: var(--c-fg);
-  --color-text-primary: var(--c-fg);
-  --color-text-secondary: var(--c-fg-70);
-  --color-accent-amber: #ff8c00;
-  --color-bubble-didi: var(--c-surface-a);
-  --color-bubble-user: var(--c-surface-b);
-  --color-line: rgb(255 255 255 / 0.1);
-  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -110,7 +88,9 @@
     *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      /* `none`, not a 0.01ms duration: with the default `transition-property: all`, a 0.01ms transition still holds its start
+         value for one frame, so the first container-query style change painted the hero in UA defaults (CLS 0.5). */
+      transition: none !important;
       scroll-behavior: auto !important;
     }
   }
@@ -154,76 +134,4 @@
 /* Standard page gutter and measure; sections that need a different box set their own. */
 @utility gutter {
   padding-inline: var(--gutter);
-}
-
-/* ---- legacy (see LEGACY ALIASES above): dark ports of the two old helper classes ---- */
-@utility surface {
-  border-radius: var(--radius-card);
-  border: 1px solid var(--color-line);
-  background: var(--c-surface-b);
-}
-
-.prose-checkapp h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--c-fg);
-}
-.prose-checkapp h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-}
-.prose-checkapp p,
-.prose-checkapp li {
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: var(--c-fg-70);
-  margin-bottom: 1.25rem;
-}
-.prose-checkapp ul {
-  list-style: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1.25rem;
-}
-.prose-checkapp li {
-  margin-bottom: 0.5rem;
-}
-.prose-checkapp a {
-  color: var(--c-mint);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.prose-checkapp strong {
-  color: var(--c-fg);
-  font-weight: 600;
-}
-.prose-checkapp hr {
-  margin: 2.5rem 0;
-  border: none;
-  border-top: 1px solid var(--color-line);
-}
-.prose-checkapp .prose-table-wrap table {
-  width: 100%;
-  min-width: 28rem;
-  border-collapse: collapse;
-}
-.prose-checkapp .prose-table-wrap th,
-.prose-checkapp .prose-table-wrap td {
-  padding: 0.875rem 1.25rem;
-  text-align: left;
-  vertical-align: top;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-bottom: 1px solid var(--color-line);
-}
-.prose-checkapp .prose-table-wrap th {
-  font-weight: 700;
-  color: var(--c-fg);
-  white-space: nowrap;
-}
-.prose-checkapp .prose-table-wrap td {
-  color: var(--c-fg-70);
 }

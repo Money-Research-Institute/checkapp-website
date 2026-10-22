@@ -1,0 +1,74 @@
+/* One column on phones and tablets; the form takes the wider track once there is room for a side card. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 2.5vw, 24px);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+}
+
+.aside {
+  min-width: 0;
+}
+.asideTitle {
+  margin: 0 0 8px;
+  color: var(--c-fg);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list li + li {
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+
+/* Each row is one link, so the whole line is the target and reads as "label, then destination". */
+.row {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tap);
+  padding-block: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.rowLabel {
+  color: var(--c-fg-70);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.rowValue {
+  color: var(--c-mint);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) {
+  .row:hover .rowValue {
+    color: var(--c-fg);
+  }
+}
+
+.note {
+  margin: 8px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--c-fg-70);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}

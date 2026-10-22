@@ -1,0 +1,1249 @@
+/*
+ * Hero. Design: Figma node 2601:12436, 1440 x 1225 (.qa/figma/hero.png).
+ *
+ * Every desktop dimension is calc(N * var(--u)), where --u is one CSS pixel of the 1440 grid:
+ *   >= 1280  --u = min(1px, 100cqw / 1440)  (0.889 at 1280, 1 at 1440), growing slowly past 1920 (1.15 at 2560, 1.2 cap)
+ *   1024-1279 --u = 0.9px   cards at near-natural size, re-laid out around a centred phone
+ *   < 1024    --u = 1px     cards are real flex layouts at natural text size, never scaled
+ * Five modes, mobile first. Width breakpoints are container queries on the section (its own width, not the viewport):
+ *   base      < 768    cascade: phone, then the Body Composition and scans cards in front of it
+ *   768-1023           flank-compact: the two cards flank the phone and tuck behind it
+ *   1024-1279          small laptop: the desktop composition without the Streak card
+ *   >= 1280            desktop: the 1440 composition, scaled by --u
+ *   >= 1473            ultrawide: the floor poster stops growing and fades out at both sides
+ * plus a landscape-phone layout (media query, because it is about height): two columns, the phone only.
+ *
+ * Motion is CSS only and every rule sits in prefers-reduced-motion: no-preference; the resting style of each element is
+ * the finished Figma frame. Parallax (translate, data-depth), the idle bob and the view() exit spread (transform) are on
+ * separate nested elements, because they would otherwise fight over one property.
+ */
+
+.hero {
+  container-type: inline-size;
+  position: relative;
+  overflow: clip; /* clip, not hidden: a hidden ancestor would freeze the view() timelines below */
+  background: #000;
+  color: var(--c-fg);
+}
+
+.inner {
+  --u: 1px;
+  --uf: min(100cqw / 1440, var(--u)); /* the floor poster's scale: never past 1.0 x its natural size on 1440-1919 */
+  --ua: max(1px, 100cqw / 1440); /* the top ambient glow always spans the section */
+  --pw: clamp(224px, 66cqw, 300px); /* phone width in the cascade */
+  --ph: calc(var(--pw) * 797 / 400); /* full phone height */
+  --knob: 29.9%; /* body-fat knob, as a share of the bar */
+  --tuck: 0px; /* how far the flank-compact cards hide behind the phone: their content stays clear of it */
+  position: relative;
+  isolation: isolate;
+  padding-top: calc(var(--header-h) + 12px);
+}
+
+/* ------------------------------------------------------------------ atmosphere */
+
+/* The two blurred green ellipses at the top of the frame, baked from the Figma shapes (2601:12593/12594). */
+.ambient {
+  --dither-a: 0.035;
+  --dither-mask: linear-gradient(#000 0%, transparent 70%);
+  position: absolute;
+  z-index: 1; /* above the floor, as in Figma, but it only ever adds light: screen leaves the floor's blacks alone */
+  top: 0;
+  left: 50%;
+  width: calc(1440 * var(--ua));
+  height: calc(480 * var(--ua));
+  margin-left: calc(-720 * var(--ua));
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.ambientImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+/* Ultrawide only: green haze where the floor poster has faded out, so the sides are not a black wall. */
+.sideGlow {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(560 * var(--u));
+  background:
+    radial-gradient(60% 70% at 50% 100%, rgb(39 98 33 / 0.28), rgb(22 56 22 / 0.14) 45%, transparent 75%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ copy */
+
+.copy {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: var(--gutter);
+  text-align: center;
+}
+
+.hero .badge {
+  min-height: 36px;
+  padding: 4px 16px;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: normal;
+  text-align: left;
+}
+
+.hero .title {
+  width: 100%;
+  max-width: 900px;
+  margin: 16px 0 0;
+  font-size: clamp(28px, 17.7px + 3.214vw, 64px); /* 28 at 320, 30 at 390, 51 at 1024, 64 at 1440 */
+  line-height: 1.25;
+  letter-spacing: -0.039em;
+  text-wrap: balance; /* one client string, two balanced lines: never a stranded word, in English or in Russian */
+}
+.lede {
+  max-width: 34ch;
+  margin: 16px 0 0;
+  color: var(--c-fg-body);
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.2px;
+  text-wrap: balance;
+}
+
+.hero .cta {
+  width: min(100%, 340px);
+  min-width: 0;
+  height: 52px;
+  margin-top: 20px;
+}
+
+/* The subscription line the client wants under the button. Rendered only when the region has a price (none has yet). */
+.fine {
+  max-width: 44ch;
+  margin: 12px 0 0;
+  color: var(--c-fg-60);
+  font-size: 12px;
+  line-height: 18px;
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------------------ stage (base = cascade, below 768) */
+
+.stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin-top: 24px;
+  padding-bottom: 28px;
+}
+
+.plane {
+  position: relative;
+}
+
+/* The poster, the canvas and the black fade: one box, so the canvas swapping in can never shift layout. */
+.floor {
+  --dither-a: 0.045;
+  --dither-mask: linear-gradient(180deg, transparent 6%, #000 38%);
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  aspect-ratio: 3 / 4; /* the tall poster crop is 720 x 960: 1 to 1 with the canvas */
+  overflow: clip;
+  pointer-events: none;
+}
+.poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+.canvas {
+  /* position, size and visibility come from fx.css (canvas[data-webgl]) */
+  border: 0;
+}
+/* Figma: linear-gradient(181.46deg, #000 1.84%, transparent 73.4%) over the 1471 x 978 image. */
+.floorFade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(181.46deg, #000 1.84%, rgb(0 0 0 / 0) 73.4%);
+  pointer-events: none;
+}
+/* the shader dithers at tier 2; the CSS noise only has to cover tiers 0 and 1 */
+:global(html[data-fx='t2']) .floor::after {
+  display: none;
+}
+
+/* Cascade: the phone is cropped at 84 % and fades out; the cards hang in front of it. */
+.phone {
+  grid-row: 1;
+  z-index: 4;
+  width: var(--pw);
+  height: calc(var(--ph) * 0.84);
+  overflow: clip;
+  -webkit-mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
+}
+.rail {
+  grid-row: 2;
+  z-index: 6;
+  justify-self: start;
+  width: min(300px, calc(100cqw - 40px));
+  margin: calc(var(--ph) * 0.84 * -0.38) 0 0 12px;
+}
+.scans {
+  grid-row: 3;
+  z-index: 6;
+  justify-self: end;
+  width: min(300px, calc(100cqw - 40px));
+  margin: 10px 12px 0 0;
+}
+.streak {
+  display: none;
+}
+
+.bottomFade {
+  position: absolute;
+  z-index: 5;
+  /* as wide as the section, not the stage: on ultrawide the stage is a centred 1440 column, and a fade only that wide
+     would leave a lit rectangle with a visible edge where the poster and the side glow go on past it */
+  left: calc(50% - 50cqw);
+  width: 100cqw;
+  bottom: 0;
+  height: 72px;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0), #000 88%);
+  pointer-events: none;
+}
+
+.float {
+  display: block;
+}
+.phoneImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+.exitPhone {
+  line-height: 0;
+}
+.checks {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------------ the glass cards (sizes in --u) */
+
+.glass {
+  position: relative;
+  isolation: isolate; /* the glow sits at z -1: above the card's own fill, below its content, as in Figma */
+  overflow: clip;
+  box-sizing: border-box;
+  border-radius: calc(12.905 * var(--u));
+  background: var(--c-glass);
+  color: #fff;
+  font-family: var(--font-inter), var(--font-manrope), system-ui, sans-serif;
+  letter-spacing: 0;
+}
+/* The stroke is a 135deg white-to-clear gradient (fx-edge), as the --c-glass-edge token, tuned to what the Figma render measures:
+   about 24 % white at the middle of the left edge and 10 % at the top edge, fading out toward the bottom right. Drawn above the glow. */
+.glass {
+  --edge: linear-gradient(135deg, rgb(255 255 255 / 0.28) 0%, rgb(255 255 255 / 0.05) 60%, rgb(255 255 255 / 0) 100%);
+  --edge-a: 1;
+}
+
+/* corner glow (Figma Ellipse 2778-2781): a radial gradient instead of a blurred SVG */
+.glow {
+  position: absolute;
+  z-index: -1;
+  right: calc(var(--gx) * var(--u) - 150px);
+  bottom: calc(var(--gy) * var(--u) - 150px);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    closest-side,
+    rgb(39 98 33 / 0.32),
+    rgb(39 98 33 / 0.19) 35%,
+    rgb(39 98 33 / 0.065) 70%,
+    rgb(39 98 33 / 0)
+  );
+  pointer-events: none;
+}
+.glowTop {
+  top: calc(var(--gt) * var(--u) - 150px);
+  bottom: auto;
+}
+
+/* watch / sync card, 330 x 86.6 */
+.watch {
+  display: none;
+  align-items: center;
+  gap: calc(11.061 * var(--u));
+  padding: calc(14.749 * var(--u));
+}
+.watchThumb {
+  position: relative;
+  flex: none;
+  width: calc(57.151 * var(--u));
+  height: calc(57.151 * var(--u));
+  overflow: clip;
+  border-radius: calc(9.218 * var(--u));
+  background: rgb(255 255 255 / 0.05);
+}
+.watchImg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+.watchText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(4.609 * var(--u));
+  min-width: 0;
+}
+.status {
+  display: flex;
+  align-items: center;
+  gap: calc(5.531 * var(--u));
+}
+.dot,
+.sync {
+  flex: none;
+  width: calc(14.749 * var(--u));
+  height: calc(14.749 * var(--u));
+}
+.statusLabel {
+  font-size: calc(13.827 * var(--u));
+  font-weight: 600;
+  line-height: normal;
+  white-space: nowrap;
+}
+.syncRow {
+  display: flex;
+  gap: calc(2.765 * var(--u));
+  font-size: calc(12.905 * var(--u));
+  font-weight: 400;
+  line-height: calc(18.436 * var(--u));
+  white-space: nowrap;
+}
+.syncLead {
+  display: flex;
+  align-items: center;
+  gap: calc(5.531 * var(--u));
+}
+.syncTime {
+  padding-left: calc(3.6 * var(--u));
+  color: #cfc9c9;
+}
+
+/* Heart Rate / Sleep Duration tiles, 162 x 64.5 */
+.vitals {
+  display: none;
+  gap: calc(6.453 * var(--u));
+  width: 100%;
+  margin-top: calc(9.218 * var(--u));
+}
+.tile {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: calc(7.374 * var(--u));
+  min-width: 0;
+  height: calc(64.525 * var(--u));
+  padding-inline: calc(14.749 * var(--u));
+}
+.iconCircle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(36.872 * var(--u));
+  height: calc(36.872 * var(--u));
+  border-radius: 50%;
+}
+.heart,
+.moon {
+  width: calc(22.123 * var(--u));
+  height: calc(22.123 * var(--u));
+}
+.tileText {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: calc(95.405 * var(--u));
+  white-space: nowrap;
+}
+.tileLabel {
+  margin-bottom: calc(-3.687 * var(--u));
+  font-size: calc(12.905 * var(--u));
+  font-weight: 400;
+  line-height: calc(20.279 * var(--u));
+}
+.tileValue {
+  color: var(--c-mint);
+  font-size: calc(14.749 * var(--u));
+  font-weight: 600;
+  line-height: calc(25.81 * var(--u));
+}
+
+/* Body Composition, 330 x 175.7 */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(7.374 * var(--u));
+  width: 100%;
+  margin-top: calc(7.374 * var(--u));
+  /* In the cascade (below 768) this card hangs in front of the phone's bright screen, where 6 % white glass would leave the
+     white text unreadable: a dark body under the same tint keeps it above AA. From 768 the card sits beside or behind the phone. */
+  background:
+    linear-gradient(var(--c-glass), var(--c-glass)),
+    rgb(9 16 9 / 0.9);
+}
+.bodyHead {
+  display: flex;
+  flex-direction: column;
+  padding: calc(14.749 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) 0 calc(14.749 * var(--u));
+}
+.bodyTitle {
+  font-size: calc(14.749 * var(--u));
+  font-weight: 600;
+  line-height: calc(25.81 * var(--u));
+}
+.bodyState {
+  color: #cecece;
+  font-size: calc(12.905 * var(--u));
+  line-height: calc(20.279 * var(--u));
+}
+.progress {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: calc(9.218 * var(--u));
+  padding: calc(18.436 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) 0 calc(14.749 * var(--u));
+}
+/* blue > green > yellow > orange > red, the stops of the Figma chart (2601:12477) */
+.bar {
+  display: block;
+  height: calc(13.827 * var(--u));
+  border-radius: calc(6.913 * var(--u));
+  background: linear-gradient(90deg, #6fd1ff 0%, #66f886 33.62%, #f8f271 48.5%, #f19872 73.5%, #ff5555 100%);
+}
+/* The rider is as wide as the bar, so translateX(%) of its own width is a share of the bar: the knob and its tooltip ride
+   by percentage and stay right at every card width. */
+.rider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(14.749 * var(--u));
+  right: calc(14.749 * var(--u) + var(--tuck));
+  transform: translateX(var(--knob));
+  pointer-events: none;
+}
+.knob {
+  position: absolute;
+  top: calc(18.436 * var(--u) + 6.9135 * var(--u));
+  left: 0;
+  width: calc(11.983 * var(--u));
+  height: calc(11.983 * var(--u));
+  margin: calc(-5.9915 * var(--u)) 0 0 calc(-5.9915 * var(--u));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 calc(11.06 * var(--u)) rgb(0 0 0 / 0.35);
+}
+.tip {
+  position: absolute;
+  top: calc(-15.67 * var(--u));
+  left: 0;
+  padding: calc(5.531 * var(--u)) calc(7.374 * var(--u));
+  border-radius: calc(7.374 * var(--u));
+  background: var(--c-brand-deep);
+  color: #fff;
+  font-size: calc(11.061 * var(--u));
+  font-weight: 500;
+  line-height: calc(12.905 * var(--u));
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.tip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(-6.36 * var(--u));
+  width: calc(11.983 * var(--u));
+  height: calc(6.453 * var(--u));
+  background: var(--c-brand-deep);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: translateX(-50%);
+}
+.scale {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto; /* the last label hugs the right edge, as in Figma; fits down to a 260 card */
+  color: #cecece;
+  font-size: calc(11.061 * var(--u));
+  line-height: calc(16.592 * var(--u));
+  white-space: nowrap;
+}
+.goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(7.374 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) calc(7.374 * var(--u)) calc(14.749 * var(--u));
+  border-top: 1px solid rgb(234 234 234 / 0.1);
+  color: #cecece;
+  font-size: calc(12.905 * var(--u));
+  line-height: calc(20.279 * var(--u));
+}
+.goalValue {
+  color: #fff;
+  font-weight: 500;
+  line-height: calc(25.81 * var(--u));
+}
+
+/* scans card, 358 x 145: stands where the Premium+ plan card stood (the plan spots show the three scans, never a plan) */
+.scanCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* no flex gap here: the <picture> and its <source>s are zero-height flex items that would each take one */
+  box-sizing: border-box;
+  min-height: calc(145 * var(--u));
+  padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(14 * var(--u)) calc(16 * var(--u) + var(--tuck));
+  overflow: clip;
+  border-radius: calc(16 * var(--u));
+  background: #2f4a24;
+  color: #fff;
+  font-family: var(--font-inter), var(--font-manrope), system-ui, sans-serif;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+.scanCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: inherit;
+  pointer-events: none;
+}
+/* Figma: the silk art is a 358 x 179 block that starts 24px above the card, cropped to cover */
+.foil {
+  position: absolute;
+  top: calc(-24 * var(--u));
+  left: 0;
+  display: block;
+  width: 100%;
+  height: calc(179 * var(--u));
+  max-width: none;
+  object-fit: cover;
+}
+/* keeps the white text above 4.5:1 over the lighter sheen of the silk */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, rgb(6 16 4 / 0.22), rgb(6 16 4 / 0.07) 70%, rgb(6 16 4 / 0));
+}
+.scanHead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.scanTitle {
+  font-size: calc(16 * var(--u));
+  font-weight: 600;
+  line-height: calc(22 * var(--u));
+}
+.scanSub {
+  color: #e6ecdc;
+  font-size: calc(12.9 * var(--u));
+  line-height: calc(18 * var(--u));
+}
+.scanRow {
+  position: relative;
+  margin-top: calc(10 * var(--u));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+}
+.scanItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4 * var(--u));
+  min-width: 0;
+}
+.scanIcon {
+  display: grid;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: calc(12 * var(--u));
+  background: rgb(255 255 255 / 0.12);
+  color: var(--c-mint);
+}
+.scanGlyph {
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+}
+.scanLabel {
+  max-width: 100%;
+  overflow: clip;
+  font-size: calc(12.9 * var(--u));
+  font-weight: 500;
+  line-height: calc(18 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* streak card, 358 x 140, rotated -10.54deg (desktop only, mostly behind the phone). The plane is its bounding box. */
+.streakCard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(358 * var(--u));
+  height: calc(140 * var(--u));
+  margin: calc(-70 * var(--u)) 0 0 calc(-179 * var(--u));
+  border-radius: calc(14 * var(--u));
+  transform: rotate(-10.54deg);
+}
+.streakRow {
+  position: absolute;
+  top: calc(15 * var(--u));
+  left: calc(15 * var(--u));
+  display: flex;
+  align-items: flex-end;
+  gap: calc(8 * var(--u));
+  width: calc(326 * var(--u));
+}
+.streakTile {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: calc(84 * var(--u));
+  padding: calc(16 * var(--u)) calc(16 * var(--u)) calc(10 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: calc(12 * var(--u));
+  background: rgb(255 255 255 / 0.1);
+}
+.flame {
+  display: block;
+  width: calc(39 * var(--u));
+  height: calc(52 * var(--u));
+  max-width: none;
+  object-fit: contain;
+}
+.streakDays {
+  font-size: calc(14 * var(--u));
+  font-weight: 700;
+  line-height: calc(18 * var(--u));
+  white-space: nowrap;
+}
+.streakLabel {
+  color: rgb(255 255 255 / 0.9);
+  font-size: calc(10 * var(--u));
+  line-height: calc(12 * var(--u));
+  white-space: nowrap;
+}
+.streakMain {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  min-width: 0;
+}
+.streakText {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  font-size: calc(14 * var(--u));
+  line-height: calc(20 * var(--u));
+  white-space: nowrap;
+}
+.streakTitle {
+  font-weight: 700;
+}
+.streakSub {
+  color: rgb(255 255 255 / 0.6);
+}
+.streakWeek {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: calc(6 * var(--u)) calc(8 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.55);
+  border-radius: calc(12 * var(--u));
+  background: rgb(255 255 255 / 0.5);
+}
+.streakDay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  width: calc(25 * var(--u));
+  color: #111;
+  font-size: calc(10 * var(--u));
+  font-weight: 500;
+  line-height: calc(16 * var(--u));
+  text-shadow: none;
+  white-space: nowrap;
+}
+.streakToday {
+  color: #ff8c00;
+}
+.streakTick {
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+}
+
+/* Foldables (inner screen about 600 wide): the cascade has room to spread, so the two cards sit 8 % in from each side. */
+@container (min-width: 600px) and (max-width: 767px) {
+  .rail {
+    margin-left: 8cqw;
+  }
+  .scans {
+    margin-right: 8cqw;
+  }
+}
+
+/* ------------------------------------------------------------------ 768+ : the stage is a box the planes sit in */
+
+@container (min-width: 768px) {
+  .inner {
+    --pw: clamp(280px, 36.5cqw, 300px);
+    --ph: calc(var(--pw) * 797 / 400);
+    /* the cards tuck behind the phone by as much as the width needs: 60px at 768, 16px from about 1000 */
+    --ov: clamp(16px, calc((580px + var(--pw) - 100cqw + 32px) / 2), 60px);
+    --tuck: var(--ov);
+    padding-top: calc(var(--header-h) + 25 * var(--u));
+  }
+
+  .body {
+    background: var(--c-glass);
+  }
+
+  .hero .badge {
+    min-height: 51px;
+    padding: 8px 24px;
+    font-size: 16px;
+    line-height: 27px;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .hero .title {
+    margin-top: 32px;
+  }
+  .lede {
+    max-width: 62ch;
+    margin-top: 32px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .hero .cta {
+    width: auto;
+    min-width: 220px;
+    height: 60px;
+    margin-top: 24px;
+  }
+  .fine {
+    max-width: 64ch;
+  }
+
+  .stage {
+    display: block;
+    height: calc(var(--ph) * 0.84);
+    margin-top: 27px;
+    padding-bottom: 0;
+  }
+  .plane {
+    position: absolute;
+    margin: 0;
+  }
+
+  /* the floor poster keeps the 1471 x 893 box of Figma's "image 297", cropped from the top, anchored to the hero's bottom */
+  .floor {
+    left: calc(50% - 735.7 * var(--uf));
+    right: auto;
+    width: calc(1471.4 * var(--uf));
+    height: calc(893 * var(--uf));
+    aspect-ratio: auto;
+  }
+  .poster {
+    object-position: 50% 0;
+  }
+  .floorFade {
+    bottom: auto;
+    height: calc(978 * var(--uf));
+  }
+
+  /* flank-compact: the Body Composition card to the left and the scans card to the right, tucked 60px behind the phone */
+  .phone {
+    top: 0;
+    left: calc(50% - var(--pw) / 2);
+    width: var(--pw);
+    height: 100%;
+    z-index: 5;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rail {
+    top: calc(var(--ph) * 0.28);
+    left: auto;
+    right: calc(50% + var(--pw) / 2 - var(--ov));
+    width: min(280px, calc(50% + var(--pw) / 2 - var(--ov) - 16px));
+    z-index: 2;
+  }
+  .scans {
+    top: calc(var(--ph) * 0.08);
+    left: calc(50% + var(--pw) / 2 - var(--ov));
+    right: auto;
+    width: min(300px, calc(50% - var(--pw) / 2 + var(--ov) - 16px));
+    z-index: 3;
+  }
+
+  .bottomFade {
+    z-index: 7;
+    height: 150px;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0), #000 80%);
+  }
+}
+
+/* With the tucked cards the bar is only ~190px: 'Average' goes from the scale and 'Normal' from the header (the tooltip would sit on it). */
+@container (min-width: 768px) and (max-width: 1023px) {
+  .bodyState {
+    display: none;
+  }
+  .scale {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  .scale span:nth-child(3) {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ 1024-1279 : small laptop */
+
+@container (min-width: 1024px) {
+  .inner {
+    --tuck: 0px;
+    --u: 0.9px;
+    --pw: calc(400 * var(--u));
+    --ph: calc(797 * var(--u));
+  }
+
+  .hero .title {
+    margin-top: 32px;
+  }
+  .lede {
+    max-width: 720px;
+    font-size: 18px;
+    line-height: 27px;
+  }
+
+  .stage {
+    height: calc(627 * var(--u));
+  }
+
+  /* Rail and scans card overlap the phone by 20px; the Streak card is dropped (nothing to hide it behind). */
+  .phone {
+    left: calc(50% - 200 * var(--u));
+    width: calc(400 * var(--u));
+  }
+  .rail {
+    top: calc(1 * var(--u));
+    left: calc(50% - 507.8 * var(--u));
+    right: auto;
+    width: calc(330 * var(--u));
+    z-index: 2;
+  }
+  .scans {
+    top: calc(78 * var(--u));
+    left: calc(50% + 177.8 * var(--u));
+    width: calc(358 * var(--u));
+  }
+  .watch {
+    display: flex;
+  }
+  .vitals {
+    display: flex;
+  }
+
+  /* Figma's blurred black rectangle (2601:12627), measured against the render: 10 % black at y 1045, 50 % at 1105, 90 % at 1165 */
+  .bottomFade {
+    height: calc(225 * var(--u));
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0) 0%,
+      rgb(0 0 0 / 0.05) 13%,
+      rgb(0 0 0 / 0.1) 20%,
+      rgb(0 0 0 / 0.17) 27%,
+      rgb(0 0 0 / 0.255) 33%,
+      rgb(0 0 0 / 0.375) 40%,
+      rgb(0 0 0 / 0.505) 47%,
+      rgb(0 0 0 / 0.635) 53%,
+      rgb(0 0 0 / 0.745) 60%,
+      rgb(0 0 0 / 0.835) 67%,
+      rgb(0 0 0 / 0.905) 73%,
+      rgb(0 0 0 / 0.96) 80%,
+      rgb(0 0 0 / 0.99) 87%,
+      #000 93%,
+      #000 100%
+    );
+  }
+}
+
+/* ------------------------------------------------------------------ 1280+ : the 1440 composition */
+
+@container (min-width: 1280px) {
+  .inner {
+    --u: max(min(1px, 100cqw / 1440), min(1.2px, 1px + (100cqw - 1920px) * 0.000234));
+  }
+
+  .hero .title {
+    max-width: calc(900 * var(--u));
+    margin-top: calc(32 * var(--u));
+    padding-bottom: calc(2 * var(--u));
+    font-size: calc(64 * var(--u));
+    line-height: calc(80 * var(--u));
+    letter-spacing: calc(-2.5 * var(--u));
+  }
+  .lede {
+    max-width: calc(720 * var(--u));
+    margin-top: calc(32 * var(--u));
+    font-size: calc(18 * var(--u));
+    line-height: calc(27 * var(--u));
+  }
+  .hero .cta {
+    margin-top: calc(24 * var(--u));
+  }
+
+  .stage {
+    width: calc(1440 * var(--u));
+    height: auto;
+    aspect-ratio: 1440 / 627;
+    margin-top: calc(27 * var(--u));
+    margin-inline: auto;
+  }
+
+  /* Figma positions, in the stage's own 1440 x 627 space (phone centre x = 711, rail margin 122, right margin 78) */
+  .phone {
+    left: calc(511 * var(--u));
+  }
+  .rail {
+    left: calc(122 * var(--u));
+  }
+  .scans {
+    left: calc(1004.18 * var(--u));
+  }
+  .streak {
+    top: calc(308 * var(--u));
+    left: calc(392 * var(--u));
+    z-index: 4;
+    display: block;
+    width: calc(377.568 * var(--u));
+    height: calc(203.1 * var(--u)); /* the bounding box of a 358 x 140 card turned -10.54 degrees */
+  }
+  .exitStreak,
+  .streak .float {
+    height: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ 1473+ : ultrawide */
+
+/* The poster is 1471 x --u wide; from here it is narrower than the section, so it fades out at both sides (the shader does the same). */
+@container (min-width: 1473px) {
+  .floor {
+    --dither-mask:
+      linear-gradient(90deg, transparent 0, #000 15%, #000 85%, transparent 100%),
+      linear-gradient(180deg, transparent 6%, #000 38%);
+  }
+  .floor::after {
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+  .poster {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 15%, #000 85%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 15%, #000 85%, transparent 100%);
+  }
+  .sideGlow {
+    display: block;
+  }
+}
+
+/* ------------------------------------------------------------------ landscape phones */
+
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 1023px) {
+  .inner {
+    --pw: 180px;
+    --ph: calc(var(--pw) * 797 / 400);
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: end;
+    column-gap: 8px;
+    padding: calc(var(--header-h) + 8px) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+  }
+  .copy {
+    grid-column: 1;
+    align-items: flex-start;
+    padding: 0 0 16px;
+    text-align: left;
+  }
+  .hero .badge {
+    min-height: 28px;
+    padding: 2px 12px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .hero .title {
+    margin-top: 10px;
+    font-size: clamp(22px, 3.6vw, 30px);
+    line-height: 1.2;
+    text-align: left;
+  }
+  .lede {
+    max-width: 52ch;
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .hero .cta {
+    width: auto;
+    min-width: 200px;
+    height: 48px;
+    margin-top: 12px;
+  }
+
+  /* the stage melts away: the phone becomes a grid item and the floor anchors to the section */
+  .stage {
+    display: contents;
+  }
+  .phone {
+    position: relative;
+    grid-column: 2;
+    justify-self: center;
+    top: auto;
+    left: auto;
+    width: var(--pw);
+    height: calc(var(--ph) * 0.65);
+    margin: 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+  }
+  .rail,
+  .scans,
+  .streak {
+    display: none;
+  }
+  .floor {
+    /* wider than the screen and centred on the second column, so the glow sits under the phone and no edge shows */
+    left: -17%;
+    right: auto;
+    width: 190%;
+    height: auto;
+    aspect-ratio: 1471.4 / 893;
+    /* the copy is in the left column: the glow stays under the phone and does not light the text from behind */
+    -webkit-mask-image: linear-gradient(90deg, transparent 40%, #000 66%);
+    mask-image: linear-gradient(90deg, transparent 40%, #000 66%);
+  }
+  .poster {
+    object-position: 50% 0;
+  }
+  .floorFade {
+    bottom: auto;
+    height: calc(978 * var(--uf));
+  }
+  .bottomFade {
+    position: absolute;
+    z-index: 5;
+    height: 96px;
+  }
+}
+
+/* very short landscape screens (667 x 375 and below): the badge goes, the type tightens */
+@media (max-height: 420px) and (orientation: landscape) and (max-width: 1023px) {
+  .hero .badge {
+    display: none;
+  }
+  .hero .title {
+    margin-top: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ short portrait phones (320 x 568) */
+
+/* With the 72px sticky bar the CTA must stay above it: drop the badge, tighten the type and the gaps. */
+@media (max-height: 600px) and (max-width: 767px) and (orientation: portrait) {
+  .inner {
+    padding-top: calc(var(--header-h) + 6px);
+  }
+  .hero .badge {
+    display: none;
+  }
+  .hero .title {
+    margin-top: 0;
+  }
+  .lede {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .hero .cta {
+    margin-top: 14px;
+  }
+  .stage {
+    margin-top: 16px;
+  }
+}
+
+/* ------------------------------------------------------------------ motion */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* one-shots: the engine arms [data-once] at boot and plays it on the first 35 % intersection; no attribute = finished */
+  .body[data-once-state='armed'] .rider {
+    transform: translateX(0%);
+  }
+  .body[data-once-state='played'] .rider {
+    animation: knobSlide 1100ms var(--ease-out-expo) both;
+  }
+  @keyframes knobSlide {
+    from {
+      transform: translateX(0%);
+    }
+    to {
+      transform: translateX(var(--knob));
+    }
+  }
+  .tile[data-once-state='played'] .heart {
+    animation: heartbeat 900ms var(--ease-out) both;
+  }
+  @keyframes heartbeat {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    16% {
+      transform: scale(1.24);
+    }
+    32% {
+      transform: scale(1);
+    }
+    48% {
+      transform: scale(1.14);
+    }
+    68% {
+      transform: scale(1);
+    }
+  }
+  .watch[data-once-state='played'] .sync {
+    animation: syncTurn 1000ms var(--ease-out-expo) both;
+  }
+  @keyframes syncTurn {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* exit: as the stage scrolls out through the top, the planes spread (cards 20-40px outward, the phone rises and tilts) */
+  @supports (animation-timeline: view()) {
+    .stage {
+      view-timeline: --hero-stage block;
+    }
+    @keyframes kfRail {
+      to {
+        transform: translate(-30px, -8px);
+      }
+    }
+    @keyframes kfScans {
+      to {
+        transform: translate(34px, -14px);
+      }
+    }
+    @keyframes kfStreak {
+      to {
+        transform: translate(-40px, 16px);
+      }
+    }
+    @keyframes kfPhone {
+      to {
+        transform: translateY(-4%) perspective(1200px) rotateX(4deg);
+      }
+    }
+    @container (min-width: 768px) {
+      .exitRail,
+      .exitScans,
+      .exitStreak,
+      .exitPhone {
+        animation-duration: 1ms;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --hero-stage;
+        animation-range: exit 0% exit 100%;
+      }
+      .exitRail {
+        animation-name: kfRail;
+      }
+      .exitScans {
+        animation-name: kfScans;
+      }
+      .exitStreak {
+        animation-name: kfStreak;
+      }
+      .exitPhone {
+        animation-name: kfPhone;
+        transform-origin: 50% 100%;
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ contrast and forced colours */
+
+@media (prefers-contrast: more) {
+  .glass {
+    --edge: linear-gradient(135deg, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.4));
+  }
+  .scrim {
+    background: #16210d;
+  }
+  .bodyState,
+  .scale,
+  .goal {
+    color: #e6e6e6;
+  }
+}
+@media (forced-colors: active) {
+  .glass,
+  .scanCard {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+  .scanCard::after,
+  .scrim,
+  .glow {
+    display: none;
+  }
+}

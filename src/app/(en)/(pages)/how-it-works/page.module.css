@@ -1,0 +1,4 @@
+/* Space between a section's centred intro and what follows it. */
+.gap {
+  margin-top: clamp(32px, 5vw, 56px);
+}

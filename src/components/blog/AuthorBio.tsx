@@ -1,4 +1,6 @@
-import { SiteImage } from '@/components/ui/SiteImage';
+import { GlassCard } from '@/components/ds/GlassCard';
+import { withBasePath } from '@/lib/paths';
+import styles from './AuthorBio.module.css';
 
 type AuthorBioProps = {
   name: string;
@@ -7,33 +9,39 @@ type AuthorBioProps = {
   checkedBy?: string;
 };
 
+/** Byline card at the end of an article: photo (or initial), name, role and who checked the piece. */
 export function AuthorBio({ name, role, imageSrc, checkedBy }: AuthorBioProps) {
   return (
-    <div className="surface rounded-3xl p-6">
-      <div className="flex items-center gap-4">
+    <GlassCard as="section" aria-label="About the author" className={styles.bio}>
+      <div className={styles.row}>
         {imageSrc ? (
-          <SiteImage
-            src={imageSrc}
-            alt={name}
-            width={56}
-            height={56}
-            className="h-14 w-14 rounded-full object-cover object-[center_18%]"
+          // 72px avatar from a small WebP (public/pages/blog). Decorative: the name sits right beside it.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className={styles.avatar}
+            src={withBasePath(imageSrc)}
+            width={72}
+            height={72}
+            alt=""
+            loading="lazy"
+            decoding="async"
           />
         ) : (
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
+          <span className={styles.initial} aria-hidden="true">
             {name.charAt(0)}
-          </div>
+          </span>
         )}
-        <div>
-          <p className="font-semibold text-text">{name}</p>
-          <p className="text-sm text-text-secondary">{role}</p>
+        <div className={styles.who}>
+          <p className={styles.kicker}>Written by</p>
+          <p className={styles.name}>{name}</p>
+          <p className={styles.role}>{role}</p>
         </div>
       </div>
-      {checkedBy && (
-        <p className="mt-4 text-sm text-text-secondary">
-          Checked by: <span className="font-medium text-text">{checkedBy}</span>
+      {checkedBy ? (
+        <p className={styles.checked}>
+          Checked by: <strong>{checkedBy}</strong>
         </p>
-      )}
-    </div>
+      ) : null}
+    </GlassCard>
   );
 }

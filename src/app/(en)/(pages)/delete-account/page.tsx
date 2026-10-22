@@ -1,7 +1,8 @@
+import { PageHero, PageShell, Section } from '@/components/ds';
+import { DeleteAccountForm } from '@/components/forms/DeleteAccountForm';
 import { JsonLd } from '@/components/layout/JsonLd';
-import { Section } from '@/components/ui/Section';
-import { createMetadata, breadcrumbSchema } from '@/lib/seo';
-import { DeleteAccountForm } from './DeleteAccountForm';
+import { breadcrumbSchema, createMetadata } from '@/lib/seo';
+import styles from './delete-account.module.css';
 
 export const metadata = createMetadata({
   title: 'Delete your CheckApp account',
@@ -12,7 +13,7 @@ export const metadata = createMetadata({
 
 export default function DeleteAccountPage() {
   return (
-    <>
+    <PageShell>
       <JsonLd
         data={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -20,19 +21,18 @@ export default function DeleteAccountPage() {
         ])}
       />
 
-      <Section variant="light" className="pt-24 md:pt-28">
-        <div className="mx-auto max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary">Google Play</p>
-          <h1 className="mt-3 font-display text-4xl font-bold md:text-5xl">Delete your account</h1>
-          <p className="mt-4 text-lg text-text-secondary">
-            Use this page to delete your CheckApp account without opening the app. Deletion is
-            permanent and usually completes immediately after you confirm the email code.
-          </p>
-          <div className="mt-10">
-            <DeleteAccountForm />
-          </div>
+      <PageHero
+        eyebrow="Google Play"
+        title="Delete your account"
+        lede="Use this page to delete your CheckApp account without opening the app. Deletion is permanent and usually completes immediately after you confirm the email code."
+      />
+
+      <Section size="narrow" tight>
+        {/* data-hides-cta-bar: nobody leaving the app wants a "Get checkapp" bar over the form they are filling in. */}
+        <div className={styles.form} data-hides-cta-bar>
+          <DeleteAccountForm />
         </div>
       </Section>
-    </>
+    </PageShell>
   );
 }

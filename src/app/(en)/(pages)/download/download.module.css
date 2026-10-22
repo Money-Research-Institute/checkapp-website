@@ -1,0 +1,100 @@
+/* The "APK coming shortly" notice that replaces the download button while ANDROID_APK_AVAILABLE is false. */
+.notice {
+  max-width: 52ch;
+  padding: 16px 20px;
+  border: 1px solid rgb(255 200 120 / 0.4);
+  border-radius: 20px;
+  background: rgb(255 170 60 / 0.08);
+  text-align: left;
+}
+.noticeTitle {
+  margin: 0;
+  color: #ffd9a0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.noticeText {
+  margin: 4px 0 0;
+  color: var(--c-fg-body);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.noticeText a {
+  color: var(--c-mint);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Install steps | before you install. Stacked until there is room for both. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 2.5vw, 24px);
+}
+@media (min-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  min-width: 0;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgb(72 203 59 / 0.35);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgb(72 203 59 / 0.16), rgb(72 203 59 / 0.04));
+  color: var(--c-mint);
+}
+.cardTitle {
+  margin: 20px 0 0;
+  color: var(--c-fg);
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.steps,
+.points {
+  margin: 16px 0 0;
+  color: var(--c-fg-70);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.steps {
+  padding-left: 1.5rem;
+  list-style: decimal;
+}
+.points {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.steps li,
+.points li {
+  padding-left: 4px;
+  text-wrap: pretty;
+}
+.steps li + li,
+.points li + li {
+  margin-top: 10px;
+}
+.steps li::marker {
+  color: var(--c-mint);
+  font-weight: 700;
+}
+.points li::marker {
+  color: var(--c-bracket);
+}
+.steps strong {
+  color: var(--c-fg);
+  font-weight: 600;
+}
+.steps em {
+  color: var(--c-fg-body);
+}
