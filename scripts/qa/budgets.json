@@ -3,7 +3,8 @@
     "Budgets for scripts/qa/check.mjs. Anything marked block fails the gate; warn is reported only.",
     "initialJsGzKB is a no-regression ceiling: the pre-redesign baseline measured 331.8KB gz, so the redesign may not add to it, and the WebGL layer must be a lazy chunk that does not count. Stretch goal worth taking separately: defer analytics (posthog) off the critical path and the ceiling drops by ~100KB. lcpMs/firstViewKB are from the same baseline plus headroom; tighten them, never loosen them, once the redesign lands.",
     "Mobile runs are CPU-throttled (cpuThrottle x). Headless Chrome uses software GL, so FPS is NOT gated here: the WebGL cost is bounded structurally (lazy chunk, pixel budget, pause-offscreen, reduced-motion, fallback) and profiled separately.",
-    "sectionPages: the Figma section contract only applies to the landing page. pagesFull: the full matrix (npm run qa:full) also walks every other route, because the redesign moves them into a route group and /delete-account and /auth/callback are Play-critical."
+    "sectionPages: the Figma section contract only applies to the landing page. pagesFull: the full matrix (npm run qa:full) also walks every other route, because the redesign moves them into a route group and /delete-account and /auth/callback are Play-critical.",
+    "bannedClaims: regexes scanned (case-insensitive) over the landing page's text, alt and aria-label, excluding anything inside [data-disclaimer]. See docs/landing-decisions.md D1."
   ],
   "pages": [
     "/"
@@ -41,7 +42,8 @@
     "page-weight-total": "warn",
     "seo-h1": "warn",
     "webgl-unverifiable": "warn",
-    "a11y-moderate": "warn"
+    "a11y-moderate": "warn",
+    "unverified-testimonial": "block"
   },
   "axeViewports": [
     "mobile-390",
@@ -254,5 +256,18 @@
     "/terms/",
     "/delete-account/",
     "/auth/callback/"
+  ],
+  "bannedClaims": [
+    "diagnos",
+    "predict\\w*\\s+(a\\s+|the\\s+)?(diseases?|illness(es)?|conditions?)",
+    "prevent\\w*\\s+(a\\s+|the\\s+)?(diseases?|illness(es)?|conditions?)",
+    "to predict is to prevent",
+    "world.?s\\s+first",
+    "\\b(cure|cures|cured|curing)\\b",
+    "\\btreat(s|ing|ment|ments)?\\b",
+    "clinically\\s+(proven|tested|validated)",
+    "medical[- ]grade",
+    "doctor[- ]approved",
+    "detect\\w*\\s+(diseases?|cancer|illness)"
   ]
 }

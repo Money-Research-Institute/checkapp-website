@@ -83,7 +83,7 @@ function initInPage({ mode }) {
   }
 }
 
-function collectInPage({ sections, checkSections, minTap, touch }) {
+function collectInPage({ sections, checkSections, minTap, touch, claims }) {
   const out = {};
   const de = document.documentElement;
   const vw = window.innerWidth;
@@ -161,6 +161,22 @@ function collectInPage({ sections, checkSections, minTap, touch }) {
     if (!hit || !(el === hit || el.contains(hit))) occluded.push(`${name}: covered by <${hit ? hit.tagName.toLowerCase() : 'nothing'}${hit && hit.className && typeof hit.className === 'string' ? '.' + hit.className.split(' ')[0] : ''}>`);
   }
   out.occluded = occluded;
+
+  // Claims scan (landing only: `claims` is null elsewhere). Text, alt and aria-label, minus anything marked data-disclaimer,
+  // so a disclaimer may say what the product does NOT do. textContent on a clone also catches hidden text.
+  out.claims = [];
+  if (claims) {
+    const clone = document.body.cloneNode(true);
+    clone.querySelectorAll('[data-disclaimer], script, style, noscript').forEach((e) => e.remove());
+    const parts = [clone.textContent];
+    clone.querySelectorAll('[alt], [aria-label]').forEach((e) => parts.push(e.getAttribute('alt') || '', e.getAttribute('aria-label') || ''));
+    const text = parts.join(' \n ').replace(/\s+/g, ' ');
+    for (const src of claims) {
+      const m = new RegExp(src, 'i').exec(text);
+      if (m) out.claims.push(`"${m[0]}" …${text.slice(Math.max(0, m.index - 30), m.index + m[0].length + 30)}…`);
+    }
+  }
+  out.unverifiedTestimonials = [...document.querySelectorAll('[data-section="testimonials"] blockquote')].filter((b) => !b.closest('[data-verified="true"]')).length;
 
   out.canvases = [...document.querySelectorAll('canvas[data-webgl]')].map((c) => ({
     state: c.dataset.webglState || '',
@@ -252,6 +268,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   vitals.lcp = [vitals.lcp, bestLcp].filter((v) => v > 0).sort((a, b) => a - b)[0] ?? 0;
   const m = await page.evaluate(collectInPage, {
     sections: figma.sections, checkSections: checkSections && budgets.sectionPages.includes(pagePath), minTap: budgets.minTapTarget, touch: vp.mobile,
+    claims: budgets.sectionPages.includes(pagePath) ? budgets.bannedClaims : null,
   });
 
   /* ---- judge ---- */
@@ -267,7 +284,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
 
   if (checkSections && budgets.sectionPages.includes(pagePath)) {
     for (const s of m.sections) {
-      if (s.missing) add('section-missing', ctx, `[data-section="${s.slug}"] not found`);
+      if (s.missing) { if (!figma.sections.find((x) => x.slug === s.slug)?.optional) add('section-missing', ctx, `[data-section="${s.slug}"] not found`); }
       else {
         if (!s.visible) add('section-missing', ctx, `section "${s.slug}" is in the DOM but not visible`);
         if (!s.hasNode) add('section-missing', ctx, `section "${s.slug}" has no data-figma-node`);
@@ -284,6 +301,8 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   }
 
   if (vitals.cls > budgets.cls) add('cls', ctx, `layout shift ${vitals.cls.toFixed(3)} > ${budgets.cls}`);
+  if (m.claims.length) add('banned-claim', ctx, `${m.claims.length} unsupported medical/superlative claim(s) on the page`, m.claims.slice(0, 4));
+  if (m.unverifiedTestimonials) add('unverified-testimonial', ctx, `${m.unverifiedTestimonials} testimonial(s) without a verified figure (data-verified="true")`);
   if (vitals.lcp === 0) add('lcp-missing', ctx, 'no largest-contentful-paint entry was recorded after 3 loads, so LCP is unverified');
   else if (vitals.lcp > lcpBudget) add('lcp', ctx, `LCP ${Math.round(vitals.lcp)}ms > ${lcpBudget}ms`);
 

@@ -19,6 +19,9 @@ const SITE = A.site ?? '/Users/kave/Repos/checkapp-website'
 const MAX_ROUNDS = A.maxRounds ?? 5
 const STOP_AFTER = A.stopAfter ?? null // 'brief' | 'plan' | 'architecture'
 const FIGMA = 'FSJqiLATooQsiMWs9OISQW'
+// Client decisions (docs/landing-decisions.md D3, D5). MASCOT left null = blocked; PAID_PLANS defaults to false (the app sells nothing yet).
+const MASCOT = A.mascot ?? null // 'shipped' = real app screenshots in the device frames | 'figma' = the Figma character as designed
+const PAID_PLANS = A.paidPlans ?? false // the app cannot sell anything yet, so the default is real feature cards; pass true only if purchases ship with this release
 
 // Mirror of scripts/qa/figma-sections.json (the file is the source of truth; this only fans out the Brief).
 const SECTIONS = [
@@ -48,6 +51,24 @@ const GATE_RULES = [
   'Only scripts/qa/figma-sections.json (slug renames, provisional flags) and the section markup of scripts/qa/fixtures/good/index.html may change.',
   'The capability probe must honour window.__QA_FORCE_GL === true (set only by the gate). The architecture\'s "?fx=2" URL override is REJECTED: ship no URL-parameter or storage override for the GL tier.',
   'The full gate walks every existing route (budgets.pagesFull) and applies the section contract to "/" only. Moving existing routes into a route group must keep every URL identical (trailing slash included) and keep /delete-account, /auth/callback and /download working.',
+].join('\n')
+
+const CONTENT_RULES = [
+  'docs/landing-decisions.md is authoritative OVER FIGMA AND OVER THE BRIEF SPECS wherever it overrides them (copy, testimonials, fonts, plan visuals). Read it in full first.',
+  'Copy: use the replacement wording from its D1 table and never reintroduce a Figma claim. The gate scans the page for banned claims (budgets.bannedClaims) and fails on them. The footer medical disclaimer is kept and marked data-disclaimer.',
+  'Testimonials: data-driven from src/content/testimonials.ts, shipped EMPTY; render nothing unless there are >= 3 verified entries; every rendered figure carries data-verified="true". Never copy the six Figma cards.',
+  'Fonts: Manrope + Inter + Bricolage Grotesque only, on the landing route group (D4). Existing routes keep their fonts through their own group layout.',
+  'figma-sections.json already has testimonials (optional) and final-cta: the architecture\'s renames are done, just verify them.',
+  MASCOT === 'shipped'
+    ? 'D3 is RESOLVED as (a): phone screens are REAL app screenshots placed inside the Figma device frames (frame art without the baked UI). Screenshots live in public/landing/shared/app-screens/ (home, chat, scan, history). Do not use the Figma sprout-doctor mascot anywhere.'
+    : MASCOT === 'figma'
+      ? 'D3 is RESOLVED as (b): use the Figma mascot and phone art exactly as designed.'
+      : 'D3 (mascot and phone screens) is OPEN. Do NOT export or reuse any mascot art or baked phone screens. Build the layout with a neutral placeholder in each device frame and list in openIssues exactly what is blocked.',
+  PAID_PLANS === true
+    ? 'D5 is RESOLVED: keep the Premium+/plan visuals as designed.'
+    : PAID_PLANS === false
+      ? 'D5 is RESOLVED: replace the plan/price visuals (hero Premium+ card, final phone paywall screen) with real feature cards (weekly report, 90-day history).'
+      : 'D5 (paid-plan visuals) is OPEN: build those two spots as neutral placeholders and list them in openIssues.',
 ].join('\n')
 
 /* ----------------------------------------------------------------- schemas */
@@ -300,6 +321,7 @@ const foundation = await agent(
   [
     COMMON,
     GATE_RULES,
+    CONTENT_RULES,
     '\nYou are the foundation builder. Implement the foundation task and nothing else.',
     `TASK: ${JSON.stringify(foundationTask)}`,
     `ARCHITECTURE: ${JSON.stringify({ summary: arch.summary, dependencies: arch.dependencies, lazyBoundary: arch.lazyBoundary, contracts: arch.contracts, renames: arch.sectionSlugRenames })}`,
@@ -327,6 +349,7 @@ const built = (
       [
         COMMON,
         GATE_RULES,
+        CONTENT_RULES,
         `\nYou build ONE section: "${t.slug}". Other agents are building the other sections at the same time in the same working tree.`,
         `TASK: ${JSON.stringify(t)}`,
         `SPEC: ${JSON.stringify(spec)}`,
@@ -350,6 +373,7 @@ const integ = await agent(
   [
     COMMON,
     GATE_RULES,
+    CONTENT_RULES,
     '\nYou are the integrator. Section builders have finished editing the working tree in parallel.',
     `REPORTS: ${JSON.stringify(built)}`,
     'Do: `npx tsc --noEmit`, `npm run lint` (compare against the known baseline of 8 errors / 7 warnings on main: do not add to it), `npm run build`. Fix cross-file problems (imports, duplicate declarations, contract mismatches) and anything the builders listed in openIssues that is a seam between tasks. Do not redesign sections.',
@@ -388,7 +412,7 @@ const reviewPrompt = (r, round) =>
     `\nYou are a visual/experience reviewer, round ${round}. Lens: ${r.lens}`,
     'Screenshots from the gate are in .qa/shots/home/<viewport>-fold.png and -full.png (look at them with the Read tool: actually LOOK, never assume). Figma references are in .qa/figma/<slug>.png.',
     'Report only real defects you can point at: a screenshot path + what is visible in it, or a measurement/console line you produced. Rank honestly: blocker = broken, unreadable, ugly enough to embarrass the brand, or violates the playbook; important = clearly below the bar; polish = nice to have (list at most 3 polish items).',
-    'Quality bar: the output must be uniformly good at every size, not great at 1440 and acceptable elsewhere. Do not report anything the deterministic gate already reports; it will be fixed separately.',
+    'Quality bar: the output must be uniformly good at every size, not great at 1440 and acceptable elsewhere. Do not report anything the deterministic gate already reports; it will be fixed separately. DO report any deviation from docs/landing-decisions.md that the gate cannot see (a claim baked into an image, an invented-looking quote, mascot art used while D3 is open, a font that is not Manrope/Inter/Bricolage).',
     'Do not edit code.',
   ].join('\n')
 
@@ -497,6 +521,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
       [
         COMMON,
         GATE_RULES,
+        CONTENT_RULES,
         `\nYou fix issues in the files owned by task "${t.id}" (${t.title}). Round ${round}.`,
         `OWNS: ${t.owns.join(', ')}. Edit only those paths; other fixers are working in parallel on theirs. If a fix needs a file you do not own, say so in openIssues.`,
         `ISSUES TO FIX: ${JSON.stringify(list)}`,

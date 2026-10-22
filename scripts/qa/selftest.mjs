@@ -20,7 +20,7 @@ const run = (name) => {
 // Every id below is a defect planted in fixtures/bad/index.html.
 const PLANTED = ['overflow-x', 'text-offscreen', 'tap-target', 'broken-image', 'request-failed', 'occlusion', 'cls',
   'console-error', 'canvas-pixels', 'canvas-a11y', 'canvas-state', 'canvas-blank', 'nowebgl-fallback', 'reduced-motion',
-  'section-missing', 'a11y', 'meta-lang'];
+  'section-missing', 'a11y', 'meta-lang', 'banned-claim', 'unverified-testimonial'];
 
 let failures = 0;
 const check = (ok, msg) => { console.log(`${ok ? '  ✓' : '  ✗'} ${msg}`); if (!ok) failures++; };
