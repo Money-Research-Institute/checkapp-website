@@ -1,24 +1,48 @@
 # CheckApp Marketing Website
 
-Multi-page marketing site for [CheckApp](https://checkapp.health) — the AI health companion app featuring DIDI.
+Static marketing site for [CheckApp](https://checkapp.today), the wellness companion app featuring DiDi.
 
-Built with **Next.js 16** (App Router), **Tailwind CSS v4**, **Framer Motion**, and **MDX** blog content.
+Built with **Next.js 16** (App Router, `output: "export"`, `trailingSlash: true`), **Tailwind CSS v4**, **MDX** blog content, and a
+small CSS-first motion system with one lazy WebGL canvas on the landing hero. Dark theme only.
 
 ## Quick start
 
 ```bash
 npm install
-npm run assets:sync   # copy DIDI assets from ../checkapp mobile repo
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## How the code is laid out
+
+| Path | What lives there |
+|------|------------------|
+| `src/styles/` | Design tokens (`tokens.css`), the motion vocabulary (`motion.css`), atmosphere utilities (`fx.css`). `src/app/globals.css` maps them into Tailwind v4. |
+| `src/components/ds/` | The design system: `CtaButton`, `Button`, `Eyebrow`, `GradientHeading`, `SectionIntro`, `Container`, `PageShell`/`PageHero`/`Section`, `GlassCard`, `Prose`, `Faq`, form fields, `Picture`, icons. See [docs/design-system.md](./docs/design-system.md). |
+| `src/components/brand/` | `LogoMark` and `Lockup`: the only way the logo is drawn ([docs/brand.md](./docs/brand.md)). |
+| `src/components/layout/` | `Header`, `Footer`, `MobileCtaBar`, `CookieConsent`, analytics glue, `JsonLd`. |
+| `src/components/landing/<slug>/` | One folder per landing section; `src/app/page.tsx` composes them. |
+| `src/experience/` | The lazy experience engine: `Experience.tsx` (the only part in the initial bundle), `core.ts`, `gl/`, `scenes.ts`. |
+| `scripts/brand/`, `scripts/assets/` | Offline asset pipelines (`sharp`): the logo kit, the AVIF/WebP encoder, the dither tile. |
+| `scripts/qa/` | The quality gate. Read-only while building pages; see [docs/experience-playbook.md](./docs/experience-playbook.md). |
+| `docs/landing-decisions.md` | Decisions that override Figma (copy, testimonials, fonts, mascot, logo). Authoritative. |
+
+Fonts (Manrope, Inter, Bricolage Grotesque only) come from `next/font/google` in `src/app/layout.tsx`.
+
+## Quality gate
+
+```bash
+npm run build && npm run qa    # quick matrix against out/
+npm run qa:full                # all viewports and every route
+npm run qa:selftest            # proves the gate itself still catches what it should
+```
+
 ## Pages
 
 | Route | Description |
 |-------|-------------|
-| `/` | Home — hero, scrollytelling, testimonials, CTA |
+| `/` | Home: hero, the usual way, meet DiDi, 4P, testimonials, how it works, FAQ, final CTA |
 | `/how-it-works` | Daily routine, tongue scan, krugocheks, science |
 | `/features` | Feature grid, comparison table, pricing |
 | `/about` | Origin story, team, values, transparency |
@@ -70,13 +94,14 @@ Every article must include:
 - External citations
 - Internal links to `/features` and `/how-it-works`
 
-## Asset sync
+## Assets
 
-When DIDI assets change in the mobile repo:
+Raw Figma exports are never committed. Encode them offline, then commit the output under `public/landing/<slug>/`:
 
 ```bash
-npm run assets:sync
-# or: ./scripts/sync-assets.sh /path/to/checkapp
+node scripts/assets/encode.mjs <raw.png> public/landing/<slug> <name> --widths 640,1080,1472   # 10-bit AVIF + WebP
+node scripts/assets/make-noise.mjs                                                           # the shared dither tile
+node scripts/brand/build-brand-kit.mjs && npm run og:generate                                # the logo kit and the OG image
 ```
 
 ## Deployment (Vercel)
@@ -152,4 +177,3 @@ Marketing site pricing copy (TZ spec) may differ from the mobile app's `subscrip
 
 - Replace TestFlight URL: `src/lib/constants.ts`
 - Replace team photos/bios: `src/app/about/page.tsx`
-- Replace OG image with proper 1200×630 branded asset: `public/og-default.png`
