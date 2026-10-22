@@ -4,7 +4,8 @@
 
 | File | What | Notes |
 |---|---|---|
-| `didi-icon-master.png` | 1024 x 1024, head-and-shoulders icon, green gradient filling the square edge to edge | master for the tile logo, favicon, apple-touch icon, maskable icon, OG image |
+| `didi-icon-master.png` | 1024 x 1024, head-and-shoulders icon on a **cream** background (#F6F8F0 with a soft pale-green glow), edge to edge | the master: tile logo, favicon, apple-touch icon, maskable icon, OG image |
+| `didi-icon-green.png` | the same icon on the first deep-green gradient | kept as an alternative; not used by default |
 | `didi-full-body.png` | 1024 x 1024, full-body waving pose on flat green | for large brand moments; not for small sizes |
 
 **Made with** Google Gemini (image generation, "Create images", Nano Banana 2) on 2026-10-22, from two reference images exported from the Figma
@@ -25,6 +26,17 @@ Prompts, in order (same chat, so each builds on the previous result):
 3. "Perfect. Now the same exact icon (same pose, framing, lighting and colours) but with the green gradient background filling the whole square edge to edge: no rounded corners, no
    white corners, no border or frame. Keep the sprout fully inside the frame with a small margin, and make sure nothing appears on the face except eyes, cheeks and the smile.
    Square 1:1."  -> `didi-icon-master.png`
+
+4. Background exploration, same chat: "Same exact icon, identical character, pose, framing, size and lighting on the character, but change ONLY the background: a warm off-white cream (#F6F8F0)
+   filling the square edge to edge, with a very soft pale-green radial glow (#DCEBCB) behind the head and a subtle soft shadow under the chin so the white hood separates from the background.
+   No tile, no rounded corners, no border. Keep the sprout fully inside the frame and nothing on the face except eyes, cheeks and smile. Square 1:1."  -> `didi-icon-master.png` (the owner's choice
+   over a near-black, a mint and a vivid-green variant, which were dropped: mint disappeared on light tabs, vivid green was louder than the site's palette, near-black was kept in mind for dark contexts).
+   Gemini failed once on this prompt ("I seem to be encountering an error"); Try again worked.
+
+**Light surfaces.** White hood on cream has almost no edge on a white page, and at 16 px the tile all but vanishes in a light browser tab. The fix is a treatment, not another background:
+a thin deep-green rim and a soft shadow, applied in code to the tile (docs/brand.md has the numbers): rim 3 % of the side (at least 1 px) in #3E7D36, drawn inside the rounded edge;
+shadow offset 3 % down, blur 3 %, rgba(20,50,20,.38), only at display sizes of 32 px and up. Compared against no treatment, a thick rim, a sage rim and shadow-only on white, light grey, a light browser
+tab and #07130c, the thin rim plus shadow was the only one that held at every size.
 
 **Lessons worth keeping.** Gemini's "Download full size image" button upscales to 2048 px and that upscale *added* a stethoscope chest-piece on the cheek that the 1024 px original does not
 have. The masters are the 1024 px originals, copied with the chat's "Copy image" button. Check any future export against the on-screen image before trusting it.
