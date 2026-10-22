@@ -1,146 +1,140 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Button } from '@/components/ui/Button';
-import { SiteImage } from '@/components/ui/SiteImage';
-import { NAV_LINKS, SITE_NAME, APP_DOWNLOAD_URL } from '@/lib/constants';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { LogoMark } from '@/components/brand/LogoMark';
+import { CtaButton } from '@/components/ds/CtaButton';
+import { APP_DOWNLOAD_URL, NAV_LINKS } from '@/lib/constants';
+import styles from './Header.module.css';
 
+/** Scrolled past the top? A primitive snapshot, so the header only re-renders when it flips. */
+function subscribeScroll(callback: () => void) {
+  window.addEventListener('scroll', callback, { passive: true });
+  return () => window.removeEventListener('scroll', callback);
+}
+const scrolledNow = () => window.scrollY > 8;
+const scrolledOnServer = () => false;
+
+/**
+ * The one header for the whole site. Fixed, transparent over the hero, glass once the page scrolls.
+ * md and up: logo + wordmark, the nav links, a 56px "Download Now" pill. Below md: logo and a 44px hamburger that opens
+ * a full-screen menu. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
+ * No animation library: the menu is a state flag and CSS; the glass fades with CSS transitions.
+ */
 export function Header() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const reduceMotion = useReducedMotion();
   const pathname = usePathname();
-  const isHome = pathname === '/';
-  const light = isHome;
+  const scrolled = useSyncExternalStore(subscribeScroll, scrolledNow, scrolledOnServer);
+  const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href.replace(/\/$/, '')));
+
+  // Menu open: lock page scroll, move focus into the menu, Escape closes, Tab stays inside (menu + button).
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 20);
+    if (!open) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    panelRef.current?.querySelector<HTMLElement>('a')?.focus();
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        buttonRef.current?.focus();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = [buttonRef.current, ...(panelRef.current?.querySelectorAll<HTMLElement>('a') ?? [])].filter(
+        (el): el is HTMLElement => !!el,
+      );
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = '';
+      root.style.overflow = previous;
+      document.removeEventListener('keydown', onKey);
     };
-  }, [menuOpen]);
-
-  const headerSurface = light
-    ? scrolled
-      ? 'border-b border-forest/10 bg-bg-warm/90 shadow-[0_8px_32px_rgb(14_31_1/0.08)] backdrop-blur-xl'
-      : 'border-b border-transparent bg-transparent'
-    : scrolled || !isHome
-      ? 'border-b border-white/10 bg-forest/80 shadow-[0_8px_32px_rgb(14_31_1/0.28)] backdrop-blur-xl'
-      : 'border-b border-transparent bg-transparent';
-
-  const brandColor = light ? 'text-forest' : 'text-white';
-  const linkColor = light
-    ? 'text-text-secondary hover:text-primary'
-    : 'text-white/75 hover:text-white';
-  const burgerColor = light ? 'bg-forest' : 'bg-white';
+  }, [open]);
 
   return (
-    <>
-      <header
-        className={`fixed top-0 z-50 w-full transition-[background-color,backdrop-filter,border-color,box-shadow] duration-300 ${headerSurface}`}
-      >
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5 md:h-16 md:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <SiteImage
-              src="/assets/didi-avatar-header.png"
-              alt={`${SITE_NAME} logo — DIDI mascot`}
-              width={36}
-              height={36}
-              className="rounded-full md:h-10 md:w-10"
-            />
-            <span className={`font-display text-lg font-bold ${brandColor}`}>{SITE_NAME}</span>
+    <header className={styles.header} data-scrolled={scrolled || undefined} data-open={open || undefined}>
+      <div className={styles.bar}>
+        <nav data-critical="nav" aria-label="Main" className={styles.nav}>
+          <Link href="/" className={styles.brand} onClick={() => setOpen(false)}>
+            <LogoMark size={28} decorative priority />
+            <span className={styles.wordmark}>CheckApp</span>
           </Link>
 
-          <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation">
+          <ul className={styles.links}>
             {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium transition-colors ${linkColor}`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Button
-              href={APP_DOWNLOAD_URL}
-              trackingPage="header"
-              trackingPosition="desktop-nav"
-              className="!px-5 !py-2.5 text-sm"
-            >
-              Download Free
-            </Button>
-          </nav>
-
-          <button
-            type="button"
-            className="flex min-h-11 min-w-11 items-center justify-center md:hidden"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span className="flex flex-col gap-1.5">
-              <span
-                className={`block h-0.5 w-6 transition-transform ${burgerColor} ${menuOpen ? 'translate-y-2 rotate-45' : ''}`}
-              />
-              <span
-                className={`block h-0.5 w-6 transition-opacity ${burgerColor} ${menuOpen ? 'opacity-0' : ''}`}
-              />
-              <span
-                className={`block h-0.5 w-6 transition-transform ${burgerColor} ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`}
-              />
-            </span>
-          </button>
-        </div>
-      </header>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={reduceMotion ? false : { x: '100%' }}
-            animate={{ x: 0 }}
-            exit={reduceMotion ? undefined : { x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className={`fixed inset-0 z-40 flex flex-col pt-24 md:hidden ${
-              light ? 'bg-bg-warm' : 'bg-forest'
-            }`}
-          >
-            <nav className="flex flex-col gap-2 px-8" aria-label="Mobile navigation">
-              {NAV_LINKS.map((link) => (
+              <li key={link.href}>
                 <Link
-                  key={link.href}
                   href={link.href}
-                  className={`min-h-11 py-3 text-xl font-semibold ${
-                    light ? 'text-forest' : 'text-white'
-                  }`}
-                  onClick={() => setMenuOpen(false)}
+                  className={styles.link}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                 >
                   {link.label}
                 </Link>
-              ))}
-              <Button
-                href={APP_DOWNLOAD_URL}
-                trackingPage="header"
-                trackingPosition="mobile-menu"
-                className="mt-4 w-full"
-              >
-                Download Free
-              </Button>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+              </li>
+            ))}
+          </ul>
+
+          <div className={styles.cta}>
+            <CtaButton href={APP_DOWNLOAD_URL} size="nav" trackingPage="header" trackingPosition="desktop-nav">
+              Download Now
+            </CtaButton>
+          </div>
+
+          <button
+            ref={buttonRef}
+            type="button"
+            className={styles.burger}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className={styles.burgerLines} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <div id="mobile-menu" ref={panelRef} className={styles.panel} hidden={!open}>
+        <nav aria-label="Mobile">
+          <ul className={styles.panelLinks}>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={styles.panelLink}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <CtaButton href={APP_DOWNLOAD_URL} size="bar" trackingPage="header" trackingPosition="mobile-menu">
+          Download Now
+        </CtaButton>
+      </div>
+    </header>
   );
 }

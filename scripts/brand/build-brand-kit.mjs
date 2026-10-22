@@ -10,7 +10,6 @@
  *   public/brand/tile/didi-tile-lifted-{N}.{avif,webp,png}      rounded tile with the soft shadow baked in
  *   public/brand/tile/didi-tile-hairline-{N}.{avif,webp,png}    rounded tile with a 1 px hairline, for 16-28 px marks
  *   public/brand/icons/{icon-180,icon-192,icon-512,maskable-512,favicon-16,favicon-32,favicon-48}.png
- *   public/brand/manifest.webmanifest
  *   src/app/{icon.png,apple-icon.png,favicon.ico}
  */
 import sharp from 'sharp';
@@ -85,21 +84,6 @@ for (const f of FAVICON) {
 }
 await put('src/app/favicon.ico', buildIco(favicons));
 
-// 4. manifest
-const manifest = {
-  name: 'CheckApp',
-  short_name: 'CheckApp',
-  description: 'Your AI health companion. Meet DIDI.',
-  start_url: '/',
-  display: 'standalone',
-  background_color: '#F6F8F0',
-  theme_color: '#07130c',
-  icons: [
-    { src: '/brand/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-    { src: '/brand/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-    { src: '/brand/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-  ],
-};
-await put('public/brand/manifest.webmanifest', JSON.stringify(manifest, null, 2) + '\n');
+// 4. The web manifest is src/app/manifest.ts (it needs the GITHUB_PAGES_BASE_PATH-aware icon URLs); it points at the icons above.
 
 console.log(`wrote ${written.length} files`);

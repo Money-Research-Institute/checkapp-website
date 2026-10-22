@@ -1,14 +1,15 @@
 /**
  * Open Graph image, 1200 x 630, written to public/og-default.png (DEFAULT_OG_IMAGE in src/lib/constants.ts).
  *
- * The DiDi master icon sits on the right of a dark #07130c canvas; the headline sits on the left in
- * Bricolage Grotesque (the site's display font, shipped as scripts/brand/fonts/*.woff2 so this never depends on a
- * build output). The master is only placed and rounded (22.4 % corners), never redrawn or recoloured.
+ * The DiDi master icon sits on the right of a dark #07130c canvas. Fonts follow docs/landing-decisions.md D4: the
+ * wordmark is Bricolage Grotesque, everything else Manrope (both shipped as scripts/brand/fonts/*.woff2 so this never
+ * depends on a build output). No health claims are baked in (D1): the gate cannot scan raster text. The master is only placed and rounded (22.4 % corners), never redrawn or recoloured.
  *
  *   npm run og:generate
  *
  * Rendered with headless Chrome (playwright-core, the same `channel: 'chrome'` the QA gate uses).
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
@@ -18,7 +19,7 @@ const ROOT = path.join(__dirname, '..');
 const OUTPUT_PATH = path.join(ROOT, 'public/og-default.png');
 const MASTER = path.join(ROOT, 'public/brand/source/didi-icon-master.png');
 const FONT_DISPLAY = path.join(__dirname, 'brand/fonts/bricolage-grotesque-latin.woff2');
-const FONT_BODY = path.join(__dirname, 'brand/fonts/dm-sans-latin.woff2');
+const FONT_BODY = path.join(__dirname, 'brand/fonts/manrope-latin.woff2');
 const TILE = path.join(ROOT, 'public/brand/tile/didi-tile-96.png');
 
 const WIDTH = 1200;
@@ -29,13 +30,13 @@ const dataUri = (file, mime) => `data:${mime};base64,${fs.readFileSync(file).toS
 const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 @font-face { font-family: 'Bricolage Grotesque'; font-weight: 200 800; src: url(${dataUri(FONT_DISPLAY, 'font/woff2')}) format('woff2'); }
-@font-face { font-family: 'DM Sans'; font-weight: 100 1000; src: url(${dataUri(FONT_BODY, 'font/woff2')}) format('woff2'); }
+@font-face { font-family: 'Manrope'; font-weight: 200 800; src: url(${dataUri(FONT_BODY, 'font/woff2')}) format('woff2'); }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: ${WIDTH}px; height: ${HEIGHT}px; overflow: hidden; background: #07130c; }
 body {
   position: relative;
   color: #f6f8f0;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   background:
     radial-gradient(520px 420px at 80% 52%, rgba(96, 160, 70, 0.34), rgba(96, 160, 70, 0) 70%),
     radial-gradient(640px 360px at 6% 104%, rgba(39, 98, 33, 0.45), rgba(39, 98, 33, 0) 70%),
@@ -45,9 +46,9 @@ body {
 .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 44px; }
 .brand img { width: 48px; height: 48px; display: block; }
 .brand span { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.02em; }
-h1 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 84px; line-height: 0.98; letter-spacing: -0.035em; }
+h1 { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 72px; line-height: 1.04; letter-spacing: -0.04em; }
 h1 em { font-style: normal; color: #9ccf6a; }
-p { margin-top: 30px; font-size: 28px; line-height: 1.35; font-weight: 500; color: #d9e4cc; max-width: 520px; }
+p { margin-top: 28px; font-size: 27px; line-height: 1.4; font-weight: 500; color: #d9e4cc; max-width: 540px; }
 .url { margin-top: 40px; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: #9ccf6a; }
 .mascot { position: absolute; right: 72px; top: 95px; width: 440px; height: 440px; border-radius: 22.4%; overflow: hidden;
   box-shadow: 0 0 0 1px rgba(246, 248, 240, 0.10), 0 30px 80px rgba(0, 0, 0, 0.55); }
@@ -55,8 +56,8 @@ p { margin-top: 30px; font-size: 28px; line-height: 1.35; font-weight: 500; colo
 </style></head><body>
 <div class="left">
   <div class="brand"><img src="${dataUri(TILE, 'image/png')}" alt=""><span>CheckApp</span></div>
-  <h1>Your AI health <em>companion.</em></h1>
-  <p>Meet DIDI: daily check-ins, tongue scans and healthy habits.</p>
+  <h1>Your daily wellness <em>companion.</em></h1>
+  <p>Meet DiDi: a small daily check-in, explained in plain language.</p>
   <div class="url">checkapp.today</div>
 </div>
 <div class="mascot"><img src="${dataUri(MASTER, 'image/png')}" alt=""></div>

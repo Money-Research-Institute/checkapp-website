@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from './constants';
+import { DEFAULT_OG_IMAGE, LOGO_URL, SITE_NAME, SITE_URL } from './constants';
 
 type PageMeta = {
   title: string;
@@ -81,7 +81,7 @@ export function organizationSchema() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/assets/didi-app-icon.png`,
+    logo: LOGO_URL,
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'hello@checkapp.today',
@@ -96,19 +96,17 @@ export function mobileApplicationSchema() {
     '@type': 'MobileApplication',
     name: SITE_NAME,
     description:
-      'AI-powered health companion app with daily check-ins, tongue scan analysis, and video messages.',
+      'A wellness companion app: DiDi checks in with you every day and explains what it notices in plain language. Not a medical device.',
     applicationCategory: 'HealthApplication',
-    operatingSystem: 'iOS',
+    operatingSystem: 'Android',
+    image: LOGO_URL,
     offers: {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '2400',
-    },
+    // No aggregateRating and no Review markup: there are no verified ratings or testimonials yet
+    // (docs/landing-decisions.md D1, D2).
   };
 }
 
@@ -151,7 +149,7 @@ export function articleSchema(post: {
       name: SITE_NAME,
       logo: {
         '@type': 'ImageObject',
-        url: `${SITE_URL}/assets/didi-app-icon.png`,
+        url: LOGO_URL,
       },
     },
     mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,

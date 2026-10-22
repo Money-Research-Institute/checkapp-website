@@ -1,66 +1,63 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { setAnalyticsConsent } from '@/lib/analytics';
+import styles from './CookieConsent.module.css';
 
+const KEY = 'cookie-consent';
+
+/**
+ * Cookie notice. Same storage key as before ('cookie-consent' = 'accepted' | 'declined'). It appears once the browser is
+ * idle (never competing with the first paint or the hero), sits above the mobile CTA bar, and is compact on phones so it
+ * cannot cover the hero's call to action.
+ */
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     try {
-      const consent = localStorage.getItem('cookie-consent');
-      if (!consent) setVisible(true);
+      if (localStorage.getItem(KEY)) return;
     } catch {
-      // localStorage unavailable (e.g. private mode some browsers)
+      return; // storage blocked: do not nag on every page
     }
+    const show = () => setVisible(true);
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(show, { timeout: 3500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(show, 3500);
+    return () => window.clearTimeout(id);
   }, []);
 
-  const handleAccept = () => {
-    try { localStorage.setItem('cookie-consent', 'accepted'); } catch { /* */ }
+  function choose(choice: 'accepted' | 'declined') {
+    try {
+      localStorage.setItem(KEY, choice);
+    } catch {
+      /* storage blocked */
+    }
+    setAnalyticsConsent(choice);
     setVisible(false);
-  };
-
-  const handleDecline = () => {
-    try { localStorage.setItem('cookie-consent', 'declined'); } catch { /* */ }
-    setVisible(false);
-  };
+  }
 
   if (!visible) return null;
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-[60] p-3 sm:p-5"
-      role="dialog"
-      aria-live="polite"
-      aria-label="Cookie consent"
-    >
-      <div className="mx-auto max-w-4xl rounded-[1.5rem] border border-black/[0.06] bg-card shadow-[0_12px_40px_rgb(14_31_1/0.12)]">
-        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-5">
-          <p className="text-sm leading-relaxed text-text-secondary">
-            We use cookies and similar technologies to improve your experience, analyse site
-            traffic, and personalise content.{' '}
-            <Link
-              href="/privacy"
-              className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
-            >
-              Privacy policy
-            </Link>
-          </p>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={handleDecline}
-              className="rounded-full border border-black/10 bg-transparent px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-warm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              Necessary only
-            </button>
-            <button
-              onClick={handleAccept}
-              className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/40"
-            >
-              Accept all
-            </button>
-          </div>
+    <div className={styles.wrap} role="dialog" aria-label="Cookie consent">
+      <div className={`fx-edge ${styles.card}`}>
+        <p className={styles.text}>
+          We use cookies to improve your experience and understand site traffic.{' '}
+          <Link href="/privacy/" className={styles.link}>
+            Privacy policy
+          </Link>
+        </p>
+        <div className={styles.actions}>
+          <button type="button" className={`${styles.btn} ${styles.secondary}`} onClick={() => choose('declined')}>
+            Necessary only
+          </button>
+          <button type="button" className={`${styles.btn} ${styles.primary}`} onClick={() => choose('accepted')}>
+            Accept all
+          </button>
         </div>
       </div>
     </div>

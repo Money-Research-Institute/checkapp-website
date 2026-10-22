@@ -38,9 +38,10 @@ export const ACCOUNT_DELETION_PATH = '/delete-account/';
 export const SITE_NAME = 'CheckApp';
 
 export const NAV_LINKS = [
-  { href: '/how-it-works', label: 'How It Works' },
-  { href: '/features', label: 'Features' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/', label: 'Home' },
+  { href: '/how-it-works/', label: 'How it works' },
+  { href: '/features/', label: 'Features' },
+  { href: '/blog/', label: 'Blog' },
 ] as const;
 
 export const SOCIAL_LINKS = {
@@ -50,3 +51,10 @@ export const SOCIAL_LINKS = {
 } as const;
 
 export const DEFAULT_OG_IMAGE = '/og-default.png';
+
+/** The logo for JSON-LD: the 3D DiDi icon, full-bleed 512 (docs/brand.md). Absolute, because structured data needs it. */
+export const LOGO_PATH = '/brand/icons/icon-512.png';
+export const LOGO_URL = `${SITE_URL.replace(/\/$/, '')}${LOGO_PATH}`;
+
+/** Browser chrome colour: the page is pure black. */
+export const THEME_COLOR = '#000000';

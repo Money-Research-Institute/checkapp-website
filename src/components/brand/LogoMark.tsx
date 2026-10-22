@@ -65,7 +65,6 @@ export function LogoMark({ size = 40, decorative = false, priority = false, clas
     <picture>
       <source type="image/avif" srcSet={srcSet(prefix, ladder, px, 'avif')} />
       <source type="image/webp" srcSet={srcSet(prefix, ladder, px, 'webp')} />
-      {/* eslint-disable-next-line @next/next/no-img-element -- static export, no image optimisation; the kit ships its own AVIF/WebP/PNG */}
       <img
         src={`${BASE}/brand/tile/${prefix}-${pick(ladder, px)}.png`}
         srcSet={srcSet(prefix, ladder, px, 'png')}
