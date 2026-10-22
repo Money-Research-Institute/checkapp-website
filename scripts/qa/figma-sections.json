@@ -1,0 +1,22 @@
+{
+  "_notes": [
+    "Source of truth for which sections the page must contain. Every entry must appear in the DOM as [data-section=\"<slug>\"] (and carry data-figma-node).",
+    "Extracted from the Landing frame's top-level children. Slugs marked provisional are named by the Brief phase of the landing-experience workflow and may be renamed (update this file when they are).",
+    "height is the Figma frame height at designWidth. It is only compared at 1440 wide, with fidelityHeightTolerance, and only for fidelity:true entries; frames overlap in the design so it is a sanity check, not a pixel contract."
+  ],
+  "figmaFile": "FSJqiLATooQsiMWs9OISQW",
+  "landingNode": "2601:12433",
+  "designWidth": 1440,
+  "designHeight": 9766,
+  "sections": [
+    { "slug": "hero",      "node": "2601:12436", "name": "hero",             "y": 0,    "height": 1225, "fidelity": true,  "provisional": false },
+    { "slug": "usual-way", "node": "2601:12628", "name": "02-the usual way", "y": 1225, "height": 1057, "fidelity": true,  "provisional": false },
+    { "slug": "familiar",  "node": "2601:12718", "name": "03-familar",       "y": 2229, "height": 1226, "fidelity": true,  "provisional": false },
+    { "slug": "projects",  "node": "2601:12989", "name": "Projects",         "y": 3529, "height": 810,  "fidelity": true,  "provisional": false },
+    { "slug": "features",  "node": "2601:13023", "name": "Frame 2147238592", "y": 4403, "height": 954,  "fidelity": true,  "provisional": true },
+    { "slug": "process",   "node": "2601:12435", "name": "unframed: 3 numbered steps (nodes 2601:12435, 2601:12434, 2601:13092 + frames 2601:13093, 2601:13098, 2601:13104)", "y": 5443, "height": 2300, "fidelity": false, "provisional": true },
+    { "slug": "faqs",      "node": "2610:30003", "name": "FAQs",             "y": 7785, "height": 666,  "fidelity": true,  "provisional": false },
+    { "slug": "data-card", "node": "2601:13109", "name": "node · Data",      "y": 8720, "height": 434,  "fidelity": true,  "provisional": true },
+    { "slug": "footer",    "node": "2601:12661", "name": "10-footer",        "y": 9026, "height": 740,  "fidelity": false, "provisional": false }
+  ]
+}

@@ -13,7 +13,10 @@
     "test:publish-date": "node --experimental-strip-types scripts/check-publish-dates.test.ts",
     "test": "npm run test:webhooks && npm run test:publish-date",
     "assets:sync": "bash scripts/sync-assets.sh",
-    "og:generate": "node scripts/generate-og-image.js"
+    "og:generate": "node scripts/generate-og-image.js",
+    "qa": "node scripts/qa/check.mjs",
+    "qa:full": "node scripts/qa/check.mjs --viewports full",
+    "qa:selftest": "node scripts/qa/selftest.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
@@ -34,8 +37,10 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "axe-core": "^4.14.0",
     "eslint": "^10.13.0",
     "eslint-config-next": "16.4.2",
+    "playwright-core": "^1.64.1",
     "tailwindcss": "^4",
     "typescript": "~6.0.3"
   }

@@ -1,0 +1,241 @@
+{
+  "_notes": [
+    "Budgets for scripts/qa/check.mjs. Anything marked block fails the gate; warn is reported only.",
+    "initialJsGzKB is a no-regression ceiling: the pre-redesign baseline measured 331.8KB gz, so the redesign may not add to it, and the WebGL layer must be a lazy chunk that does not count. Stretch goal worth taking separately: defer analytics (posthog) off the critical path and the ceiling drops by ~100KB. lcpMs/firstViewKB are from the same baseline plus headroom; tighten them, never loosen them, once the redesign lands.",
+    "Mobile runs are CPU-throttled (cpuThrottle x). Headless Chrome uses software GL, so FPS is NOT gated here: the WebGL cost is bounded structurally (lazy chunk, pixel budget, pause-offscreen, reduced-motion, fallback) and profiled separately."
+  ],
+  "pages": [
+    "/"
+  ],
+  "cpuThrottle": 4,
+  "lcpMs": {
+    "desktop": 2500,
+    "mobile": 3500
+  },
+  "cls": 0.05,
+  "firstViewKB": {
+    "desktop": 2200,
+    "mobile": 1600
+  },
+  "totalKB": {
+    "desktop": 6000,
+    "mobile": 4000
+  },
+  "initialJsGzKB": 340,
+  "canvasPixels": {
+    "mobile": 2100000,
+    "desktop": 4200000
+  },
+  "minTapTarget": 44,
+  "reducedMotionMaxRafPerSec": 6,
+  "fidelityHeightTolerance": 0.2,
+  "ignore": [
+    "/_vercel/",
+    "posthog",
+    "vercel-insights",
+    "vitals.vercel"
+  ],
+  "severity": {
+    "section-fidelity": "warn",
+    "page-weight-total": "warn",
+    "seo-h1": "warn",
+    "webgl-unverifiable": "warn",
+    "a11y-moderate": "warn"
+  },
+  "axeViewports": [
+    "mobile-390",
+    "tablet-820",
+    "desktop-1440"
+  ],
+  "viewports": {
+    "quick": [
+      {
+        "name": "mobile-360",
+        "width": 360,
+        "height": 640,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "mobile-390",
+        "width": 390,
+        "height": 844,
+        "dpr": 3,
+        "mobile": true,
+        "shot": "full"
+      },
+      {
+        "name": "tablet-820",
+        "width": 820,
+        "height": 1180,
+        "dpr": 2,
+        "mobile": true,
+        "shot": "full"
+      },
+      {
+        "name": "desktop-1440",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "mobile": false,
+        "shot": "full"
+      }
+    ],
+    "full": [
+      {
+        "name": "mobile-320",
+        "width": 320,
+        "height": 568,
+        "dpr": 2,
+        "mobile": true
+      },
+      {
+        "name": "mobile-360",
+        "width": 360,
+        "height": 640,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "mobile-375",
+        "width": 375,
+        "height": 667,
+        "dpr": 2,
+        "mobile": true
+      },
+      {
+        "name": "mobile-390",
+        "width": 390,
+        "height": 844,
+        "dpr": 3,
+        "mobile": true,
+        "shot": "full"
+      },
+      {
+        "name": "mobile-412",
+        "width": 412,
+        "height": 915,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "mobile-430",
+        "width": 430,
+        "height": 932,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "fold-600",
+        "width": 600,
+        "height": 960,
+        "dpr": 2,
+        "mobile": true
+      },
+      {
+        "name": "mobile-landscape-844",
+        "width": 844,
+        "height": 390,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "tablet-768",
+        "width": 768,
+        "height": 1024,
+        "dpr": 2,
+        "mobile": true
+      },
+      {
+        "name": "tablet-820",
+        "width": 820,
+        "height": 1180,
+        "dpr": 2,
+        "mobile": true,
+        "shot": "full"
+      },
+      {
+        "name": "tablet-landscape-1024",
+        "width": 1024,
+        "height": 768,
+        "dpr": 2,
+        "mobile": true
+      },
+      {
+        "name": "laptop-1280",
+        "width": 1280,
+        "height": 720,
+        "dpr": 1,
+        "mobile": false
+      },
+      {
+        "name": "laptop-1366",
+        "width": 1366,
+        "height": 768,
+        "dpr": 1,
+        "mobile": false
+      },
+      {
+        "name": "desktop-1440",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "mobile": false,
+        "shot": "full"
+      },
+      {
+        "name": "retina-1440",
+        "width": 1440,
+        "height": 900,
+        "dpr": 2,
+        "mobile": false
+      },
+      {
+        "name": "desktop-1920",
+        "width": 1920,
+        "height": 1080,
+        "dpr": 1,
+        "mobile": false,
+        "shot": "full"
+      },
+      {
+        "name": "qhd-2560",
+        "width": 2560,
+        "height": 1440,
+        "dpr": 1,
+        "mobile": false
+      },
+      {
+        "name": "ultrawide-3440",
+        "width": 3440,
+        "height": 1440,
+        "dpr": 1,
+        "mobile": false
+      }
+    ],
+    "selftest": [
+      {
+        "name": "mobile-390",
+        "width": 390,
+        "height": 844,
+        "dpr": 3,
+        "mobile": true
+      },
+      {
+        "name": "desktop-1440",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "mobile": false
+      }
+    ]
+  },
+  "extraModes": {
+    "_about": "nowebgl = getContext('webgl*') returns null; reduced = prefers-reduced-motion. Run on these viewports only to bound time.",
+    "viewports": [
+      "mobile-390",
+      "tablet-820",
+      "desktop-1440"
+    ]
+  }
+}
