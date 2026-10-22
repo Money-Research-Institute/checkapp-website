@@ -21,7 +21,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "@vercel/analytics": "^2.0.1",
-    "framer-motion": "^14.6.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.17.0",
     "next": "16.4.2",
@@ -41,6 +40,7 @@
     "eslint": "^10.13.0",
     "eslint-config-next": "16.4.2",
     "playwright-core": "^1.64.1",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "~6.0.3"
   }
