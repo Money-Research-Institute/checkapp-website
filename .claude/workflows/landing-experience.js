@@ -6,6 +6,7 @@ export const meta = {
     { title: 'بریف', detail: 'هر سکشن Figma یک تحلیلگر + استخراج توکن‌ها' },
     { title: 'طراحی تجربه', detail: '۳ طرح مستقل → ۳ داور با زاویه‌ی متفاوت → ترکیب برنده' },
     { title: 'معماری', detail: 'فایل‌ها، قراردادها، مالکیت فایل برای هر ایجنت' },
+    { title: 'لوگو', detail: 'لوگو از روی ماسکوت DiDi: ۳ مفهوم، ۳ داور، کیت برند (favicon، OG، کامپوننت)' },
     { title: 'پایه', detail: 'وابستگی‌ها، توکن‌ها، موتور WebGL با قرارداد playbook' },
     { title: 'ساخت', detail: 'هر سکشن موازی (مالکیت جدا) + یکپارچه‌سازی' },
     { title: 'گیت کیفیت', detail: 'اجرای گیت قطعی + بازبین‌های بصری + راستی‌آزمایی مخالف + رفع، تا سبز شدن' },
@@ -20,7 +21,7 @@ const MAX_ROUNDS = A.maxRounds ?? 5
 const STOP_AFTER = A.stopAfter ?? null // 'brief' | 'plan' | 'architecture'
 const FIGMA = 'FSJqiLATooQsiMWs9OISQW'
 // Client decisions (docs/landing-decisions.md D3, D5). MASCOT left null = blocked; PAID_PLANS defaults to false (the app sells nothing yet).
-const MASCOT = A.mascot ?? null // 'shipped' = real app screenshots in the device frames | 'figma' = the Figma character as designed
+const MASCOT = A.mascot ?? 'figma' // decided: the Figma sprout-doctor IS DiDi, the alien is retired (docs/landing-decisions.md D3)
 const PAID_PLANS = A.paidPlans ?? false // the app cannot sell anything yet, so the default is real feature cards; pass true only if purchases ship with this release
 
 // Mirror of scripts/qa/figma-sections.json (the file is the source of truth; this only fans out the Brief).
@@ -54,15 +55,16 @@ const GATE_RULES = [
 ].join('\n')
 
 const CONTENT_RULES = [
-  'docs/landing-decisions.md is authoritative OVER FIGMA AND OVER THE BRIEF SPECS wherever it overrides them (copy, testimonials, fonts, plan visuals). Read it in full first.',
+  'docs/landing-decisions.md is authoritative OVER FIGMA, OVER THE BRIEF SPECS AND OVER THE ARCHITECTURE TASK BRIEFS wherever it overrides them (copy, testimonials, fonts, plan visuals, mascot, logo). Read it in full first.',
   'Copy: use the replacement wording from its D1 table and never reintroduce a Figma claim. The gate scans the page for banned claims (budgets.bannedClaims) and fails on them. The footer medical disclaimer is kept and marked data-disclaimer.',
-  'Testimonials: data-driven from src/content/testimonials.ts, shipped EMPTY; render nothing unless there are >= 3 verified entries; every rendered figure carries data-verified="true". Never copy the six Figma cards.',
+  'Testimonials (D2, owner decision): build the six cards EXACTLY as in Figma, data-driven from src/content/testimonials.ts (the six Figma entries, each flagged placeholder:true; Daniel Ross also needsReplacement:true because his quote is leftover crypto text). Rendered figures carry data-verified="false" until a real entry replaces them. The gate reports this as a warning; do not try to silence it.',
+  'Logo (D7): the logo phase created the brand kit (docs/brand.md). Use `@/components/brand/LogoMark` (or Lockup) for EVERY logo mark: nav, footer, final CTA. Never inline or redraw another logo. Icons, manifest icons, JSON-LD logo and the OG image come from public/brand and src/app/icon.*.',
   'Fonts: Manrope + Inter + Bricolage Grotesque only, on the landing route group (D4). Existing routes keep their fonts through their own group layout.',
   'figma-sections.json already has testimonials (optional) and final-cta: the architecture\'s renames are done, just verify them.',
   MASCOT === 'shipped'
     ? 'D3 is RESOLVED as (a): phone screens are REAL app screenshots placed inside the Figma device frames (frame art without the baked UI). Screenshots live in public/landing/shared/app-screens/ (home, chat, scan, history). Do not use the Figma sprout-doctor mascot anywhere.'
     : MASCOT === 'figma'
-      ? 'D3 is RESOLVED as (b): use the Figma mascot and phone art exactly as designed.'
+      ? 'D3 is RESOLVED: the white hooded sprout-doctor IS DiDi; the alien was retired. Use the Figma mascot and phone art exactly as designed. NEVER use the old alien art (public/assets/didi-*) anywhere; replace what uses it on the landing route group.'
       : 'D3 (mascot and phone screens) is OPEN. Do NOT export or reuse any mascot art or baked phone screens. Build the layout with a neutral placeholder in each device frame and list in openIssues exactly what is blocked.',
   PAID_PLANS === true
     ? 'D5 is RESOLVED: keep the Premium+/plan visuals as designed.'
@@ -70,6 +72,8 @@ const CONTENT_RULES = [
       ? 'D5 is RESOLVED: replace the plan/price visuals (hero Premium+ card, final phone paywall screen) with real feature cards (weekly report, 90-day history).'
       : 'D5 (paid-plan visuals) is OPEN: build those two spots as neutral placeholders and list them in openIssues.',
 ].join('\n')
+
+const BRAND_NOTE = 'BRAND: the logo phase has produced the brand kit (docs/brand.md, src/components/brand/LogoMark.tsx and Lockup.tsx, public/brand/**, src/app/icon.svg / apple-icon.png / favicon.ico). Wire it: layout metadata (icons, web-manifest icons, openGraph/twitter image 1200x630, the JSON-LD logo URL) and make the nav and footer use LogoMark/Lockup. The gate\'s brand-assets check must pass.'
 
 /* ----------------------------------------------------------------- schemas */
 const str = { type: 'string' }
@@ -179,6 +183,8 @@ const TRIAGE = {
   properties: { assignments: { type: 'array', items: { type: 'object', properties: { ref: str, owner: str, why: str }, required: ['ref', 'owner'] } } },
   required: ['assignments'],
 }
+
+const LOGO = { type: 'object', properties: { concept: str, rationale: str, svgPath: str, svg: str, smallSizeNotes: str }, required: ['concept', 'rationale', 'svgPath', 'svg'] }
 
 const DONE = { type: 'object', properties: { summary: str, commit: str, buildOk: { type: 'boolean' }, filesTouched: strs, openIssues: strs }, required: ['summary', 'buildOk'] }
 
@@ -314,7 +320,86 @@ for (const t of arch.tasks) for (const f of t.owns) { if (owned.has(f) && owned.
 if (clash.length) log(`هشدار: مالکیت فایل‌ها هم‌پوشانی دارد (احتمال تداخل ایجنت‌ها): ${clash.slice(0, 5).join(' | ')}`)
 if (STOP_AFTER === 'architecture') return { stoppedAfter: 'architecture', specs, tokens, finalPlan, arch, ownershipClashes: clash }
 
-/* ============================================================ 4. FOUNDATION === */
+/* ============================================================ 4. LOGO === */
+phase('لوگو')
+log('لوگو از روی ماسکوت DiDi: سه مفهوم موازی، سه داور، سپس کیت برند')
+
+const LOGO_ANGLES = [
+  { key: 'silhouette', brief: 'SILHOUETTE: DiDi\'s hooded head plus the sprout as ONE bold glyph, no inner detail beyond what survives at 16 px. Think app-icon-level simplicity.' },
+  { key: 'face-tile', brief: 'FACE TILE: the rounded-square tile the Figma already uses (vertical gradient #518747 to #40783C) with a simplified DiDi face and sprout in white, refined and made crisp at small sizes.' },
+  { key: 'monogram', brief: 'MONOGRAM: a "C" whose opening is the hood and whose counter holds the sprout leaf, so it reads as CheckApp first and DiDi second.' },
+]
+
+const logoConcepts = (
+  await parallel(
+    LOGO_ANGLES.map((a) => () =>
+      agent(
+        [
+          COMMON,
+          `\nDesign a logo MARK for CheckApp, derived from its mascot DiDi (a white hooded doctor with a sprout on its head). Angle: ${a.brief}`,
+          'Reference: in Figma load the figma:figma-design-to-code skill and the Figma tools, then read the existing header logo vector (node 2601:12599) and the footer logo tile (node 2601:12670), and look at the mascot art on the hero phone (node 2601:12438) and in section 2601:12989. Save reference PNGs under .qa/brand/ref/.',
+          'Brand colours: #48CB3B, #41773C, #276221, gradient #518747 to #40783C, white, near-black #000. The wordmark is Bricolage Grotesque Bold and is NOT part of the mark.',
+          'Constraints: hand-authored vector SVG, viewBox 0 0 64 64, at most 12 paths, no raster, no filters, readable at 16x16 on both #000 and white, a single-colour version must also work, include <title>. It must read as DiDi (not a generic leaf), feel premium on a dark page, and be distinctive from the sprout-leaf cliche.',
+          `Write it to ${SITE}/.qa/brand/${a.key}/mark.svg. Then PROVE it holds up: write a small Node script (playwright-core with channel "chrome" is installed) that renders the SVG at 16, 24, 32, 64 and 512 px on #000 and on #fff into PNGs, LOOK at them with the Read tool, and iterate until the 16 px version is clearly recognisable. Do not touch anything outside ${SITE}/.qa/brand/.`,
+          'Return the final SVG source in `svg`, its path in svgPath, and what you changed to make it survive small sizes.',
+        ].join('\n'),
+        { label: `لوگو · ${a.key}`, phase: 'لوگو', schema: LOGO },
+      ),
+    ),
+  )
+).filter(Boolean)
+
+if (!logoConcepts.length) throw new Error('هیچ مفهوم لوگویی تولید نشد')
+
+const LOGO_LENSES = [
+  'RECOGNITION: which mark survives 16x16 and 24x24 best (favicon test), is the most distinctive, and reads in a second?',
+  'MASCOT AND BRAND FIT: which mark clearly comes from DiDi and the Figma look, feels premium on a dark page, and avoids the generic leaf-logo cliche?',
+  'PRODUCTION: which is the cleanest vector (few paths, correct geometry), has a convincing single-colour version, keeps contrast on dark and light, and fits a maskable-icon safe zone?',
+]
+const logoJudgments = (
+  await parallel(
+    LOGO_LENSES.map((lens, i) => () =>
+      agent(
+        [
+          COMMON,
+          `\nYou are logo judge ${i + 1} of 3. Lens: ${lens}`,
+          `CONCEPTS: ${JSON.stringify(logoConcepts)}`,
+          `Open each concept's rendered PNGs under ${SITE}/.qa/brand/<key>/ (re-render with your own script if they are missing) and LOOK at them. Score 1-10 through your lens only, with a concrete reason; name any dealbreaker.`,
+        ].join('\n'),
+        { label: `داور لوگو ${i + 1}`, phase: 'لوگو', schema: SCORES },
+      ),
+    ),
+  )
+).filter(Boolean)
+
+const logoChoice = await agent(
+  [
+    COMMON,
+    '\nChoose the final logo. Start from the best-judged concept (dealbreakers weigh heavily), refine it, and graft strengths from the others only if they improve small-size legibility.',
+    `CONCEPTS: ${JSON.stringify(logoConcepts)}`,
+    `JUDGMENTS: ${JSON.stringify(logoJudgments)}`,
+    `Write the result to ${SITE}/.qa/brand/final/mark.svg, re-render it at 16/24/32/64/512 on black and white and LOOK at the PNGs before returning. Return it in the same schema.`,
+  ].join('\n'),
+  { label: 'انتخاب لوگو', phase: 'لوگو', schema: LOGO, effort: 'high' },
+)
+
+const kit = await agent(
+  [
+    COMMON,
+    '\nYou are the brand-kit producer. Turn the chosen logo into production assets and a component, and wire the Next metadata icons. Nothing else.',
+    `CHOSEN LOGO: ${JSON.stringify(logoChoice)}`,
+    `You may write ONLY: public/brand/**, scripts/brand/**, docs/brand.md, src/components/brand/**, src/app/icon.*, src/app/apple-icon.*, src/app/favicon.ico, and scripts/generate-og-image.js. Do not edit anything else under src/.`,
+    'Produce: public/brand/mark.svg (colour), mark-mono.svg (currentColor), mark-tile.svg (mark on the green rounded tile); PNG exports with sharp: icon-16/32/48/180/192/512.png and maskable-512.png (mark inside the 80% safe zone); src/app/icon.svg, src/app/apple-icon.png (180), src/app/favicon.ico (an ICO whose entries are the 16/32/48 PNGs; write a tiny Node writer in scripts/brand/), replacing the old src/app/icon.png and favicon.ico.',
+    'Components: src/components/brand/LogoMark.tsx (server component, inline SVG, props size / mono / title; decorative => aria-hidden, otherwise role="img" with a <title>) and Lockup.tsx (LogoMark + "CheckApp" in Bricolage Grotesque via the existing --font-bricolage variable).',
+    'OG image: update scripts/generate-og-image.js to compose the new mark and the headline, run `npm run og:generate`, and verify the output is exactly 1200x630 (sharp metadata) and where the site expects it.',
+    'docs/brand.md: the mark and its variants, minimum size (16 px), clear space, what not to do, and a manifest table of every asset with where it is used (metadata icons, web-manifest icons, JSON-LD logo, OG, header, footer).',
+    'Verify: render previews of every PNG, check every dimension with sharp, run `npx tsc --noEmit`. Commit: feat(brand): DiDi-derived logo mark and brand kit.',
+  ].join('\n'),
+  { label: 'کیت برند', phase: 'لوگو', schema: DONE, effort: 'high' },
+)
+if (!kit || !kit.buildOk) log(`هشدار: کیت برند کامل نشد: ${kit ? kit.summary : 'agent failed'}`)
+
+/* ============================================================ 5. FOUNDATION === */
 phase('پایه')
 const foundationTask = arch.tasks.find((t) => t.kind === 'foundation')
 const foundation = await agent(
@@ -322,6 +407,8 @@ const foundation = await agent(
     COMMON,
     GATE_RULES,
     CONTENT_RULES,
+    BRAND_NOTE,
+    `LOGO KIT: ${JSON.stringify(kit ? { summary: kit.summary, files: kit.filesTouched } : null)}`,
     '\nYou are the foundation builder. Implement the foundation task and nothing else.',
     `TASK: ${JSON.stringify(foundationTask)}`,
     `ARCHITECTURE: ${JSON.stringify({ summary: arch.summary, dependencies: arch.dependencies, lazyBoundary: arch.lazyBoundary, contracts: arch.contracts, renames: arch.sectionSlugRenames })}`,
@@ -336,7 +423,7 @@ const foundation = await agent(
 if (!foundation || !foundation.buildOk) throw new Error(`پایه ساخته نشد: ${foundation ? foundation.summary : 'agent failed'}`)
 log(`پایه آماده: ${foundation.summary}`)
 
-/* ============================================================ 5. BUILD === */
+/* ============================================================ 6. BUILD === */
 phase('ساخت')
 const sectionTasks = arch.tasks.filter((t) => t.kind === 'section')
 log(`ساخت ${sectionTasks.length} سکشن به‌صورت موازی؛ هر ایجنت فقط فایل‌های خودش را می‌نویسد`)
@@ -383,7 +470,7 @@ const integ = await agent(
 )
 if (!integ || !integ.buildOk) log(`هشدار: یکپارچه‌سازی build سبز نداد: ${integ ? integ.summary : 'agent failed'}`)
 
-/* ============================================================ 6. QUALITY GATE LOOP === */
+/* ============================================================ 7. QUALITY GATE LOOP === */
 phase('گیت کیفیت')
 
 const gatePrompt = (level, round) =>
@@ -537,7 +624,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
   await parallel(globalFixes.map((e) => () => fixOne(e))) // shared files last, so section fixers never race them
 }
 
-/* ============================================================ 7. FINAL REVIEW === */
+/* ============================================================ 8. FINAL REVIEW === */
 phase('بازبینی نهایی')
 const critic = await agent(
   [
@@ -561,5 +648,6 @@ return {
   openFindings: lastVerified,
   critic,
   plan: { angle: finalPlan.angle, stack: finalPlan.stack },
+  logo: logoChoice ? { concept: logoChoice.concept, rationale: logoChoice.rationale } : null,
   note: green ? 'گیت قطعی روی ماتریس کامل سبز شد و هیچ blocker بصری تأییدشده‌ای نماند.' : 'سبز نشد: خروجی را تأیید نکنید؛ gate و openFindings را ببینید.',
 }

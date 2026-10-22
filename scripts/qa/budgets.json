@@ -4,7 +4,8 @@
     "initialJsGzKB is a no-regression ceiling: the pre-redesign baseline measured 331.8KB gz, so the redesign may not add to it, and the WebGL layer must be a lazy chunk that does not count. Stretch goal worth taking separately: defer analytics (posthog) off the critical path and the ceiling drops by ~100KB. lcpMs/firstViewKB are from the same baseline plus headroom; tighten them, never loosen them, once the redesign lands.",
     "Mobile runs are CPU-throttled (cpuThrottle x). Headless Chrome uses software GL, so FPS is NOT gated here: the WebGL cost is bounded structurally (lazy chunk, pixel budget, pause-offscreen, reduced-motion, fallback) and profiled separately.",
     "sectionPages: the Figma section contract only applies to the landing page. pagesFull: the full matrix (npm run qa:full) also walks every other route, because the redesign moves them into a route group and /delete-account and /auth/callback are Play-critical.",
-    "bannedClaims: regexes scanned (case-insensitive) over the landing page's text, alt and aria-label, excluding anything inside [data-disclaimer]. See docs/landing-decisions.md D1."
+    "bannedClaims: regexes scanned (case-insensitive) over the landing page's text, alt and aria-label, excluding anything inside [data-disclaimer]. See docs/landing-decisions.md D1.",
+    "unverified-testimonial is a warning: the owner decided to ship the Figma testimonials (docs/landing-decisions.md D2). It stays in every report."
   ],
   "pages": [
     "/"
@@ -43,7 +44,7 @@
     "seo-h1": "warn",
     "webgl-unverifiable": "warn",
     "a11y-moderate": "warn",
-    "unverified-testimonial": "block"
+    "unverified-testimonial": "warn"
   },
   "axeViewports": [
     "mobile-390",

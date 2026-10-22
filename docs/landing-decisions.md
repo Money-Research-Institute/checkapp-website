@@ -37,26 +37,22 @@ The gate's `banned-claim` check scans the landing page's text (plus alt and aria
 preventing one, curing, treating, "world's first", "clinically proven/tested/validated", "medical-grade", "doctor-approved". Text inside an element marked
 `data-disclaimer` is exempt, so the disclaimer may say what the product does *not* do. Text baked into raster images cannot be scanned: do not put claims there.
 
-## D2. Testimonials: none until they are real  (decided)
+## D2. Testimonials: as in Figma  (decided by the project owner; risk stays visible)
 
-All six cards look invented: stock names, "Web3 Enthusiast", "Blockchain Analyst", and one quote is leftover crypto-dashboard
-text. Invented testimonials on a health product are a trust and advertising-standards problem.
+The owner's call is to build the six testimonial cards exactly as designed. Data-driven from `src/content/testimonials.ts` (the six Figma entries, each flagged
+`placeholder: true`; card 5's quote is leftover crypto-dashboard text and is also flagged `needsReplacement: true`).
 
-- Build the section and its layout, driven by `src/content/testimonials.ts`, which ships **empty**.
-- The section renders nothing unless there are at least three entries, each `{ name, role, quote, date, verified: true }`, with consent recorded outside the repo.
-- Rendered cards carry `data-verified="true"`. The gate fails any `blockquote` in `[data-section="testimonials"]` without it (`unverified-testimonial`).
-- `testimonials` is `optional: true` in `scripts/qa/figma-sections.json`: absent is fine, present-and-unverified is not.
+Still true, and tracked rather than hidden: the names, roles and quotes look invented and the six avatars look like stock photos of real people. The gate reports
+`unverified-testimonial` as a **warning** on every run (it was a blocker before this decision), and the final critic lists it in the launch checklist.
+Rendered figures carry `data-verified="false"` until a real, consented entry replaces them.
 
-## D3. Mascot and phone screens  (OPEN, one client answer; building proceeds on (a))
+## D3. Mascot  (decided by the project owner)
 
-Figma shows a white hooded "sprout doctor" DiDi inside the phone mock-ups, with a different home screen, whereas the shipped app's DiDi is the
-alien and its home screen reads "Check Me", not "Start Tongue Scan". ("Mah" in the design is the *user's* name in the mock UI, not the mascot.)
+The white hooded "sprout doctor" **is DiDi**. The alien was retired entirely. Use the Figma character and phone art as designed ("Mah" is the user's name in the mock UI,
+not the mascot). No alien art anywhere on the site.
 
-- (a) **shipped app is canonical** (recommended): phone screens become real app screenshots in the Figma device frames; the sprout art is not used.
-- (b) **the Figma character is the new brand**: use the art as designed, and the app has to change to match before the page goes live.
-
-Swapping between (a) and (b) later only replaces image assets (`public/landing/shared/app-screens/` and the mascot art), so building on (a) while the client
-answers is low-regret. Until a choice is passed to the workflow (`mascot: 'shipped' | 'figma'`), builders may not export or reuse mascot art or baked phone screens.
+Follow-ups outside this repo, listed so they are not forgotten: the mobile app and the Play listing screenshots still show the alien (and "Check Me", where the
+mock-ups say "Start Tongue Scan"); they need the new art before the landing page and the store tell the same story.
 
 ## D4. Fonts  (decided)
 
@@ -79,3 +75,10 @@ rerun with `paidPlans: true` and keep the visuals.
 - Hero nav and CTA are a restyle of the global `Header`/`MobileCtaBar`, not a second copy.
 - Contrast fixes from the Brief stand (final-CTA sub-line `#7c7c86`, "You are on the" ≥ `#d4d4d4`).
 - Tiny decorative cards (Roboto 9.7 px) ship as flattened `aria-hidden` images, not DOM.
+
+## D7. Logo: made from the mascot  (decided by the project owner)
+
+A logo mark is designed from DiDi's silhouette and used wherever the logo appears: header, footer, favicon, apple-touch icon, web manifest icons, JSON-LD logo, OG image.
+The workflow's "لوگو" phase produces it (three concepts, three judges, a brand kit) before the foundation is built. Rules: one mark, one component
+(`@/components/brand/LogoMark`), no second inline logo anywhere; readable at 16 px; a mono variant; documented in `docs/brand.md`. The wordmark stays Bricolage Grotesque Bold.
+The gate's `brand-assets` check fails the page if the icon, apple-touch icon or OG image (1200 x 630) is missing or does not resolve.

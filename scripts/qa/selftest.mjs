@@ -20,7 +20,7 @@ const run = (name) => {
 // Every id below is a defect planted in fixtures/bad/index.html.
 const PLANTED = ['overflow-x', 'text-offscreen', 'tap-target', 'broken-image', 'request-failed', 'occlusion', 'cls',
   'console-error', 'canvas-pixels', 'canvas-a11y', 'canvas-state', 'canvas-blank', 'nowebgl-fallback', 'reduced-motion',
-  'section-missing', 'a11y', 'meta-lang', 'banned-claim', 'unverified-testimonial'];
+  'section-missing', 'a11y', 'meta-lang', 'banned-claim', 'unverified-testimonial', 'brand-assets'];
 
 let failures = 0;
 const check = (ok, msg) => { console.log(`${ok ? '  ✓' : '  ✗'} ${msg}`); if (!ok) failures++; };
@@ -35,7 +35,7 @@ console.log('bad fixture (planted defects)');
 const bad = run('bad');
 const badReport = JSON.parse(await readFile(resolve(ROOT, '.qa/selftest/bad.json'), 'utf8'));
 check(bad.status === 1 && !badReport.ok, `fails (exit ${bad.status}, ${badReport.counts.blocking} blocking)`);
-const seen = new Set(badReport.issues.filter((i) => i.severity === 'block').map((i) => i.id));
+const seen = new Set(badReport.issues.map((i) => i.id)); // any severity: the point is that the defect is noticed
 for (const id of PLANTED) check(seen.has(id), `catches ${id}`);
 
 console.log(failures ? `\nSELFTEST FAIL (${failures})` : '\nSELFTEST PASS: the gate passes good pages and catches every planted defect');

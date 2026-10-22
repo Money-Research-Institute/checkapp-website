@@ -339,6 +339,30 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
     }
   }
 
+  // Brand wiring: the icon, apple-touch icon and OG image must exist and resolve (landing page, once per run).
+  if (mode === 'default' && budgets.sectionPages.includes(pagePath) && vp === viewports[0]) {
+    const refs = await page.evaluate(() => ({
+      icon: [...document.querySelectorAll('link[rel~="icon"]')].map((l) => l.href),
+      'apple-touch-icon': [...document.querySelectorAll('link[rel="apple-touch-icon"]')].map((l) => l.href),
+      'og:image': [...document.querySelectorAll('meta[property="og:image"]')].map((x) => x.content),
+    }));
+    for (const [kind, urls] of Object.entries(refs)) {
+      if (!urls.length) { add('brand-assets', ctx, `no ${kind} declared`); continue; }
+      for (const u of urls) {
+        const local = base + new URL(u, page.url()).pathname; // metadataBase may point at production: test what this build serves
+        const r = await context.request.get(local).catch(() => null);
+        if (!r || r.status() !== 200) { add('brand-assets', ctx, `${kind} ${new URL(u, page.url()).pathname} -> ${r ? r.status() : 'unreachable'}`); continue; }
+        if (kind === 'og:image') {
+          const buf = await r.body();
+          if (buf.subarray(1, 4).toString() === 'PNG') {
+            const w = buf.readUInt32BE(16), h = buf.readUInt32BE(20);
+            if (w !== 1200 || h !== 630) add('brand-assets', ctx, `og:image is ${w}x${h}, want 1200x630`);
+          }
+        }
+      }
+    }
+  }
+
   metrics.push({ ...ctx, lcp: Math.round(vitals.lcp), lcpTag: vitals.lcpTag, cls: Number(vitals.cls.toFixed(3)), firstViewKB: bytesAtLoad, totalKB, rafPerSec, overflowX: m.overflowX, docHeight: m.docHeight, canvases: m.canvases.length });
   await context.close();
 }
