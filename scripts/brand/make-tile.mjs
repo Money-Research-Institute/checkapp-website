@@ -1,14 +1,16 @@
 /**
  * The DiDi logo tile, with the light-surface treatment (docs/landing-decisions.md D7).
  *
- * The master is cream, which disappears on white pages, so the tile always carries a thin deep-green rim
- * (drawn inside the rounded edge) and, from 32 px up, a soft shadow on a padded transparent canvas.
+ * The master is cream, which disappears on white pages, so the tile is lifted off them:
+ *   - from 32 px up: a soft shadow on a padded transparent canvas (the owner's choice: shadow only, no rim);
+ *   - below 32 px (browser tabs, 24 px marks): a shadow is just blur there, and without any edge the tile
+ *     vanishes in a light tab, so these sizes get a 1 px deep-green hairline instead.
  *
- *   node scripts/brand/make-tile.mjs 64 out.png          rimmed tile + shadow (>= 32 px)
- *   node scripts/brand/make-tile.mjs 16 out.png          rimmed tile, no shadow
+ *   node scripts/brand/make-tile.mjs 64 out.png          shadow-only tile
+ *   node scripts/brand/make-tile.mjs 16 out.png          hairline-rimmed tile
  *   node scripts/brand/make-tile.mjs 512 out.png --bare  rounded tile only (no rim, no shadow)
  *
- * Import `makeTile` from other scripts. Verified by eye on #fff, #f1f3f5, a light tab and #07130c.
+ * Import `makeTile` from other scripts. Checked by eye on #fff, #f1f3f5, a light tab and #07130c.
  */
 import sharp from 'sharp';
 import { fileURLToPath } from 'node:url';
@@ -18,9 +20,9 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const MASTER = join(HERE, '../../public/brand/source/didi-icon-master.png');
 
 export const RIM_COLOR = '#3E7D36';
-export const RIM = 0.03; // of the side, never less than 1 px
+export const RIM_PX = 1; // hairline, only below SHADOW_FROM
 export const RADIUS = 0.224; // of the side
-export const SHADOW_FROM = 32; // px: below this the blur is noise
+export const SHADOW_FROM = 32; // px: from here up the tile gets a shadow; below it, a hairline rim
 
 const svg = (w, h, body) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${body}</svg>`);
 
@@ -43,12 +45,14 @@ export async function makeTile(size, { bare = false, shadow = size >= SHADOW_FRO
     layers.push({ input: await sharp(blob).blur(Math.max(0.8, size * 0.03)).png().toBuffer(), left: 0, top: 0 });
   }
   layers.push({ input: base, left: pad, top: pad });
-  const bw = Math.max(1, size * RIM);
-  layers.push({
-    input: svg(size, size, `<rect x="${bw / 2}" y="${bw / 2}" width="${size - bw}" height="${size - bw}" rx="${r - bw / 2}" fill="none" stroke="${RIM_COLOR}" stroke-width="${bw}"/>`),
-    left: pad,
-    top: pad,
-  });
+  if (!shadow) {
+    const bw = RIM_PX;
+    layers.push({
+      input: svg(size, size, `<rect x="${bw / 2}" y="${bw / 2}" width="${size - bw}" height="${size - bw}" rx="${r - bw / 2}" fill="none" stroke="${RIM_COLOR}" stroke-width="${bw}"/>`),
+      left: pad,
+      top: pad,
+    });
+  }
   return sharp({ create: { width: full, height: full, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite(layers).png().toBuffer();
 }
 

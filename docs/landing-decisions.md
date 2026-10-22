@@ -78,8 +78,9 @@ rerun with `paidPlans: true` and keep the visuals.
 ## D7. Logo: the 3D DiDi icon on cream  (decided by the project owner)
 
 The logo is the 3D mascot icon made with Google Gemini from the Figma mascot (docs/brand-provenance.md): head-and-shoulders DiDi on a cream background, in the spirit of Duolingo's owl.
-An earlier flat-vector attempt was rejected; of five backgrounds the owner chose cream. Cream alone disappears on light pages, so the tile always carries a thin deep-green rim
-(3 % of the side, at least 1 px, #3E7D36) and, from 32 px up, a soft shadow. It is used wherever the logo appears: header, footer, favicon, apple-touch icon, manifest icons, JSON-LD logo, OG image.
+An earlier flat-vector attempt was rejected; of five backgrounds the owner chose cream. Cream alone disappears on light pages, so the tile is lifted off them with **a soft shadow only, no rim**
+(the owner compared five treatments and chose shadow-only). One honest exception: below 32 px (a 16 px favicon, 24 px marks) a shadow is only blur and the tile vanishes in a light browser tab,
+so those sizes carry a 1 px deep-green hairline instead. It is used wherever the logo appears: header, footer, favicon, apple-touch icon, manifest icons, JSON-LD logo, OG image.
 The brand-kit step only derives assets and a component from the masters (`@/components/brand/LogoMark`); nobody redraws or recolours it. The gate's `brand-assets` check fails the page if the
 icon, apple-touch icon or OG image (1200 x 630) is missing or does not resolve.
 

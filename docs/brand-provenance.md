@@ -33,10 +33,10 @@ Prompts, in order (same chat, so each builds on the previous result):
    over a near-black, a mint and a vivid-green variant, which were dropped: mint disappeared on light tabs, vivid green was louder than the site's palette, near-black was kept in mind for dark contexts).
    Gemini failed once on this prompt ("I seem to be encountering an error"); Try again worked.
 
-**Light surfaces.** White hood on cream has almost no edge on a white page, and at 16 px the tile all but vanishes in a light browser tab. The fix is a treatment, not another background:
-a thin deep-green rim and a soft shadow, applied in code to the tile (docs/brand.md has the numbers): rim 3 % of the side (at least 1 px) in #3E7D36, drawn inside the rounded edge;
-shadow offset 3 % down, blur 3 %, rgba(20,50,20,.38), only at display sizes of 32 px and up. Compared against no treatment, a thick rim, a sage rim and shadow-only on white, light grey, a light browser
-tab and #07130c, the thin rim plus shadow was the only one that held at every size.
+**Light surfaces.** White hood on cream has almost no edge on a white page, and at 16 px the tile all but vanishes in a light browser tab. The fix is a treatment, not another background.
+Five were built from the same master and compared on white, light grey, a light browser tab and #07130c: none, a thick deep-green rim, a sage rim, shadow only, and a thin rim plus shadow. The owner chose
+**shadow only**: offset 3 % down, blur 3 % of the side, rgba(20,50,20,.38), on a transparent canvas padded by 12 %, from 32 px up. Below 32 px a shadow is blur and the tile disappears in a light tab
+(seen in the comparison), so 16 and 24 px get a 1 px #3E7D36 hairline instead. The code is `scripts/brand/make-tile.mjs`.
 
 **Lessons worth keeping.** Gemini's "Download full size image" button upscales to 2048 px and that upscale *added* a stethoscope chest-piece on the cheek that the 1024 px original does not
 have. The masters are the 1024 px originals, copied with the chat's "Copy image" button. Check any future export against the on-screen image before trusting it.
