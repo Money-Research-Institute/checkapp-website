@@ -25,6 +25,14 @@ enforce the rest. Design source: Figma `FSJqiLATooQsiMWs9OISQW`, node `2601:1243
 | `data-webgl-luma` | same canvas | mean luma 0–1 of the first frame (one `readPixels` after first draw); a black canvas fails |
 | `[data-webgl-poster]` | sibling `<img>` | visible whenever state is `fallback`/`lost`; it is the LCP element; crossfades out only after the first frame |
 
+**Forcing the GL path in the gate.** A software renderer (SwiftShader/llvmpipe) is sent to T0 for real users, but the gate runs on one. The
+capability probe must therefore honour `window.__QA_FORCE_GL === true`, which only the gate sets. Never ship a URL-parameter or
+storage override for this (`?fx=2` and the like): it is a production test hook that users and crawlers can trigger.
+
+**The gate is read-only for builders.** `scripts/qa/check.mjs`, `budgets.json`, `static-server.mjs`, `serve.mjs` and `selftest.mjs` must not be
+edited while building the page. Only `figma-sections.json` (slug renames) and the section markup in the good fixture may change.
+A change to the gate is a separate, reviewed commit that also passes `npm run qa:selftest`.
+
 `scripts/qa/fixtures/good/index.html` is a working reference of the whole contract (fallback, reduced motion,
 pause off-screen, tab-hidden pause, context loss/restore, pixel cap, dynamic resolution). Start from it.
 

@@ -38,7 +38,7 @@ const figma = JSON.parse(await readFile(join(HERE, 'figma-sections.json'), 'utf8
 const outDir = resolve(ROOT, opt('out', 'out'));
 const externalUrl = opt('url', null);
 const viewportSet = opt('viewports', 'quick');
-const pages = opt('pages', budgets.pages.join(',')).split(',');
+const pages = opt('pages', (viewportSet === 'full' ? budgets.pagesFull : budgets.pages).join(',')).split(',');
 const checkSections = !flag('no-sections');
 const shotsDir = resolve(ROOT, opt('shots', '.qa/shots'));
 const reportPath = resolve(ROOT, opt('json', '.qa/report.json'));
@@ -57,6 +57,9 @@ function add(id, ctx, message, detail) {
 /* ------------------------------------------- in-page code (serialised) */
 function initInPage({ mode }) {
   window.__qa = { cls: 0, lcp: 0, lcpTag: '', raf: 0 };
+  // Headless Chrome renders GL in software, which a real capability probe correctly sends to tier 0. The gate has to
+  // exercise the GL path anyway, so it sets this flag; the probe may honour it, and no URL parameter may exist for it.
+  window.__QA_FORCE_GL = true;
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (cb) => { window.__qa.raf++; return raf(cb); };
   try {
@@ -248,7 +251,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   const vitals = await page.evaluate(() => ({ ...window.__qa }));
   vitals.lcp = [vitals.lcp, bestLcp].filter((v) => v > 0).sort((a, b) => a - b)[0] ?? 0;
   const m = await page.evaluate(collectInPage, {
-    sections: figma.sections, checkSections, minTap: budgets.minTapTarget, touch: vp.mobile,
+    sections: figma.sections, checkSections: checkSections && budgets.sectionPages.includes(pagePath), minTap: budgets.minTapTarget, touch: vp.mobile,
   });
 
   /* ---- judge ---- */
@@ -262,7 +265,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   if (!m.landmarks.lang) add('meta-lang', ctx, '<html lang> is not set');
   if (m.landmarks.h1 !== 1) add('seo-h1', ctx, `expected exactly one <h1>, found ${m.landmarks.h1}`);
 
-  if (checkSections) {
+  if (checkSections && budgets.sectionPages.includes(pagePath)) {
     for (const s of m.sections) {
       if (s.missing) add('section-missing', ctx, `[data-section="${s.slug}"] not found`);
       else {

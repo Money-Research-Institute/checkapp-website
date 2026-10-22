@@ -42,6 +42,14 @@ const COMMON = [
   'Your final text is a return value, not a message to a person. Return exactly what the schema asks for.',
 ].join('\n')
 
+// Appended to every prompt AFTER the architecture phase. Earlier prompts are deliberately untouched so a resumed run keeps its cache.
+const GATE_RULES = [
+  'THE GATE IS READ-ONLY. Never edit scripts/qa/check.mjs, budgets.json, static-server.mjs, serve.mjs or selftest.mjs, and never loosen a budget. This OVERRULES the architecture plan wherever it lets foundation edit check.mjs.',
+  'Only scripts/qa/figma-sections.json (slug renames, provisional flags) and the section markup of scripts/qa/fixtures/good/index.html may change.',
+  'The capability probe must honour window.__QA_FORCE_GL === true (set only by the gate). The architecture\'s "?fx=2" URL override is REJECTED: ship no URL-parameter or storage override for the GL tier.',
+  'The full gate walks every existing route (budgets.pagesFull) and applies the section contract to "/" only. Moving existing routes into a route group must keep every URL identical (trailing slash included) and keep /delete-account, /auth/callback and /download working.',
+].join('\n')
+
 /* ----------------------------------------------------------------- schemas */
 const str = { type: 'string' }
 const strs = { type: 'array', items: str }
@@ -291,6 +299,7 @@ const foundationTask = arch.tasks.find((t) => t.kind === 'foundation')
 const foundation = await agent(
   [
     COMMON,
+    GATE_RULES,
     '\nYou are the foundation builder. Implement the foundation task and nothing else.',
     `TASK: ${JSON.stringify(foundationTask)}`,
     `ARCHITECTURE: ${JSON.stringify({ summary: arch.summary, dependencies: arch.dependencies, lazyBoundary: arch.lazyBoundary, contracts: arch.contracts, renames: arch.sectionSlugRenames })}`,
@@ -317,6 +326,7 @@ const built = (
     return agent(
       [
         COMMON,
+        GATE_RULES,
         `\nYou build ONE section: "${t.slug}". Other agents are building the other sections at the same time in the same working tree.`,
         `TASK: ${JSON.stringify(t)}`,
         `SPEC: ${JSON.stringify(spec)}`,
@@ -339,6 +349,7 @@ const built = (
 const integ = await agent(
   [
     COMMON,
+    GATE_RULES,
     '\nYou are the integrator. Section builders have finished editing the working tree in parallel.',
     `REPORTS: ${JSON.stringify(built)}`,
     'Do: `npx tsc --noEmit`, `npm run lint` (compare against the known baseline of 8 errors / 7 warnings on main: do not add to it), `npm run build`. Fix cross-file problems (imports, duplicate declarations, contract mismatches) and anything the builders listed in openIssues that is a seam between tasks. Do not redesign sections.',
@@ -355,6 +366,7 @@ const gatePrompt = (level, round) =>
   [
     COMMON,
     `\nYou run the deterministic quality gate, round ${round}, level "${level}". You do NOT edit source code.`,
+    `0. Tamper check: BASE=$(git log --format=%h -1 --grep='gate-baseline'); run \`git diff --stat $BASE -- scripts/qa/check.mjs scripts/qa/budgets.json scripts/qa/static-server.mjs scripts/qa/serve.mjs scripts/qa/selftest.mjs\`. If it prints anything, return ok:false with ONE blocking issue id "gate-tampered" naming the files, and stop: do not run the gate.`,
     `1. If \`git status --short\` shows changes, commit them first: git add -A && git commit -m "fix(landing): QA round ${round - 1} fixes".`,
     `2. Run: npm run build   (if it fails, return ok:false, buildOk:false and put the compiler errors in blocking[] with id "build").`,
     `3. Run: ${level === 'full' ? 'npm run qa:full' : 'npm run qa'}   (several minutes: use a 10-minute timeout, or run it in the background and wait for it to exit; never report before it has exited).`,
@@ -484,6 +496,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
     return agent(
       [
         COMMON,
+        GATE_RULES,
         `\nYou fix issues in the files owned by task "${t.id}" (${t.title}). Round ${round}.`,
         `OWNS: ${t.owns.join(', ')}. Edit only those paths; other fixers are working in parallel on theirs. If a fix needs a file you do not own, say so in openIssues.`,
         `ISSUES TO FIX: ${JSON.stringify(list)}`,
@@ -509,6 +522,7 @@ const critic = await agent(
     `ROUND HISTORY: ${JSON.stringify(history)}`,
     `OPEN VERIFIED FINDINGS: ${JSON.stringify(lastVerified)}`,
     'List, concretely: which viewports/devices/browsers/states were NOT exercised (Safari/iOS, Firefox, real GPUs, slow networks, 200% zoom, forced-colors, print, keyboard-only navigation, existing sub-pages that share the layout, the /download page APK flow, analytics consent banner interplay); which claims in the playbook are enforced only by the honour system; whether any budget was loosened during the run (diff scripts/qa/budgets.json against git history); and the top five things a human should test on real devices before launch.',
+    'Gate integrity: BASE=$(git log --format=%h -1 --grep=gate-baseline); `git diff $BASE -- scripts/qa/check.mjs scripts/qa/budgets.json scripts/qa/static-server.mjs scripts/qa/selftest.mjs` must be empty. List anything else that weakens a check (budgets, ignore lists, skipped routes, severity downgrades) in budgetsLoosened.',
     'Check git: confirm everything is committed on feat/landing-experience and nothing was pushed.',
   ].join('\n'),
   { label: 'منتقد کامل‌بودن', phase: 'بازبینی نهایی', schema: { type: 'object', properties: { notCovered: strs, honourSystemOnly: strs, budgetsLoosened: strs, humanChecklist: strs, gitClean: { type: 'boolean' } }, required: ['notCovered', 'humanChecklist'] }, effort: 'high' },
