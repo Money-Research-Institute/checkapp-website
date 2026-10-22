@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { LogoMark } from '@/components/brand/LogoMark';
 import { CtaButton } from '@/components/ds/CtaButton';
-import { APP_DOWNLOAD_URL, NAV_LINKS } from '@/lib/constants';
+import type { Dict } from '@/i18n';
+import { APP_DOWNLOAD_URL, NAV_LINKS, SITE_NAME } from '@/lib/constants';
 import styles from './Header.module.css';
 
 /** Scrolled past the top? A primitive snapshot, so the header only re-renders when it flips. */
@@ -22,14 +23,36 @@ const scrolledOnServer = () => false;
  * a full-screen menu. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
  * No animation library: the menu is a state flag and CSS; the glass fades with CSS transitions.
  */
-export function Header() {
+export function Header({
+  dict,
+  homeHref,
+  ctaLabel,
+  englishTargets,
+  englishOnlyLabel,
+}: {
+  /** The shell strings (src/i18n), chosen by the page's language. */
+  dict: Dict['header'];
+  /** Where the logo and "Home" go: `/` on English pages, the region's own landing page (`/ru/`) on the others. */
+  homeHref: string;
+  /** The download button: copy.hero.cta on a landing page, the shell's default elsewhere. */
+  ctaLabel: string;
+  /** The links lead to pages that exist in English only (every page but the landing pages): say so on a Russian page. */
+  englishTargets: boolean;
+  /** Spoken after such a link ("page in English"). */
+  englishOnlyLabel: string;
+}) {
   const pathname = usePathname();
   const scrolled = useSyncExternalStore(subscribeScroll, scrolledNow, scrolledOnServer);
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href.replace(/\/$/, '')));
+  const isActive = (href: string) =>
+    href === homeHref ? pathname === homeHref : pathname.startsWith(href.replace(/\/$/, ''));
+  const links = [
+    { href: homeHref, label: dict.home, english: false },
+    ...NAV_LINKS.map((link) => ({ href: link.href, label: dict[link.key], english: englishTargets })),
+  ];
 
   // Menu open: lock page scroll, move focus into the menu, Escape closes, Tab stays inside (menu + button).
   useEffect(() => {
@@ -70,21 +93,23 @@ export function Header() {
   return (
     <header className={styles.header} data-scrolled={scrolled || undefined} data-open={open || undefined}>
       <div className={styles.bar}>
-        <nav data-critical="nav" aria-label="Main" className={styles.nav}>
-          <Link href="/" className={styles.brand} onClick={() => setOpen(false)}>
+        <nav data-critical="nav" aria-label={dict.navLabel} className={styles.nav}>
+          <Link href={homeHref} className={styles.brand} onClick={() => setOpen(false)}>
             <LogoMark size={28} decorative priority />
-            <span className={styles.wordmark}>CheckApp</span>
+            <span className={styles.wordmark}>{SITE_NAME}</span>
           </Link>
 
           <ul className={styles.links}>
-            {NAV_LINKS.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   className={styles.link}
                   aria-current={isActive(link.href) ? 'page' : undefined}
+                  hrefLang={link.english ? 'en' : undefined}
                 >
                   {link.label}
+                  {link.english ? <span className="sr-only"> ({englishOnlyLabel})</span> : null}
                 </Link>
               </li>
             ))}
@@ -92,7 +117,7 @@ export function Header() {
 
           <div className={styles.cta}>
             <CtaButton href={APP_DOWNLOAD_URL} size="nav" trackingPage="header" trackingPosition="desktop-nav">
-              Download Now
+              {ctaLabel}
             </CtaButton>
           </div>
 
@@ -100,7 +125,7 @@ export function Header() {
             ref={buttonRef}
             type="button"
             className={styles.burger}
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? dict.closeMenu : dict.openMenu}
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
@@ -115,24 +140,26 @@ export function Header() {
       </div>
 
       <div id="mobile-menu" ref={panelRef} className={styles.panel} hidden={!open}>
-        <nav aria-label="Mobile">
+        <nav aria-label={dict.mobileNavLabel}>
           <ul className={styles.panelLinks}>
-            {NAV_LINKS.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   className={styles.panelLink}
                   aria-current={isActive(link.href) ? 'page' : undefined}
+                  hrefLang={link.english ? 'en' : undefined}
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
+                  {link.english ? <span className="sr-only"> ({englishOnlyLabel})</span> : null}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
         <CtaButton href={APP_DOWNLOAD_URL} size="bar" trackingPage="header" trackingPosition="mobile-menu">
-          Download Now
+          {ctaLabel}
         </CtaButton>
       </div>
     </header>

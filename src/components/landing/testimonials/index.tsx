@@ -3,11 +3,12 @@
  * a server component with root <section data-section="testimonials" data-figma-node="2601:13023">, an aria-labelledby heading,
  * never opacity 0, and a height at 1440 within +/-20 % of scripts/qa/figma-sections.json (954px).
  */
+import type { SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
 import { GradientHeading } from '@/components/ds/GradientHeading';
 
 /** Optional in figma-sections.json. The real cards (data-driven, data-verified="false") come from the testimonials task. */
-export function TestimonialsSection() {
+export function TestimonialsSection({ region }: SectionProps) {
   return (
     <section
       data-section="testimonials"

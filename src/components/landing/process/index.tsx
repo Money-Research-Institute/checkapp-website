@@ -3,10 +3,11 @@
  * a server component with root <section data-section="process" data-figma-node="2601:12435">, an aria-labelledby heading,
  * never opacity 0, and a height at 1440 within +/-20 % of scripts/qa/figma-sections.json (2300px).
  */
+import type { SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
 
 /** Anchor target of the "How it works" links: id="how-it-works". The Figma frame has no visible heading, so the h2 is sr-only. */
-export function ProcessSection() {
+export function ProcessSection({ region }: SectionProps) {
   return (
     <section
       id="how-it-works"

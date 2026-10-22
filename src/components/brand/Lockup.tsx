@@ -1,7 +1,8 @@
+import { SITE_NAME } from '@/lib/constants';
 import { LogoMark } from './LogoMark';
 
 /**
- * Logo lockup: the DiDi tile followed by "CheckApp" in Bricolage Grotesque Bold
+ * Logo lockup: the DiDi tile followed by "checkapp" (lower case, as the client spells it) in Bricolage Grotesque Bold
  * (the `--font-bricolage` variable set up in the root layout). The text carries the name,
  * so the mark is decorative. The text colour is inherited (`currentColor`).
  */
@@ -28,7 +29,7 @@ export function Lockup({ size = 32, priority = false, className }: LockupProps) 
           letterSpacing: '-0.02em',
         }}
       >
-        CheckApp
+        {SITE_NAME}
       </span>
     </span>
   );

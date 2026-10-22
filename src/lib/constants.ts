@@ -35,13 +35,17 @@ export const SUPABASE_ANON_KEY =
 
 export const ACCOUNT_DELETION_PATH = '/delete-account/';
 
-export const SITE_NAME = 'CheckApp';
+/** The brand is spelled in lower case, as the client asks (docs/landing-copy.md). The legal pages keep their own text. */
+export const SITE_NAME = 'checkapp';
 
+/**
+ * The header's links. `key` picks the label from the shell dictionary (src/i18n), so the same list serves every language.
+ * "Home" is not here: it points at the landing page of the current region, which the header knows.
+ */
 export const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/how-it-works/', label: 'How it works' },
-  { href: '/features/', label: 'Features' },
-  { href: '/blog/', label: 'Blog' },
+  { href: '/how-it-works/', key: 'howItWorks' },
+  { href: '/features/', key: 'features' },
+  { href: '/blog/', key: 'blog' },
 ] as const;
 
 export const SOCIAL_LINKS = {

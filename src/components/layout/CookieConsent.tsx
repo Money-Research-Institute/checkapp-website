@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import type { Dict } from '@/i18n';
 import { setAnalyticsConsent } from '@/lib/analytics';
 import styles from './CookieConsent.module.css';
 
@@ -12,7 +13,7 @@ const KEY = 'cookie-consent';
  * input (or 8 s), never at load, so it cannot cover the hero's call to action unprompted. It sits above the mobile CTA bar
  * and is compact on phones and on short landscape screens.
  */
-export function CookieConsent() {
+export function CookieConsent({ dict }: { dict: Dict['cookie'] }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,20 +47,20 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className={styles.wrap} role="dialog" aria-label="Cookie consent">
+    <div className={styles.wrap} role="dialog" aria-label={dict.label}>
       <div className={`fx-edge ${styles.card}`}>
         <p className={styles.text}>
-          We use cookies to improve your experience and understand site traffic.{' '}
+          {dict.text}{' '}
           <Link href="/privacy/" className={styles.link}>
-            Privacy policy
+            {dict.privacy}
           </Link>
         </p>
         <div className={styles.actions}>
           <button type="button" className={`${styles.btn} ${styles.secondary}`} onClick={() => choose('declined')}>
-            Necessary only
+            {dict.necessary}
           </button>
           <button type="button" className={`${styles.btn} ${styles.primary}`} onClick={() => choose('accepted')}>
-            Accept all
+            {dict.accept}
           </button>
         </div>
       </div>

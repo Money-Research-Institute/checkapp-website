@@ -11,7 +11,7 @@ import styles from './MobileCtaBar.module.css';
  * the page reserves exactly that space. It gets out of the way while any element marked `data-hides-cta-bar` (the hero's
  * and the final section's own CTA) is on screen, so two buttons never stack. Hidden means inert too.
  */
-function Bar() {
+function Bar({ label }: { label: string }) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -32,14 +32,14 @@ function Bar() {
   return (
     <div className={styles.bar} data-hidden={hidden || undefined} inert={hidden}>
       <CtaButton href={APP_DOWNLOAD_URL} size="bar" trackingPage="mobile-bar" trackingPosition="sticky-bottom">
-        Get CheckApp Free
+        {label}
       </CtaButton>
     </div>
   );
 }
 
-export function MobileCtaBar() {
+export function MobileCtaBar({ label }: { label: string }) {
   // A new page has new targets: remount so the hidden flag starts fresh.
   const pathname = usePathname();
-  return <Bar key={pathname} />;
+  return <Bar key={pathname} label={label} />;
 }

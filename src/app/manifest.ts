@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { THEME_COLOR } from '@/lib/constants';
+import { SITE_NAME, THEME_COLOR } from '@/lib/constants';
 import { withBasePath } from '@/lib/paths';
 
 // Static export: the manifest is written to out/manifest.webmanifest at build time.
@@ -8,8 +8,8 @@ export const dynamic = 'force-static';
 /** Web app manifest. Icons are the DiDi kit in public/brand/icons (docs/brand.md); `maskable` has the Android safe zone. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'CheckApp',
-    short_name: 'CheckApp',
+    name: SITE_NAME,
+    short_name: SITE_NAME,
     description: 'A wellness companion that checks in with you every day. Meet DiDi.',
     start_url: withBasePath('/'),
     scope: withBasePath('/'),

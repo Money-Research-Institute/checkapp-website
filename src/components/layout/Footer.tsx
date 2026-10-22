@@ -1,74 +1,218 @@
-import Link from 'next/link';
-import { Lockup } from '@/components/brand/Lockup';
-import { Container } from '@/components/ds/Container';
-import { SITE_NAME, SOCIAL_LINKS } from '@/lib/constants';
-
 /**
- * FOUNDATION STUB, owned by the footer task (it replaces this file). Contract it keeps:
- * root <footer data-section="footer" data-figma-node="2601:12661">, the Medical Disclaimer as <p data-disclaimer>,
- * the copyright line, 44px link targets, padding-top from --footer-runway so the final CTA can overlap it.
+ * The global footer (Figma "10-footer", node 2601:12661, 1440 x 740). A server component rendered on every route by
+ * the root layout; the landing page is the context Figma designs, the other routes inherit it with a shorter runway.
+ *
+ * Plain DOM over a baked, dithered glow poster. Nothing here is a canvas and nothing moves the text:
+ *  - the glow is one AVIF/WebP (public/landing/footer, flipped X and cropped to the part Figma shows), a black veil that
+ *    reproduces Figma's 179.96deg black-to-transparent overlay, and the runtime `.fx-dither` noise tile (AVIF smooths
+ *    baked-in noise away, so the dither lives in CSS);
+ *  - a scroll-linked rise (view() timeline, compositor-only) brings the glow from 64px low and 30 % dimmer to exactly
+ *    Figma's resting frame as the page ends, so the brightest the glow ever gets is the sampled #2E7034 peak and text
+ *    contrast is the same at the end state as in the design. Without view() timelines, or under reduced motion, the
+ *    page simply shows that resting frame. On a fine pointer the engine's [data-depth] sways it by at most 40px.
+ *
+ * Deviations from Figma, all on purpose (docs/landing-decisions.md):
+ *  - D1: the tagline says only what the app does today (Figma: "monitors hydration signals"), and the medical
+ *    disclaimer strip the old footer carried is kept as <p data-disclaimer>. Figma drops it. The disclaimer is the client's
+ *    wording for the page's region (src/content/copy); pages that are not a landing page show the US one.
+ *  - D4: Manrope everywhere; Bricolage Grotesque is the wordmark only. The column headings are Manrope 600.
+ *  - D7: the logo is the shared LogoMark (the 3D DiDi tile), never the flat Figma glyph.
+ *  - Contrast: Figma's white/.4 headings and white/.5 legal row fail AA over the glow (about 3.8:1), so they are
+ *    raised (see footer.module.css). axe cannot judge text over gradients, so this was measured, not assumed.
+ *  - Targets: Figma's 28px link pitch is kept only on a fine pointer from 1100px; everywhere else every link is 44px.
+ *
+ * Regions and languages (docs/landing-copy.md): the footer is the same component on every route, in the page's language
+ * (src/i18n). On a landing page it also carries the region switcher, real links to the four landing pages (each label in its
+ * own language, hreflang on each, the current one aria-current="page"). The Russian page links to pages that exist in
+ * English only (privacy, terms, blog, ...): those links say so with hreflang="en" and a spoken "page in English".
+ *
+ * The three link groups are <nav>s labelled by their visible headings; the duplicate legal links in the bottom bar are
+ * hidden (display: none, so out of the accessibility tree too) on phones, where they would only repeat the Company column.
  */
-const link = 'inline-flex tap items-center text-sm text-fg-70 transition-colors hover:text-fg';
+import Link from 'next/link';
+import type { CSSProperties } from 'react';
+import { LogoMark } from '@/components/brand/LogoMark';
+import { Container } from '@/components/ds/Container';
+import { Picture } from '@/components/ds/Picture';
+import {
+  RegionHreflang,
+  RegionLabels,
+  RegionPaths,
+  Regions,
+  getRegionCopy,
+  localeOf,
+  type Locale,
+  type Region,
+} from '@/content/copy';
+import { fill, getDict, type Dict } from '@/i18n';
+import { SITE_NAME, SOCIAL_LINKS } from '@/lib/constants';
+import styles from './footer/footer.module.css';
+import { COMPANY_LINKS, CONNECT_LINKS, LEGAL_LINKS, PRODUCT_LINKS, type FooterLinkItem } from './footer/links';
 
-export function Footer() {
+const YEAR = new Date().getFullYear();
+
+/** The page gutter, never narrower than the notch / rounded-corner inset of a landscape phone. */
+const SAFE_GUTTER: CSSProperties = {
+  paddingInline:
+    'max(var(--gutter), env(safe-area-inset-left, 0px)) max(var(--gutter), env(safe-area-inset-right, 0px))',
+};
+
+type LinkContext = {
+  dict: Dict['footer'];
+  /** The page is not in English, but the link's target is. */
+  englishTarget: boolean;
+};
+
+function FooterLink({ item, className, ctx }: { item: FooterLinkItem; className: string; ctx: LinkContext }) {
+  const label = item.label === 'email' ? SOCIAL_LINKS.contact.replace(/^mailto:/, '') : ctx.dict[item.label];
+  if (item.kind === 'external') {
+    return (
+      <a href={item.href} className={className} target="_blank" rel="noopener noreferrer">
+        {label}
+        <span className={styles.sr}> ({ctx.dict.opensInNewTab})</span>
+      </a>
+    );
+  }
+  if (item.kind === 'mail') {
+    return (
+      <a href={item.href} className={className}>
+        {label}
+      </a>
+    );
+  }
+  return (
+    <Link href={item.href} className={className} hrefLang={ctx.englishTarget ? 'en' : undefined}>
+      {label}
+      {ctx.englishTarget ? <span className={styles.sr}> ({ctx.dict.pageInEnglish})</span> : null}
+    </Link>
+  );
+}
+
+function LinkGroup({
+  id,
+  title,
+  items,
+  ctx,
+  className,
+}: {
+  id: string;
+  title: string;
+  items: readonly FooterLinkItem[];
+  ctx: LinkContext;
+  className?: string;
+}) {
+  return (
+    <nav aria-labelledby={id} className={className ? `${styles.group} ${className}` : styles.group}>
+      <h3 id={id} className={styles.heading}>
+        {title}
+      </h3>
+      <ul className={styles.list}>
+        {items.map((item) => (
+          <li key={item.href}>
+            <FooterLink item={item} className={styles.link} ctx={ctx} />
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/** The region switcher: one real link per landing page, each label in its own language. */
+function RegionSwitcher({ current, dict }: { current: Region; dict: Dict['footer'] }) {
+  return (
+    <nav aria-labelledby="footer-regions" className={styles.regions}>
+      <h3 id="footer-regions" className={styles.regionHeading}>
+        {dict.regionHeading}
+      </h3>
+      <ul className={styles.regionList}>
+        {Regions.map((region) => (
+          <li key={region}>
+            <Link
+              href={RegionPaths[region]}
+              hrefLang={RegionHreflang[region]}
+              lang={localeOf(region)}
+              className={styles.regionLink}
+              aria-current={region === current ? 'page' : undefined}
+            >
+              {RegionLabels[region]}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+export function Footer({ locale, region }: { locale: Locale; region?: Region }) {
+  const dict = getDict(locale).footer;
+  const ctx: LinkContext = { dict, englishTarget: locale !== 'en' };
+  // The client's disclaimer for the page's region. Pages that are not a landing page take the one of their language.
+  const disclaimer = getRegionCopy(region ?? (locale === 'ru' ? 'ru' : 'us')).disclaimer;
+
   return (
     <footer
       data-section="footer"
       data-figma-node="2601:12661"
-      aria-label="Site footer"
-      className="relative overflow-clip bg-bg text-fg"
-      style={{ paddingTop: 'var(--footer-runway)' }}
+      aria-labelledby="footer-heading"
+      className={styles.footer}
     >
-      <Container size="wide">
-        <div className="grid gap-10 md:grid-cols-4">
-          <div>
-            <Lockup size={32} />
-            <p className="mt-4 text-sm leading-relaxed text-fg-60">
-              Your daily wellness companion. DiDi checks in with you, looks at what you share and explains what it notices in
-              plain language.
+      <h2 id="footer-heading" className={styles.sr}>
+        {dict.heading}
+      </h2>
+
+      {/* Atmosphere only. The layer is 48px wider than the footer on each side so the pointer sway never shows an edge. */}
+      <div className={styles.glow} aria-hidden="true" data-depth="40" data-depth-y="0" data-depth-k="4">
+        <div className={`${styles.stage} fx-dither`}>
+          <Picture
+            base="/landing/footer/glow"
+            widths={[1097]}
+            width={1097}
+            height={564}
+            alt=""
+            aria-hidden="true"
+            className={styles.poster}
+          />
+          <span className={styles.veil} />
+        </div>
+      </div>
+
+      <Container size="wide" className={styles.inner} style={SAFE_GUTTER}>
+        <div className={styles.grid}>
+          <div className={styles.brand}>
+            <p className={styles.lockup}>
+              <span className={styles.mark}>
+                <LogoMark size={26} decorative />
+              </span>
+              <span className={styles.wordmark}>{SITE_NAME}</span>
             </p>
+            <p className={styles.tagline}>{dict.tagline}</p>
           </div>
 
-          <nav aria-label="Product">
-            <h2 className="mb-2 font-brand text-xs font-semibold uppercase tracking-[0.04em] text-fg-60">Product</h2>
-            <ul>
-              <li><Link href="/features/" className={link}>Features</Link></li>
-              <li><Link href="/how-it-works/" className={link}>How it works</Link></li>
-              <li><Link href="/blog/" className={link}>Blog</Link></li>
-            </ul>
-          </nav>
-
-          <nav aria-label="Company">
-            <h2 className="mb-2 font-brand text-xs font-semibold uppercase tracking-[0.04em] text-fg-60">Company</h2>
-            <ul>
-              <li><Link href="/privacy/" className={link}>Privacy</Link></li>
-              <li><Link href="/terms/" className={link}>Terms</Link></li>
-              <li><Link href="/delete-account/" className={link}>Delete account</Link></li>
-            </ul>
-          </nav>
-
-          <nav aria-label="Connect">
-            <h2 className="mb-2 font-brand text-xs font-semibold uppercase tracking-[0.04em] text-fg-60">Connect</h2>
-            <ul>
-              <li><a href={SOCIAL_LINKS.instagram} className={link} target="_blank" rel="noopener noreferrer">Instagram</a></li>
-              <li><a href={SOCIAL_LINKS.twitter} className={link} target="_blank" rel="noopener noreferrer">Twitter/X</a></li>
-              <li><Link href="/contact/" className={link}>Contact</Link></li>
-              <li><a href={SOCIAL_LINKS.contact} className={link}>hello@checkapp.today</a></li>
-            </ul>
-          </nav>
+          <LinkGroup id="footer-product" title={dict.product} items={PRODUCT_LINKS} ctx={ctx} />
+          <LinkGroup id="footer-company" title={dict.company} items={COMPANY_LINKS} ctx={ctx} />
+          <LinkGroup id="footer-connect" title={dict.connect} items={CONNECT_LINKS} ctx={ctx} className={styles.connect} />
         </div>
 
-        <div className="mt-10 border-t border-white/[0.08] pt-6">
-          <p data-disclaimer className="text-xs leading-relaxed text-fg-60">
-            <strong className="font-semibold text-fg-70">Medical Disclaimer:</strong> CheckApp and DiDi are wellness
-            companions, not medical devices. The information, signals, and suggestions provided are for general wellness
-            guidance only and do not constitute medical advice, a diagnosis, or a treatment plan. Always consult a qualified
-            healthcare professional for any medical concerns. CheckApp does not claim to diagnose, treat, cure, or prevent
-            any condition or disease.
+        {region ? <RegionSwitcher current={region} dict={dict} /> : null}
+
+        {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
+        <p data-disclaimer className={styles.note}>
+          {disclaimer}
+        </p>
+
+        <div className={styles.bar}>
+          <p className={styles.copy}>
+            {fill(dict.copyright, { year: YEAR, name: SITE_NAME })}
           </p>
-          <p className="mt-6 pb-8 text-sm text-fg-50">
-            © 2026 {SITE_NAME} · For wellness guidance only · Not a medical device
-          </p>
+          <nav aria-label={dict.legalNav} className={styles.legal}>
+            <ul className={styles.legalList}>
+              {LEGAL_LINKS.map((item) => (
+                <li key={item.href}>
+                  <FooterLink item={item} className={styles.legalLink} ctx={ctx} />
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </Container>
     </footer>

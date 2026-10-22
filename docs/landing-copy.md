@@ -68,6 +68,29 @@ sections above, 404). Put them in `src/components/landing/<slug>/copy.ts` (`{ en
 typed accessor, static export. The legal and blog pages stay English. Each landing page sets its own `<title>`, description (the hero
 subheadline is a good one), canonical, `hreflang` alternates and `og:locale`, and is in the sitemap.
 
+## How the four pages are built
+
+```
+src/app/
+  (en)/layout.tsx          root layout, <html lang="en">, Latin fonts   -> RootShell
+  (en)/(us)/  eu/  gulf/   one layout + page per landing page           -> SiteFrame region=...  + LandingPage
+  (en)/(pages)/            every inner page (about, blog, privacy, ...) -> SiteFrame, no region
+  (ru)/layout.tsx          root layout, <html lang="ru">, Cyrillic fonts -> RootShell
+  (ru)/ru/                 the Russian landing page                      -> SiteFrame region="ru" + LandingPage
+  global-not-found.tsx     the 404 (a whole document: two root layouts have no single layout to build it from)
+```
+
+- Next.js allows one `lang` per root layout, hence two root layouts sharing `RootShell`. Going between `/ru/` and any other page is a full page load.
+- `SiteFrame` (skip link, header, `<main>`, footer, phone CTA bar, cookie notice) is rendered by the layout of each landing page, because the footer
+  (region switcher, the region's disclaimer) and the download label (`copy.hero.cta`) depend on the region and a layout cannot read the URL.
+- Shell strings live in `src/i18n/{en,ru}.ts` (typed, no library). English is the default for every non-landing page; the Russian strings are drafts.
+- Fonts: `src/lib/fonts/latin.ts` for English, `src/lib/fonts/cyrillic.ts` for `/ru/`. next/font writes the `@font-face` of every subset with a
+  `unicode-range`, so the browser only fetches a Cyrillic file when Cyrillic text is on the page, and only the Russian page *preloads* it. Two details keep that
+  true: `experimental.cssChunking: 'graph'` (the default chunking merges the font CSS of both root layouts into every page), and the `Русский` label in the
+  footer switcher, which is set in the system font on English pages (in Manrope it would trigger the Cyrillic download on `/`). `npm run check:lang-fonts` checks the
+  built `out/` for all of it.
+- Footer links on `/ru/` to pages that exist only in English (privacy, terms, blog, ...) carry `hreflang="en"` and a spoken "страница на английском".
+
 ## The gate knows all of this
 
 `pages` (quick) = `/` and `/ru/`; `pagesFull` and `sectionPages` = all four. New checks: `lang-mismatch` (`<html lang>` must be the page's

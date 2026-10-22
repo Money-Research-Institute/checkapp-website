@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
+import { SITE_NAME } from '@/lib/constants';
 
 /**
- * The CheckApp logo: the 3D DiDi icon as a rounded tile. This is the only logo on the site;
+ * The checkapp logo: the 3D DiDi icon as a rounded tile. This is the only logo on the site;
  * it is derived from the master art by `scripts/brand/build-brand-kit.mjs` and is never redrawn,
  * recoloured or stretched here (docs/brand.md).
  *
@@ -40,7 +41,7 @@ function srcSet(prefix: string, ladder: readonly number[], size: number, format:
 export type LogoMarkProps = {
   /** Rendered side in CSS px. UI minimum is 28; 16 is for favicons only. Default 40. */
   size?: number;
-  /** True when text next to the mark already says "CheckApp" (alt is empty). False: alt is "CheckApp". Default false. */
+  /** True when text next to the mark already says "checkapp" (alt is empty). False: alt is "checkapp". Default false. */
   decorative?: boolean;
   /** Above-the-fold mark (header, hero): eager, high fetch priority. Default false: lazy. */
   priority?: boolean;
@@ -70,7 +71,7 @@ export function LogoMark({ size = 40, decorative = false, priority = false, clas
         srcSet={srcSet(prefix, ladder, px, 'png')}
         width={px}
         height={px}
-        alt={decorative ? '' : 'CheckApp'}
+        alt={decorative ? '' : SITE_NAME}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         fetchPriority={priority ? 'high' : 'auto'}

@@ -1,0 +1,507 @@
+/*
+ * Global footer. Figma 2601:12661, 1440 x 740. See Footer.tsx for what is, and is not, Figma-literal.
+ *
+ * Layout is driven by the footer's own inline width (container queries on .inner), not by device names:
+ *   < 540    brand on top; Product | Company side by side; Connect on its own row; no duplicate legal links
+ *   540-879  brand on top, then three equal columns; legal links return (stacked under the copyright below 720)
+ *   >= 880   the Figma composition: brand | Product | Company | Connect
+ * The Figma-literal 28px link rhythm exists only from 1100px with a fine pointer; every other link is 44px tall.
+ *
+ * Stacking: .glow (back) < .inner (text). Nothing in .glow takes pointer events or carries meaning.
+ */
+
+.footer {
+  /* Text alphas over the glow. Figma has .4 / .6 / .7 / .5, which measure 3.8:1 or worse over the bright floor; these
+     clear 4.5:1 against the brightest sampled backdrop (#2E7034) with the dither on top. */
+  --f-head: rgb(255 255 255 / 0.6);
+  --f-tag: rgb(255 255 255 / 0.66);
+  --f-link: rgb(255 255 255 / 0.7);
+  --f-quiet: rgb(255 255 255 / 0.76);
+  --f-rule: rgb(255 255 255 / 0.1);
+  /* Space above the first row and below the last one (Figma: 64 and 44). */
+  --f-pt: 40px;
+  --f-pb: 44px;
+  /* Phones reserve room for the fixed CTA bar as padding on <body> (globals.css). The footer reaches back over that
+     strip so the glow runs to the bottom edge under the bar, and re-pads itself so the last row clears the bar. */
+  --bar: 0px;
+  --safe-b: 0px;
+
+  position: relative;
+  flex: none;
+  overflow: clip; /* never overflow: hidden, which would freeze the view() timeline below */
+  margin-bottom: calc(var(--bar) * -1);
+  /* The final CTA hangs over the footer's first --footer-overlap px, then --footer-runway of pure gradient. */
+  padding-top: calc(var(--footer-overlap, 0px) + var(--footer-runway, 96px));
+  background: var(--c-bg);
+  color: var(--c-fg);
+  view-timeline-name: --footer-view;
+  view-timeline-axis: block;
+}
+
+@media (max-width: 767.98px) {
+  .footer {
+    --bar: calc(var(--cta-bar-h, 72px) + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (min-width: 768px) {
+  .footer {
+    --f-pt: 56px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+}
+@media (min-width: 1100px) {
+  .footer {
+    --f-pt: 64px;
+  }
+}
+/* Landscape phone: 22svh of runway (about 86px at 390 tall) instead of the 169px the width alone would give. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .footer {
+    padding-top: calc(var(--footer-overlap, 0px) + min(var(--footer-runway, 96px), max(48px, 22svh)));
+  }
+}
+/* The Figma 28px rhythm: fine pointer on a real desktop only. */
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .footer {
+    --f-pb: 40px;
+  }
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------ glow */
+
+.glow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* 48px of bleed each side for the pointer sway, and never narrower than 900px (+ bleed): a 390px phone looks at the
+     middle of the glow, where the light is. Equal left and right keeps it centred. */
+  left: min(-48px, calc((100% - 996px) / 2));
+  right: min(-48px, calc((100% - 996px) / 2));
+  pointer-events: none;
+}
+
+/* The poster window: Figma's 740px of glow, glued to the bottom edge. Shorter footers (inner routes) squeeze it instead
+   of cutting it, so its black top always meets the page without a seam. .fx-dither adds the noise ::after. */
+.stage {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: min(740px, 100%);
+}
+
+.poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: fill; /* stretches horizontally on ultrawide; the glow is low-frequency, so it only softens */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Figma's overlay: linear-gradient(179.96deg, #000 0%, transparent 39% of 1666px), 650px of 740. It sits above the noise,
+   so the top of the footer stays exactly #000 and the dither only shows where there is light. */
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(179.96deg, #000 0%, rgb(0 0 0 / 0) 87.84%);
+}
+
+/* The page ends on the same floor light it opens with. The glow starts 64px low and 30 % dimmer and reaches Figma's
+   resting frame as the last of the footer scrolls in (view() range ends when its bottom edge meets the viewport's,
+   i.e. at the end of the page). Opacity never exceeds 1, so the peak stays the sampled #2E7034. The default style IS
+   the final frame: Firefox, older Safari, no-JS and reduced motion all show it. */
+@keyframes rise {
+  from {
+    opacity: 0.7;
+    transform: translate3d(0, 64px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .glow {
+      animation: rise 1ms linear both;
+      animation-timeline: --footer-view;
+      animation-range: entry 20% entry 100%;
+    }
+  }
+}
+
+/* Ultrawide: beyond about 2200px the poster is stretched past 1.5x, so the far edges fall to black instead of a long dim bar. */
+@media (min-width: 2200px) {
+  .glow {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  }
+}
+@media (prefers-contrast: more) {
+  .stage {
+    opacity: 0.55;
+  }
+}
+@media (forced-colors: active), print {
+  .glow {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ content */
+
+.inner {
+  container-type: inline-size;
+  position: relative;
+  padding-top: var(--f-pt);
+  padding-bottom: calc(var(--f-pb) + var(--bar) + var(--safe-b));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+  row-gap: 28px;
+  align-items: start;
+}
+
+.brand {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.connect {
+  grid-column: 1 / -1;
+}
+
+.group {
+  min-width: 0;
+}
+
+.lockup {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+}
+
+/* Figma: the 26px tile sits 3px below the top of the 28px text line. */
+.mark {
+  display: block;
+  flex: none;
+  margin-top: 3px;
+}
+
+.wordmark {
+  font-family: var(--font-bricolage), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--c-fg);
+}
+
+.tagline {
+  max-width: 34ch;
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 22.75px;
+  color: var(--f-tag);
+  text-wrap: pretty;
+}
+
+.heading {
+  margin: 0 0 4px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--f-head);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link,
+.legalLink {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap, 44px);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--f-link);
+  text-decoration: none;
+  overflow-wrap: anywhere; /* hello@checkapp.today must never push a column wider than the screen */
+  transition: color var(--dur-fast, 150ms) var(--ease-out, ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .link:hover,
+  .legalLink:hover {
+    color: var(--c-fg);
+  }
+}
+.link:focus-visible,
+.legalLink:focus-visible {
+  color: var(--c-fg);
+}
+
+/* Region switcher (landing pages): real links to the four landing pages, the current one marked aria-current="page". */
+.regions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin-top: 28px;
+}
+
+.regionHeading {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--f-head);
+}
+
+.regionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.regionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap, 44px);
+  min-width: var(--tap, 44px);
+  padding-inline: 14px;
+  border: 1px solid var(--f-rule);
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--f-link);
+  text-decoration: none;
+  transition:
+    color var(--dur-fast, 150ms) var(--ease-out, ease-out),
+    background-color var(--dur-fast, 150ms) var(--ease-out, ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.regionLink[aria-current='page'] {
+  border-color: transparent;
+  background: rgb(255 255 255 / 0.14);
+  color: var(--c-fg);
+  font-weight: 600;
+}
+
+/* The Russian label ("Русский") is on every English page. Set in Manrope it would make the browser fetch the Cyrillic file just
+   for that word, so there it takes the system font, which has Cyrillic. On the Russian page the label is Manrope like the rest. */
+:root:not(:lang(ru)) .regionLink:lang(ru) {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@media (hover: hover) {
+  .regionLink:hover {
+    color: var(--c-fg);
+  }
+}
+.regionLink:focus-visible {
+  color: var(--c-fg);
+}
+
+@media (forced-colors: active) {
+  .regionLink[aria-current='page'] {
+    border-color: Highlight;
+  }
+}
+
+/* The medical disclaimer: quiet, but real text at a readable size and contrast. */
+.note {
+  max-width: 64rem;
+  margin: 36px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--f-quiet);
+  text-wrap: pretty;
+}
+.note strong {
+  font-weight: 600;
+  color: var(--c-fg);
+}
+
+.bar {
+  display: grid;
+  gap: 4px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--f-rule);
+}
+
+/* "For wellness guidance only · Not a medical device" carries regulatory wording: it wraps, it never disappears. */
+.copy {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--f-quiet);
+  text-wrap: balance;
+}
+
+/* Phones: the Company column already lists these three links, so the copy is dropped (display none, so also gone from the
+   accessibility tree instead of being read twice). */
+.legal {
+  display: none;
+}
+
+.legalList {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 0 0 -8px; /* the 8px of side padding that makes "Terms" 44px wide is pulled back out of the text edge */
+  padding: 0;
+  list-style: none;
+}
+
+.legalLink {
+  justify-content: center;
+  min-width: var(--tap, 44px);
+  padding-inline: 8px;
+  color: var(--f-quiet);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ 540 and up */
+
+@container (min-width: 540px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(24px, 4cqi, 32px);
+    row-gap: 36px;
+  }
+  .connect {
+    grid-column: auto;
+  }
+  .tagline {
+    max-width: 46ch;
+  }
+  .legal {
+    display: block;
+  }
+  .note {
+    margin-top: 44px;
+  }
+  .bar {
+    margin-top: 32px;
+  }
+}
+
+/* One row once the copyright (451px) and the three legal links (about 220px) fit side by side with room to spare. */
+@container (min-width: 720px) {
+  .bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 24px;
+    padding-top: 16px;
+  }
+  .legalList {
+    justify-content: flex-end;
+    margin: 0 -8px 0 0;
+  }
+}
+
+/* The Figma composition. 358 + 3 x 242 + 3 x 40 = 1204 is the row Figma draws at 1440; as fr it scales down to 880
+   without a fixed width, and the link columns never go under 164px (hello@checkapp.today). Wider than 1204 the row stays
+   left-aligned in the 1320 column, leaving Figma's void on the right. */
+@container (min-width: 880px) {
+  .grid {
+    grid-template-columns: minmax(0, 358fr) repeat(3, minmax(164px, 242fr));
+    column-gap: 40px;
+    row-gap: 0;
+    width: min(100%, 1204px);
+  }
+  .brand {
+    grid-column: auto;
+  }
+  .tagline {
+    max-width: 17rem;
+  }
+  .note {
+    margin-top: 40px;
+  }
+}
+
+/* Figma-literal rhythm: 20px text on a 28px pitch, 16px between legal links. */
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) {
+  .heading {
+    margin-bottom: 12px;
+  }
+  .link {
+    min-height: 28px;
+    padding-block: 4px;
+  }
+  .bar {
+    padding-top: 28px;
+  }
+  .legalList {
+    gap: 16px;
+    margin: 0;
+  }
+  .legalLink {
+    min-height: 28px;
+    min-width: 0;
+    padding: 4px 0;
+  }
+}
+
+/* ------------------------------------------------------------------ preferences */
+
+@media (prefers-reduced-motion: reduce) {
+  .link,
+  .legalLink,
+  .regionLink {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .footer {
+    --f-head: rgb(255 255 255 / 0.9);
+    --f-tag: rgb(255 255 255 / 0.9);
+    --f-link: rgb(255 255 255 / 0.9);
+    --f-quiet: rgb(255 255 255 / 0.92);
+    --f-rule: rgb(255 255 255 / 0.3);
+  }
+}
+
+@media (forced-colors: active) {
+  .link:focus-visible,
+  .legalLink:focus-visible,
+  .regionLink:focus-visible {
+    outline-color: Highlight;
+  }
+}

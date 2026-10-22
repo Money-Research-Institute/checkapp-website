@@ -3,10 +3,11 @@
  * a server component with root <section data-section="familiar" data-figma-node="2601:12718">, an aria-labelledby heading,
  * never opacity 0, and a height at 1440 within +/-20 % of scripts/qa/figma-sections.json (1226px).
  */
+import type { SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
 import { GradientHeading } from '@/components/ds/GradientHeading';
 
-export function FamiliarSection() {
+export function FamiliarSection({ region }: SectionProps) {
   return (
     <section
       data-section="familiar"
