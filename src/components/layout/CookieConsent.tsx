@@ -8,9 +8,9 @@ import styles from './CookieConsent.module.css';
 const KEY = 'cookie-consent';
 
 /**
- * Cookie notice. Same storage key as before ('cookie-consent' = 'accepted' | 'declined'). It appears once the browser is
- * idle (never competing with the first paint or the hero), sits above the mobile CTA bar, and is compact on phones so it
- * cannot cover the hero's call to action.
+ * Cookie notice. Same storage key as before ('cookie-consent' = 'accepted' | 'declined'). It appears after the first real
+ * input (or 8 s), never at load, so it cannot cover the hero's call to action unprompted. It sits above the mobile CTA bar
+ * and is compact on phones and on short landscape screens.
  */
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
@@ -21,13 +21,16 @@ export function CookieConsent() {
     } catch {
       return; // storage blocked: do not nag on every page
     }
+    // Show after the first real input (pointer, key, wheel, touch), or after 8 s of reading at the latest. Never at load:
+    // the notice must not sit on top of the hero's call to action before anyone has touched the page.
+    const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     const show = () => setVisible(true);
-    if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(show, { timeout: 3500 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = window.setTimeout(show, 3500);
-    return () => window.clearTimeout(id);
+    const timer = window.setTimeout(show, 8000);
+    events.forEach((name) => window.addEventListener(name, show, { once: true, passive: true }));
+    return () => {
+      window.clearTimeout(timer);
+      events.forEach((name) => window.removeEventListener(name, show));
+    };
   }, []);
 
   function choose(choice: 'accepted' | 'declined') {
