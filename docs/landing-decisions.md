@@ -6,6 +6,10 @@ policy cannot support. Where a decision is still open it says so; nothing open m
 Builders and reviewers read this file in full. The gate enforces what can be enforced (`banned-claim`,
 `unverified-testimonial`, `section-missing`).
 
+**The client's final copy (22.10.2026) is in `docs/landing-copy.md` and wins over D1 for every block it covers** (hero, Meet DiDi, what it does,
+how it works, data, 4P, final call, FAQ, disclaimer, in four regions). D1, D5 and the spelling rule below apply only to what that document does not cover.
+D9 and D10 are new.
+
 ## D1. Copy: no medical or superlative claims  (decided, needs client sign-off)
 
 The site's own footer says "CheckApp does not claim to diagnose, treat, cure, or prevent any condition or disease", and
@@ -28,7 +32,7 @@ Draft wording is ours; the client approves it.
 | FAQ, row 004 | "What is 4P medicine?" | "What is 4P?" | "medicine" |
 | FAQ, answers 001/003/004 | missing in Figma | 001: "DiDi is the companion inside CheckApp. It checks in with you every day, looks at the photos and answers you share, and explains what it notices in plain language. It is a wellness companion, not a medical device." 003: "A traditional checkup is a snapshot once in a while. DiDi is a daily conversation that compares today with your own earlier check-ins, so changes stand out. It does not replace seeing a doctor." 004: "4P is how we think about everyday wellness: Personalisation, Patterns, Progress and Participation, built around you." | no answer, or invented elsewhere |
 | footer | disclaimer strip dropped, only "Not a medical device" kept | **keep the existing Medical Disclaimer strip** (mark it `data-disclaimer`) and keep the copyright line | regulatory wording must survive |
-| everywhere | "Checkup", "DIDI" | "CheckApp"; "DiDi" in running text (as most of the design) | one name |
+| everywhere | "Checkup", "DIDI" | **"checkapp"** (the client's spelling, docs/landing-copy.md); "DiDi" in running text | one name |
 
 Also: do **not** carry over the current homepage's "2,400+ people building healthy habits" unless the client confirms the number.
 The usual-way section's "checkups shouldn't happen just once a year" stays, because the disclaimer is visible on the same page.
@@ -89,3 +93,14 @@ icon, apple-touch icon or OG image (1200 x 630) is missing or does not resolve.
 Everything already on the branch belongs to a previous project. Refactor freely, delete what the new design replaces, and judge on merit. Keep only what is functional or legally
 required: every URL, the text of /privacy and /terms, the delete-account flow, the auth-callback forwarding, the download/APK flow, the blog engine and its content, the lead form and
 webhook, analytics with cookie consent, sitemap/robots, SEO metadata and JSON-LD. One design system for the whole site, with no second "old" shell.
+
+## D9. Regions are pages  (decided by the project owner, 22.10.2026)
+
+The client wrote the landing copy per market (US, EU, Gulf, CIS/Russian). The site gets four pages: `/` (US, the default), `/eu/`, `/gulf/`, `/ru/`, rendered from the
+same sections with the client's wording for that region. `/ru/` is Russian end to end (`<html lang="ru">`, Russian chrome). No geo-redirect, a footer switcher, hreflang. Details and
+the block-to-section map: `docs/landing-copy.md`. The gate walks all four.
+
+## D10. Holds on the client's copy  (decided by default, each reversible; see docs/landing-copy.md)
+
+H1 the US "Digital Diagnostic" sentence is not shown; H2 no price is shown until the client supplies one; H3 lower-case `checkapp`; H4 no testimonials on `/ru/`. D5 is narrowed: the two
+plan spots show the three scans, because "weekly report" and "90-day history" are not things the app does today.

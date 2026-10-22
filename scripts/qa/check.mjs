@@ -20,6 +20,7 @@ import { gzipSync } from 'node:zlib';
 import { extname, join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serve, candidates } from './static-server.mjs';
+import { cyrillicShare, findClaims, findPlaceholders, findUnsupported } from './claims.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '../..');
@@ -162,19 +163,25 @@ function collectInPage({ sections, checkSections, minTap, touch, claims }) {
   }
   out.occluded = occluded;
 
-  // Claims scan (landing only: `claims` is null elsewhere). Text, alt and aria-label, minus anything marked data-disclaimer,
-  // so a disclaimer may say what the product does NOT do. textContent on a clone also catches hidden text.
-  out.claims = [];
+  // Text for the claim, capability, placeholder and language checks: text content, alt and aria-label of everything that is
+  // not script/style. textContent on a clone also catches hidden text. `text` drops anything marked data-disclaimer, so a
+  // disclaimer may say what the product does NOT do; `textCaps` also drops the testimonials (Figma placeholders, D2).
+  // The scanning itself runs in node (claims.mjs), where selftest can test it.
+  const textOf = (root) => {
+    const parts = [root.textContent];
+    root.querySelectorAll('[alt], [aria-label]').forEach((e) => parts.push(e.getAttribute('alt') || '', e.getAttribute('aria-label') || ''));
+    return parts.join(' \n ').replace(/\s+/g, ' ');
+  };
+  const full = document.body.cloneNode(true);
+  full.querySelectorAll('script, style, noscript').forEach((e) => e.remove());
+  out.textAll = textOf(full);
+  out.text = null;
+  out.textCaps = null;
   if (claims) {
-    const clone = document.body.cloneNode(true);
-    clone.querySelectorAll('[data-disclaimer], script, style, noscript').forEach((e) => e.remove());
-    const parts = [clone.textContent];
-    clone.querySelectorAll('[alt], [aria-label]').forEach((e) => parts.push(e.getAttribute('alt') || '', e.getAttribute('aria-label') || ''));
-    const text = parts.join(' \n ').replace(/\s+/g, ' ');
-    for (const src of claims) {
-      const m = new RegExp(src, 'i').exec(text);
-      if (m) out.claims.push(`"${m[0]}" …${text.slice(Math.max(0, m.index - 30), m.index + m[0].length + 30)}…`);
-    }
+    full.querySelectorAll('[data-disclaimer]').forEach((e) => e.remove());
+    out.text = textOf(full);
+    full.querySelectorAll('[data-section="testimonials"]').forEach((e) => e.remove());
+    out.textCaps = textOf(full);
   }
   out.unverifiedTestimonials = [...document.querySelectorAll('[data-section="testimonials"] blockquote')].filter((b) => !b.closest('[data-verified="true"]')).length;
 
@@ -256,7 +263,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   const rafPerSec = (await page.evaluate(() => window.__qa.raf)) - raf0;
 
   if (mode === 'default') {
-    const dir = join(shotsDir, pagePath === '/' ? 'home' : pagePath.replace(/\W+/g, '-'));
+    const dir = join(shotsDir, pagePath === '/' ? 'home' : pagePath.replace(/^\/|\/$/g, '').replace(/\W+/g, '-'));
     await mkdir(dir, { recursive: true });
     await page.screenshot({ path: join(dir, `${vp.name}-fold.png`), scale: 'css' });
     if (vp.shot === 'full') await page.screenshot({ path: join(dir, `${vp.name}-full.png`), fullPage: true, scale: 'css' });
@@ -268,7 +275,7 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   vitals.lcp = [vitals.lcp, bestLcp].filter((v) => v > 0).sort((a, b) => a - b)[0] ?? 0;
   const m = await page.evaluate(collectInPage, {
     sections: figma.sections, checkSections: checkSections && budgets.sectionPages.includes(pagePath), minTap: budgets.minTapTarget, touch: vp.mobile,
-    claims: budgets.sectionPages.includes(pagePath) ? budgets.bannedClaims : null,
+    claims: budgets.sectionPages.includes(pagePath),
   });
 
   /* ---- judge ---- */
@@ -301,7 +308,22 @@ async function runCase(browser, base, pagePath, vp, mode, axeSrc) {
   }
 
   if (vitals.cls > budgets.cls) add('cls', ctx, `layout shift ${vitals.cls.toFixed(3)} > ${budgets.cls}`);
-  if (m.claims.length) add('banned-claim', ctx, `${m.claims.length} unsupported medical/superlative claim(s) on the page`, m.claims.slice(0, 4));
+  if (m.text !== null) {
+    const claimHits = findClaims(m.text, budgets);
+    if (claimHits.length) add('banned-claim', ctx, `${claimHits.length} unsupported medical/superlative claim(s) on the page`, claimHits.slice(0, 4));
+    const capHits = findUnsupported(m.textCaps, budgets);
+    if (capHits.length) add('unsupported-capability', ctx, `${capHits.length} claim(s) about something the app cannot do yet`, capHits.slice(0, 4));
+  }
+  const leaks = findPlaceholders(m.textAll, budgets.placeholders);
+  if (leaks.length) add('placeholder-leak', ctx, `${leaks.length} template token(s) or filler text reached the page`, leaks.slice(0, 4));
+  const wantLang = budgets.pageLang?.[pagePath] ?? 'en';
+  if (m.landmarks.lang && m.landmarks.lang.split('-')[0].toLowerCase() !== wantLang) add('lang-mismatch', ctx, `<html lang="${m.landmarks.lang}"> but this page is ${wantLang}`);
+  const cyr = cyrillicShare(m.textAll);
+  const cyrRule = budgets.cyrillicShare?.[wantLang];
+  if (cyr !== null && cyrRule) {
+    if (cyrRule.min !== undefined && cyr < cyrRule.min) add('lang-content', ctx, `only ${Math.round(cyr * 100)}% of the letters are Cyrillic on a ${wantLang} page (min ${Math.round(cyrRule.min * 100)}%): untranslated text`);
+    if (cyrRule.max !== undefined && cyr > cyrRule.max) add('lang-content', ctx, `${Math.round(cyr * 100)}% of the letters are Cyrillic on a ${wantLang} page (max ${Math.round(cyrRule.max * 100)}%)`);
+  }
   if (m.unverifiedTestimonials) add('unverified-testimonial', ctx, `${m.unverifiedTestimonials} testimonial(s) without a verified figure (data-verified="true")`);
   if (vitals.lcp === 0) add('lcp-missing', ctx, 'no largest-contentful-paint entry was recorded after 3 loads, so LCP is unverified');
   else if (vitals.lcp > lcpBudget) add('lcp', ctx, `LCP ${Math.round(vitals.lcp)}ms > ${lcpBudget}ms`);

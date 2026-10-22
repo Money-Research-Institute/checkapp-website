@@ -1,6 +1,6 @@
 export const meta = {
   name: 'landing-experience',
-  description: 'ریدیزاین لندینگ CheckApp از Figma با تجربه‌ی WebGL/گیم‌دِو، ریسپانسیو برای همه‌ی اندازه‌ها، با گیت کیفیت قطعی که تا سبز نشدن تکرار می‌شود',
+  description: 'ریدیزاین لندینگ checkapp از Figma با تجربه‌ی WebGL/گیم‌دِو، ریسپانسیو برای همه‌ی اندازه‌ها، با گیت کیفیت قطعی که تا سبز نشدن تکرار می‌شود',
   whenToUse: 'Run after docs/experience-playbook.md and scripts/qa exist. First run with args {stopAfter:"architecture"} to review the plan, then run again without it to build.',
   phases: [
     { title: 'بریف', detail: 'هر سکشن Figma یک تحلیلگر + استخراج توکن‌ها' },
@@ -8,6 +8,7 @@ export const meta = {
     { title: 'معماری', detail: 'فایل‌ها، قراردادها، مالکیت فایل برای هر ایجنت' },
     { title: 'لوگو', detail: 'کیت برند از روی مستر سه‌بعدی DiDi: favicon، آیکن‌ها، OG، کامپوننت' },
     { title: 'پایه', detail: 'وابستگی‌ها، توکن‌ها، موتور WebGL با قرارداد playbook' },
+    { title: 'منطقه‌ها', detail: 'چهار صفحه‌ی منطقه (US/EU/Gulf/RU)، زبان و فونت سیریلیک، پوسته‌ی دوزبانه، SEO' },
     { title: 'ساخت', detail: 'هر سکشن موازی (مالکیت جدا) + یکپارچه‌سازی' },
     { title: 'گیت کیفیت', detail: 'اجرای گیت قطعی + بازبین‌های بصری + راستی‌آزمایی مخالف + رفع، تا سبز شدن' },
     { title: 'بازبینی نهایی', detail: 'منتقد کامل‌بودن: چه چیزی پوشش داده نشد' },
@@ -74,6 +75,42 @@ const CONTENT_RULES = [
 ].join('\n')
 
 const BRAND_NOTE = 'BRAND: the logo phase has produced the brand kit (docs/brand.md, src/components/brand/LogoMark.tsx and Lockup.tsx, public/brand/**, src/app/icon.svg / apple-icon.png / favicon.ico). Wire it: layout metadata (icons, web-manifest icons, openGraph/twitter image 1200x630, the JSON-LD logo URL) and make the nav and footer use LogoMark/Lockup. The gate\'s brand-assets check must pass.'
+
+// The client's final copy (22.10.2026). Used only in prompts AFTER the foundation, so the cached early phases are untouched.
+const COPY_RULES = [
+  "THE CLIENT'S FINAL COPY: read docs/landing-copy.md in full and obey it. It OVERRIDES docs/landing-decisions.md D1, D5 and the spelling rule for every block it covers, and it overrides CONTENT_RULES wherever they differ (the lower-case wordmark \"checkapp\", no \"weekly report / 90-day history\" cards, no \"compares with earlier check-ins\").",
+  'The client\'s strings live in src/content/copy (verbatim, tested by the gate\'s selftest). Import them (getRegionCopy, meetDidiText, subscriptionLine, faqEntries, RegionPaths, ...). NEVER retype, shorten, reword or "improve" one of them, and never edit src/content/copy.',
+  'Every landing section is a server component taking { region }: SectionProps and renders the SAME layout and art for all four regions (us, eu, gulf, ru); only the strings change. LandingPage (written in the regions step) renders them in design order.',
+  'Strings the client\'s document does NOT cover go in YOUR section\'s src/components/landing/<slug>/copy.ts as { en: {...}, ru: {...} }. Mark every Russian string // DRAFT (the client approves it later). Tone: informal «ты», short, no medical claims. Say only what the app does today: photo scans of the tongue, face and iris, on request, with a short wellness insight back (docs/landing-copy.md, "What the app can honestly claim"). The gate fails: diagnos*, predicting or preventing a disease, weekly report, 90-day history, comparing with earlier check-ins, trends, "over time", continuous or real-time monitoring, video analysis, and the Russian equivalents.',
+  'The hero Upgrade card and the final-CTA paywall phone (D5) become the three scans (tongue, face, iris), never a plan, price, trial or report.',
+  'Price: show the hero small print only when subscriptionLine(region) is non-null and the price FAQ only through faqEntries(region); never print a placeholder (`{price}`, `[Price]`): the gate fails it.',
+  'Russian text is 15-30% longer than English: a headline can wrap onto 3-4 lines, buttons and FAQ rows grow. Build every box to survive it and check your section with region ru, not only us.',
+  'On the ru page EVERY visible string is Russian (alt, aria-label, button labels, image text). The gate fails a ru page under 60% Cyrillic, and any page whose <html lang> disagrees with its language.',
+  'testimonials: render nothing for region ru (no [data-section="testimonials"], it is optional in figma-sections.json). For us/eu/gulf keep D2 exactly.',
+  'Spelling: "checkapp" (lower case) and "DiDi" in every string and in the wordmark; the legal pages keep their text.',
+].join('\n')
+
+const SECTION_NOTE = 'A previous pass already built this section with the older Figma/D1 copy: its files are in your owned directories. Update them IN PLACE to the rules above. Keep what is good (layout, art, motion, tokens), replace every string the client\'s document now covers, and add the region prop. Delete strings and assets that no region uses.'
+
+const REGIONS_PROMPT = [
+  COMMON,
+  GATE_RULES,
+  CONTENT_RULES,
+  BRAND_NOTE,
+  COPY_RULES,
+  '\nYou are the regions step. The foundation is built and committed; the section builders have not started. You make the site four-page and bilingual so the section builders can simply read their copy.',
+  'Read docs/landing-copy.md, docs/landing-decisions.md D9/D10, src/content/copy/* and the current layout, shell components (Header, Footer, MobileCtaBar, cookie consent, not-found), src/lib/seo, next-sitemap config. Read the Next.js 16 docs in node_modules/next/dist/docs on root layouts, route groups, `not-found`/`global-not-found`, metadata `alternates`, `generateStaticParams` and fonts BEFORE choosing an approach.',
+  'DELIVER (all of it):',
+  '1. Routes: / (us), /eu/, /gulf/, /ru/ as static pages. One server component src/components/landing/LandingPage.tsx takes { region } and renders the nine sections in design order plus the Experience island, passing region to each. Every existing URL stays identical (trailing slash included); /ru/ etc. are additions.',
+  '2. Document language: <html lang> is "ru" on /ru/ and "en" everywhere else. Use whatever Next 16 supports for a static export (typically route groups with a root layout per group sharing one RootShell component, so no layout code is duplicated). 404 must still be generated (out/404.html) and good. Verify by reading out/*.html after `npm run build`.',
+  '3. Fonts: D4 loads latin only. Russian needs the CYRILLIC subsets of Manrope and Inter (Bricolage is the latin-only wordmark). Load them so that English pages do NOT preload or download Cyrillic, and /ru/ gets it with the same display:swap and a metric-matched fallback. Prove it: in the built /ru/ page, document.fonts.check("16px Manrope", "Привет") is true after load and the computed body font is Manrope; on / no Cyrillic font file is requested.',
+  '4. Shell i18n: src/i18n/{en,ru}.ts plus a tiny typed accessor (no i18n library). Cover Header nav and its CTA label, MobileCtaBar, cookie consent, Footer (link labels, copyright, the region switcher), 404, aria-labels and the skip link. English is the default for every non-landing page. On the landing pages the header/CTA label comes from copy.hero.cta. Russian shell strings are DRAFTS (// DRAFT), informal «ты», short. Footer links to /privacy/, /terms/, /blog/ etc. keep their English targets: mark those links lang="en" on /ru/.',
+  '5. Footer: a region switcher (RegionLabels, each label in its own language, current one aria-current="page", real links to RegionPaths, hreflang on each) on the landing pages, and the region\'s disclaimer in an element with data-disclaimer (copy.disclaimer), plus the copyright line. The footer slot of the landing is the global Footer: do not build a second footer.',
+  '6. SEO per landing page: <title> "checkapp · DiDi, your digital health companion" (ru: "checkapp · DiDi, цифровой друг твоего здоровья"), description = copy.hero.subheadline, canonical = its own URL, alternates.languages from RegionHreflang plus x-default = /, og:locale (en_US / en_IE / en_AE / ru_RU), og:url; all four in the sitemap and next-sitemap config; JSON-LD stays English except inLanguage. No FAQ JSON-LD from you: the faqs section emits it.',
+  '7. Wordmark: Lockup renders "checkapp" (lower case); LogoMark standalone alt "checkapp"; JSON-LD organization name and metadata site name likewise. Do not touch /privacy and /terms text.',
+  '8. Each section component\'s signature gets `{ region }: SectionProps` (import from @/content/copy) and nothing else: this is the ONLY edit you may make inside src/components/landing/<slug>/; the section builders own those files after you.',
+  `Verify: \`npx tsc --noEmit\`, \`npm run build\`, then \`node scripts/qa/check.mjs --viewports selftest --no-sections --pages /,/eu/,/gulf/,/ru/\` must have no lang-mismatch, lang-content (stubs are still English: if lang-content fires only because the stub text is English, say so in openIssues, do not edit the gate), placeholder-leak, meta or console errors. Read out/ru/index.html and confirm lang="ru". Commit: feat(regions): four landing pages, Russian shell, Cyrillic fonts, hreflang. Never edit scripts/qa or src/content/copy.`,
+].join('\n')
 
 /* ----------------------------------------------------------------- schemas */
 const str = { type: 'string' }
@@ -365,6 +402,14 @@ const foundation = await agent(
 if (!foundation || !foundation.buildOk) throw new Error(`پایه ساخته نشد: ${foundation ? foundation.summary : 'agent failed'}`)
 log(`پایه آماده: ${foundation.summary}`)
 
+/* ============================================================ 5b. REGIONS === */
+phase('منطقه‌ها')
+const regions = await agent(REGIONS_PROMPT, { label: 'منطقه‌ها · صفحه‌ها، زبان، فونت، پوسته', phase: 'منطقه‌ها', schema: DONE, effort: 'high' })
+if (!regions || !regions.buildOk) throw new Error(`مرحله‌ی منطقه‌ها ساخته نشد: ${regions ? regions.summary : 'agent failed'}`)
+log(`منطقه‌ها آماده: ${regions.summary}`)
+// New shared files belong to the foundation owner from here on, so a later gate fix has somewhere to go.
+foundationTask.owns.push('src/i18n/', 'src/components/landing/LandingPage.tsx', ...(regions.filesTouched ?? []).filter((f) => !f.startsWith('src/components/landing/') || f.endsWith('LandingPage.tsx')))
+
 /* ============================================================ 6. BUILD === */
 phase('ساخت')
 const sectionTasks = arch.tasks.filter((t) => t.kind === 'section' || t.kind === 'page')
@@ -379,6 +424,7 @@ const built = (
         COMMON,
         GATE_RULES,
         CONTENT_RULES,
+        ...(t.kind === 'section' ? [COPY_RULES, SECTION_NOTE] : []),
         `\nYou build ONE ${t.kind === 'page' ? 'page group (refactor it onto the new shell and primitives; delete what it no longer uses)' : 'landing section'}: "${t.slug ?? t.id}". Other agents are building the other tasks at the same time in the same working tree.`,
         `TASK: ${JSON.stringify(t)}`,
         `SPEC: ${JSON.stringify(spec)}`,
@@ -403,6 +449,7 @@ const integ = await agent(
     COMMON,
     GATE_RULES,
     CONTENT_RULES,
+    COPY_RULES,
     '\nYou are the integrator. Section builders have finished editing the working tree in parallel.',
     `REPORTS: ${JSON.stringify(built)}`,
     'Do: `npx tsc --noEmit`, `npm run lint` (compare against the known baseline of 8 errors / 7 warnings on main: do not add to it), `npm run build`. Fix cross-file problems (imports, duplicate declarations, contract mismatches) and anything the builders listed in openIssues that is a seam between tasks. Do not redesign sections.',
@@ -432,6 +479,7 @@ const reviewers = [
   { key: 'tablet', lens: 'tablets 768/820 portrait and 1024 landscape: layout rhythm, wasted space, awkward in-between states between phone and desktop breakpoints' },
   { key: 'desktop', lens: 'desktop 1280/1366/1440/1920 against the Figma reference PNGs in .qa/figma/: fidelity section by section (spacing, type, colour, glass, glow, composition), consistency of the whole page' },
   { key: 'wide', lens: 'ultrawide 2560 and 3440: max measure, background atmosphere extending, nothing stretched, nothing floating in empty space' },
+  { key: 'ru', lens: 'the Russian page /ru/ (.qa/shots/ru/) at 390, 820 and 1440 against the US page: text expansion breaking boxes (headlines on 3-4 lines, buttons, FAQ rows, cards), orphaned or hyphen-less ugly wraps, any English left on the page (nav, buttons, cookie notice, footer, alt text, image text), Cyrillic rendered in a fallback font instead of Manrope/Inter, the tone of the Russian draft strings (informal «ты», natural, no calques), and that no section shows a medical claim or a capability the app does not have. Also open the built /ru/ in a browser and confirm document.fonts.check("16px Manrope", "Привет")' },
   { key: 'motion', lens: 'LIVE behaviour in a browser (serve with `node scripts/qa/serve.mjs 4173`; if the port is busy a server from an earlier round is already serving out/, reuse it; then use the browser tools): WebGL runs and looks right, shader/console errors, simulate WEBGL_lose_context loss and restore, reduced motion, tab hidden pause, scroll feel (no jank, no hijack), parallax smoothness, touch vs hover behaviour, loading sequence (poster -> crossfade, no flash, no layout jump)' },
 ]
 
@@ -439,7 +487,7 @@ const reviewPrompt = (r, round) =>
   [
     COMMON,
     `\nYou are a visual/experience reviewer, round ${round}. Lens: ${r.lens}`,
-    'Screenshots from the gate are in .qa/shots/home/<viewport>-fold.png and -full.png (look at them with the Read tool: actually LOOK, never assume). Figma references are in .qa/figma/<slug>.png.',
+    'Screenshots from the gate are in .qa/shots/<page>/<viewport>-fold.png and -full.png, where <page> is home (the US page, /), ru (/ru/) and, at the full level, eu and gulf (look at them with the Read tool: actually LOOK, never assume). Figma references are in .qa/figma/<slug>.png. The four pages share layout and art: judge a layout defect once, on the page where it is worst.',
     'Report only real defects you can point at: a screenshot path + what is visible in it, or a measurement/console line you produced. Rank honestly: blocker = broken, unreadable, ugly enough to embarrass the brand, or violates the playbook; important = clearly below the bar; polish = nice to have (list at most 3 polish items).',
     'Quality bar: the output must be uniformly good at every size, not great at 1440 and acceptable elsewhere. Do not report anything the deterministic gate already reports; it will be fixed separately. DO report any deviation from docs/landing-decisions.md that the gate cannot see (a claim baked into an image, an invented-looking quote, mascot art used while D3 is open, a font that is not Manrope/Inter/Bricolage).',
     'Do not edit code.',
@@ -551,6 +599,7 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
         COMMON,
         GATE_RULES,
         CONTENT_RULES,
+        COPY_RULES,
         `\nYou fix issues in the files owned by task "${t.id}" (${t.title}). Round ${round}.`,
         `OWNS: ${t.owns.join(', ')}. Edit only those paths; other fixers are working in parallel on theirs. If a fix needs a file you do not own, say so in openIssues.`,
         `ISSUES TO FIX: ${JSON.stringify(list)}`,
@@ -577,6 +626,7 @@ const critic = await agent(
     `OPEN VERIFIED FINDINGS: ${JSON.stringify(lastVerified)}`,
     'List, concretely: which viewports/devices/browsers/states were NOT exercised (Safari/iOS, Firefox, real GPUs, slow networks, 200% zoom, forced-colors, print, keyboard-only navigation, existing sub-pages that share the layout, the /download page APK flow, analytics consent banner interplay); which claims in the playbook are enforced only by the honour system; whether any budget was loosened during the run (diff scripts/qa/budgets.json against git history); and the top five things a human should test on real devices before launch.',
     'Gate integrity: BASE=$(git log --format=%h -1 --grep=gate-baseline); `git diff $BASE -- scripts/qa/check.mjs scripts/qa/budgets.json scripts/qa/static-server.mjs scripts/qa/selftest.mjs` must be empty. List anything else that weakens a check (budgets, ignore lists, skipped routes, severity downgrades) in budgetsLoosened.',
+    'Regions: list what the client must approve before launch (every // DRAFT Russian string, the four P tile texts, the usual-way section, the held items H1-H4 of docs/landing-copy.md), whether hreflang/canonical/sitemap are right for all four pages, whether /eu/ and /gulf/ differ from / only where the client\'s document says so, and whether English pages download any Cyrillic font file.',
     'Check git: confirm everything is committed on feat/landing-experience and nothing was pushed.',
   ].join('\n'),
   { label: 'منتقد کامل‌بودن', phase: 'بازبینی نهایی', schema: { type: 'object', properties: { notCovered: strs, honourSystemOnly: strs, budgetsLoosened: strs, humanChecklist: strs, gitClean: { type: 'boolean' } }, required: ['notCovered', 'humanChecklist'] }, effort: 'high' },
