@@ -56,11 +56,10 @@ mock-ups say "Start Tongue Scan"); they need the new art before the landing page
 
 ## D4. Fonts  (decided)
 
-The design uses Manrope, Inter, Geist, DM Sans, Roboto and Bricolage Grotesque; the site loads DM Sans, Bricolage and DM Mono. Landing route group:
+The design uses Manrope, Inter, Geist, DM Sans, Roboto and Bricolage Grotesque; the old site loaded DM Sans, Bricolage and DM Mono. Whole site:
 
-- **Manrope** (400/500/600/700, display and body), **Inter** (500/600/700, UI numerals and small card text), **Bricolage Grotesque** (wordmark only, already loaded).
-- Geist → Manrope (800 where the design uses Black), DM Sans → Manrope, Roboto → Inter. `next/font/google`, latin subset, `display: swap`, preload only the hero weights.
-- The existing sub-pages keep their current fonts through their own route-group layout, so the redesign does not restyle them.
+- **Manrope** (400/500/600/700, display and body), **Inter** (500/600/700, UI numerals and small card text), **Bricolage Grotesque** (wordmark only).
+- Geist -> Manrope (800 where the design uses Black), DM Sans -> Manrope, Roboto -> Inter, DM Mono dropped. `next/font/google`, latin subset, `display: swap`, preload only the hero weights.
 
 ## D5. Paid-plan visuals  (decided by default, reversible)
 
@@ -76,9 +75,15 @@ rerun with `paidPlans: true` and keep the visuals.
 - Contrast fixes from the Brief stand (final-CTA sub-line `#7c7c86`, "You are on the" ≥ `#d4d4d4`).
 - Tiny decorative cards (Roboto 9.7 px) ship as flattened `aria-hidden` images, not DOM.
 
-## D7. Logo: made from the mascot  (decided by the project owner)
+## D7. Logo: the 3D DiDi icon  (decided by the project owner)
 
-A logo mark is designed from DiDi's silhouette and used wherever the logo appears: header, footer, favicon, apple-touch icon, web manifest icons, JSON-LD logo, OG image.
-The workflow's "لوگو" phase produces it (three concepts, three judges, a brand kit) before the foundation is built. Rules: one mark, one component
-(`@/components/brand/LogoMark`), no second inline logo anywhere; readable at 16 px; a mono variant; documented in `docs/brand.md`. The wordmark stays Bricolage Grotesque Bold.
-The gate's `brand-assets` check fails the page if the icon, apple-touch icon or OG image (1200 x 630) is missing or does not resolve.
+The logo is the 3D mascot icon made with Google Gemini from the Figma mascot (docs/brand-provenance.md): a head-and-shoulders DiDi on a green tile, in the spirit of Duolingo's owl.
+It is used wherever the logo appears: header, footer, favicon, apple-touch icon, manifest icons, JSON-LD logo, OG image. An earlier flat-vector attempt was rejected.
+The brand-kit step only derives assets and a component from the masters (`@/components/brand/LogoMark`); nobody redraws it. The gate's `brand-assets` check fails the page if the icon,
+apple-touch icon or OG image (1200 x 630) is missing or does not resolve.
+
+## D8. Existing code is not a constraint  (decided by the project owner)
+
+Everything already on the branch belongs to a previous project. Refactor freely, delete what the new design replaces, and judge on merit. Keep only what is functional or legally
+required: every URL, the text of /privacy and /terms, the delete-account flow, the auth-callback forwarding, the download/APK flow, the blog engine and its content, the lead form and
+webhook, analytics with cookie consent, sitemap/robots, SEO metadata and JSON-LD. One design system for the whole site, with no second "old" shell.

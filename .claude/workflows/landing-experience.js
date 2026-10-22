@@ -6,7 +6,7 @@ export const meta = {
     { title: 'بریف', detail: 'هر سکشن Figma یک تحلیلگر + استخراج توکن‌ها' },
     { title: 'طراحی تجربه', detail: '۳ طرح مستقل → ۳ داور با زاویه‌ی متفاوت → ترکیب برنده' },
     { title: 'معماری', detail: 'فایل‌ها، قراردادها، مالکیت فایل برای هر ایجنت' },
-    { title: 'لوگو', detail: 'لوگو از روی ماسکوت DiDi: ۳ مفهوم، ۳ داور، کیت برند (favicon، OG، کامپوننت)' },
+    { title: 'لوگو', detail: 'کیت برند از روی مستر سه‌بعدی DiDi: favicon، آیکن‌ها، OG، کامپوننت' },
     { title: 'پایه', detail: 'وابستگی‌ها، توکن‌ها، موتور WebGL با قرارداد playbook' },
     { title: 'ساخت', detail: 'هر سکشن موازی (مالکیت جدا) + یکپارچه‌سازی' },
     { title: 'گیت کیفیت', detail: 'اجرای گیت قطعی + بازبین‌های بصری + راستی‌آزمایی مخالف + رفع، تا سبز شدن' },
@@ -51,15 +51,15 @@ const GATE_RULES = [
   'THE GATE IS READ-ONLY. Never edit scripts/qa/check.mjs, budgets.json, static-server.mjs, serve.mjs or selftest.mjs, and never loosen a budget. This OVERRULES the architecture plan wherever it lets foundation edit check.mjs.',
   'Only scripts/qa/figma-sections.json (slug renames, provisional flags) and the section markup of scripts/qa/fixtures/good/index.html may change.',
   'The capability probe must honour window.__QA_FORCE_GL === true (set only by the gate). The architecture\'s "?fx=2" URL override is REJECTED: ship no URL-parameter or storage override for the GL tier.',
-  'The full gate walks every existing route (budgets.pagesFull) and applies the section contract to "/" only. Moving existing routes into a route group must keep every URL identical (trailing slash included) and keep /delete-account, /auth/callback and /download working.',
+  'The full gate walks every existing route (budgets.pagesFull) and applies the section contract to "/" only. Every existing URL must stay identical (trailing slash included), and /delete-account, /auth/callback and /download must keep working: the full matrix walks all of them.',
 ].join('\n')
 
 const CONTENT_RULES = [
   'docs/landing-decisions.md is authoritative OVER FIGMA, OVER THE BRIEF SPECS AND OVER THE ARCHITECTURE TASK BRIEFS wherever it overrides them (copy, testimonials, fonts, plan visuals, mascot, logo). Read it in full first.',
   'Copy: use the replacement wording from its D1 table and never reintroduce a Figma claim. The gate scans the page for banned claims (budgets.bannedClaims) and fails on them. The footer medical disclaimer is kept and marked data-disclaimer.',
   'Testimonials (D2, owner decision): build the six cards EXACTLY as in Figma, data-driven from src/content/testimonials.ts (the six Figma entries, each flagged placeholder:true; Daniel Ross also needsReplacement:true because his quote is leftover crypto text). Rendered figures carry data-verified="false" until a real entry replaces them. The gate reports this as a warning; do not try to silence it.',
-  'Logo (D7): the logo phase created the brand kit (docs/brand.md). Use `@/components/brand/LogoMark` (or Lockup) for EVERY logo mark: nav, footer, final CTA. Never inline or redraw another logo. Icons, manifest icons, JSON-LD logo and the OG image come from public/brand and src/app/icon.*.',
-  'Fonts: Manrope + Inter + Bricolage Grotesque only, on the landing route group (D4). Existing routes keep their fonts through their own group layout.',
+  'Logo (D7): the logo is the 3D DiDi icon in public/brand/source (docs/brand-provenance.md); the brand-kit step derived assets and the component (docs/brand.md). Use `@/components/brand/LogoMark` (or Lockup) for EVERY logo mark: nav, footer, final CTA. Never inline, redraw, recolour or re-render it. Icons, manifest icons, JSON-LD logo and the OG image come from public/brand and src/app/icon.*.',
+  'Fonts (D4): Manrope + Inter + Bricolage Grotesque only, ACROSS THE WHOLE SITE. The existing code is from a previous project and is not a constraint (D8): refactor and delete freely, keep only what is functional or legally required.',
   'figma-sections.json already has testimonials (optional) and final-cta: the architecture\'s renames are done, just verify them.',
   MASCOT === 'shipped'
     ? 'D3 is RESOLVED as (a): phone screens are REAL app screenshots placed inside the Figma device frames (frame art without the baked UI). Screenshots live in public/landing/shared/app-screens/ (home, chat, scan, history). Do not use the Figma sprout-doctor mascot anywhere.'
@@ -133,7 +133,7 @@ const ARCH = {
       type: 'array',
       items: {
         type: 'object',
-        properties: { id: str, kind: { type: 'string', enum: ['foundation', 'section'] }, slug: str, title: str, owns: strs, brief: str },
+        properties: { id: str, kind: { type: 'string', enum: ['foundation', 'section', 'page'] }, slug: str, title: str, owns: strs, brief: str },
         required: ['id', 'kind', 'title', 'owns', 'brief'],
       },
     },
@@ -183,8 +183,6 @@ const TRIAGE = {
   properties: { assignments: { type: 'array', items: { type: 'object', properties: { ref: str, owner: str, why: str }, required: ['ref', 'owner'] } } },
   required: ['assignments'],
 }
-
-const LOGO = { type: 'object', properties: { concept: str, rationale: str, svgPath: str, svg: str, smallSizeNotes: str }, required: ['concept', 'rationale', 'svgPath', 'svg'] }
 
 const DONE = { type: 'object', properties: { summary: str, commit: str, buildOk: { type: 'boolean' }, filesTouched: strs, openIssues: strs }, required: ['summary', 'buildOk'] }
 
@@ -302,11 +300,12 @@ const arch = await agent(
     `SECTION SPECS: ${specsJson}`,
     `TOKENS: ${tokensJson}`,
     `FINAL PLAN: ${JSON.stringify(finalPlan)}`,
-    'Inspect the current src/ (layout, globals.css, components, existing pages) so the plan fits what exists; keep existing routes (/, /download, /features, /blog, /privacy, /terms, /delete-account, /auth/callback, ...) working and keep their SEO metadata, JSON-LD and analytics.',
+    'EXISTING CODE IS FROM A PREVIOUS PROJECT AND IS NOT A CONSTRAINT. Inspect src/ to learn what is there, then use your own judgment: refactor or delete freely, and do not preserve structure, styling, components or naming for their own sake. Unify the WHOLE site under one design system: dark theme, one Header, one Footer, one mobile CTA bar, one set of primitives, Manrope + Inter + Bricolage Grotesque only, tokens as CSS variables. There is NO "old chrome" route group and no second set of fonts. Delete every old component and stylesheet the new design replaces (HomeLanding, HeroHome, Scrollytelling, FourPMedicine, ProblemSection, TestimonialCarousel, PricingCards, home.css, unused ui primitives, ...) so no dead code remains.',
+    'KEEP only what is functional or legally required: every URL, identical, trailing slash included; the TEXT of /privacy and /terms; /delete-account behaviour (the form and the endpoint it posts to); /auth/callback forwarding into checkapp://auth/callback with query and hash; /download and the APK flow; the blog engine (MDX in content/blog, src/lib/blog.ts, its RSS/sitemap hooks); the lead form and its webhook; analytics (PostHog, Vercel) with cookie consent; next-sitemap and robots; SEO metadata and JSON-LD (rewrite them more cleanly if you can).',
     'Output:',
     '- dependencies to add (each with the reason and an estimated gz size). Prefer none or tiny. No dependency without a reason.',
     '- sectionSlugRenames for any provisional slug in scripts/qa/figma-sections.json that the Brief named better (the foundation task will update that file).',
-    '- tasks: ONE "foundation" task (deps, tokens as CSS variables, layout shell, page.tsx composing every section with placeholders, the lazy ExperienceCanvas engine following the playbook contract: capability probe, tiers, pause off-screen/hidden, context loss, pixel cap, dynamic resolution, poster/fallback, reduced motion) and ONE "section" task per section. Every task lists `owns`: the exact files/dirs it may create or edit. Ownership must be DISJOINT across tasks: no file may be owned twice. Section tasks may only import from foundation outputs. Each section task also owns its own asset directory under public/ (for example public/landing/<slug>/).',
+    '- tasks: ONE "foundation" task (deps, tokens as CSS variables, layout shell, page.tsx composing every section with placeholders, the lazy ExperienceCanvas engine following the playbook contract: capability probe, tiers, pause off-screen/hidden, context loss, pixel cap, dynamic resolution, poster/fallback, reduced motion) and ONE "section" task per landing section, plus "page" tasks that refactor every other route onto the new primitives and shell (group them sensibly, for example blog, how-it-works+features+about, contact+download+delete-account, legal; each owns its route files and the components only it uses). Every task lists `owns`: the exact files/dirs it may create or edit. Ownership must be DISJOINT across tasks: no file may be owned twice. Section tasks may only import from foundation outputs. Each section task also owns its own asset directory under public/ (for example public/landing/<slug>/).',
     '- lazyBoundary: exactly where the dynamic import() sits and why that keeps WebGL out of the initial bundle and out of LCP.',
     '- contracts: the props/attributes shared between foundation and sections (e.g. the hook sections use to register a light, the data-attributes).',
     'Do not write product code.',
@@ -322,78 +321,20 @@ if (STOP_AFTER === 'architecture') return { stoppedAfter: 'architecture', specs,
 
 /* ============================================================ 4. LOGO === */
 phase('لوگو')
-log('لوگو از روی ماسکوت DiDi: سه مفهوم موازی، سه داور، سپس کیت برند')
+log('لوگو: مستر سه‌بعدی DiDi (ساخته‌شده با Gemini) است؛ اینجا فقط کیت برند از روی آن تولید می‌شود، طراحی مجدد در کار نیست')
 
-const LOGO_ANGLES = [
-  { key: 'silhouette', brief: 'SILHOUETTE: DiDi\'s hooded head plus the sprout as ONE bold glyph, no inner detail beyond what survives at 16 px. Think app-icon-level simplicity.' },
-  { key: 'face-tile', brief: 'FACE TILE: the rounded-square tile the Figma already uses (vertical gradient #518747 to #40783C) with a simplified DiDi face and sprout in white, refined and made crisp at small sizes.' },
-  { key: 'monogram', brief: 'MONOGRAM: a "C" whose opening is the hood and whose counter holds the sprout leaf, so it reads as CheckApp first and DiDi second.' },
-]
-
-const logoConcepts = (
-  await parallel(
-    LOGO_ANGLES.map((a) => () =>
-      agent(
-        [
-          COMMON,
-          `\nDesign a logo MARK for CheckApp, derived from its mascot DiDi (a white hooded doctor with a sprout on its head). Angle: ${a.brief}`,
-          'Reference: in Figma load the figma:figma-design-to-code skill and the Figma tools, then read the existing header logo vector (node 2601:12599) and the footer logo tile (node 2601:12670), and look at the mascot art on the hero phone (node 2601:12438) and in section 2601:12989. Save reference PNGs under .qa/brand/ref/.',
-          'Brand colours: #48CB3B, #41773C, #276221, gradient #518747 to #40783C, white, near-black #000. The wordmark is Bricolage Grotesque Bold and is NOT part of the mark.',
-          'Constraints: hand-authored vector SVG, viewBox 0 0 64 64, at most 12 paths, no raster, no filters, readable at 16x16 on both #000 and white, a single-colour version must also work, include <title>. It must read as DiDi (not a generic leaf), feel premium on a dark page, and be distinctive from the sprout-leaf cliche.',
-          `Write it to ${SITE}/.qa/brand/${a.key}/mark.svg. Then PROVE it holds up: write a small Node script (playwright-core with channel "chrome" is installed) that renders the SVG at 16, 24, 32, 64 and 512 px on #000 and on #fff into PNGs, LOOK at them with the Read tool, and iterate until the 16 px version is clearly recognisable. Do not touch anything outside ${SITE}/.qa/brand/.`,
-          'Return the final SVG source in `svg`, its path in svgPath, and what you changed to make it survive small sizes.',
-        ].join('\n'),
-        { label: `لوگو · ${a.key}`, phase: 'لوگو', schema: LOGO },
-      ),
-    ),
-  )
-).filter(Boolean)
-
-if (!logoConcepts.length) throw new Error('هیچ مفهوم لوگویی تولید نشد')
-
-const LOGO_LENSES = [
-  'RECOGNITION: which mark survives 16x16 and 24x24 best (favicon test), is the most distinctive, and reads in a second?',
-  'MASCOT AND BRAND FIT: which mark clearly comes from DiDi and the Figma look, feels premium on a dark page, and avoids the generic leaf-logo cliche?',
-  'PRODUCTION: which is the cleanest vector (few paths, correct geometry), has a convincing single-colour version, keeps contrast on dark and light, and fits a maskable-icon safe zone?',
-]
-const logoJudgments = (
-  await parallel(
-    LOGO_LENSES.map((lens, i) => () =>
-      agent(
-        [
-          COMMON,
-          `\nYou are logo judge ${i + 1} of 3. Lens: ${lens}`,
-          `CONCEPTS: ${JSON.stringify(logoConcepts)}`,
-          `Open each concept's rendered PNGs under ${SITE}/.qa/brand/<key>/ (re-render with your own script if they are missing) and LOOK at them. Score 1-10 through your lens only, with a concrete reason; name any dealbreaker.`,
-        ].join('\n'),
-        { label: `داور لوگو ${i + 1}`, phase: 'لوگو', schema: SCORES },
-      ),
-    ),
-  )
-).filter(Boolean)
-
-const logoChoice = await agent(
-  [
-    COMMON,
-    '\nChoose the final logo. Start from the best-judged concept (dealbreakers weigh heavily), refine it, and graft strengths from the others only if they improve small-size legibility.',
-    `CONCEPTS: ${JSON.stringify(logoConcepts)}`,
-    `JUDGMENTS: ${JSON.stringify(logoJudgments)}`,
-    `Write the result to ${SITE}/.qa/brand/final/mark.svg, re-render it at 16/24/32/64/512 on black and white and LOOK at the PNGs before returning. Return it in the same schema.`,
-  ].join('\n'),
-  { label: 'انتخاب لوگو', phase: 'لوگو', schema: LOGO, effort: 'high' },
-)
-
+// Taste is the owner's, not an agent's: the logo is the 3D DiDi icon in public/brand/source (docs/brand-provenance.md).
 const kit = await agent(
   [
     COMMON,
-    '\nYou are the brand-kit producer. Turn the chosen logo into production assets and a component, and wire the Next metadata icons. Nothing else.',
-    `CHOSEN LOGO: ${JSON.stringify(logoChoice)}`,
-    `You may write ONLY: public/brand/**, scripts/brand/**, docs/brand.md, src/components/brand/**, src/app/icon.*, src/app/apple-icon.*, src/app/favicon.ico, and scripts/generate-og-image.js. Do not edit anything else under src/.`,
-    'Produce: public/brand/mark.svg (colour), mark-mono.svg (currentColor), mark-tile.svg (mark on the green rounded tile); PNG exports with sharp: icon-16/32/48/180/192/512.png and maskable-512.png (mark inside the 80% safe zone); src/app/icon.svg, src/app/apple-icon.png (180), src/app/favicon.ico (an ICO whose entries are the 16/32/48 PNGs; write a tiny Node writer in scripts/brand/), replacing the old src/app/icon.png and favicon.ico.',
-    'Components: src/components/brand/LogoMark.tsx (server component, inline SVG, props size / mono / title; decorative => aria-hidden, otherwise role="img" with a <title>) and Lockup.tsx (LogoMark + "CheckApp" in Bricolage Grotesque via the existing --font-bricolage variable).',
-    'OG image: update scripts/generate-og-image.js to compose the new mark and the headline, run `npm run og:generate`, and verify the output is exactly 1200x630 (sharp metadata) and where the site expects it.',
-    'docs/brand.md: the mark and its variants, minimum size (16 px), clear space, what not to do, and a manifest table of every asset with where it is used (metadata icons, web-manifest icons, JSON-LD logo, OG, header, footer).',
-    'Verify: render previews of every PNG, check every dimension with sharp, run `npx tsc --noEmit`. Commit: feat(brand): DiDi-derived logo mark and brand kit.',
+    '\nYou are the brand-kit producer. The logo is DECIDED: the 3D DiDi icon. Do not redesign, redraw, re-render or "improve" it. Derive production assets from the masters and write the component. Nothing else.',
+    'Masters (read docs/brand-provenance.md first): public/brand/source/didi-icon-master.png (1024x1024, green gradient to every edge, no rounded corners) and didi-full-body.png (large brand moments only).',
+    `You may write ONLY: public/brand/**, scripts/brand/**, docs/brand.md, src/components/brand/**, src/app/icon.*, src/app/apple-icon.*, src/app/favicon.ico, scripts/generate-og-image.js. Do not edit the masters. Do not edit anything else under src/.`,
+    'Produce with sharp (already installed): (1) the rounded tile: the master cut with a rounded-square mask, corner radius 22.4 % of the side, in 40/64/96/128/256/512 px as AVIF + WebP + PNG fallback, lanczos3, a light sharpen at <= 64 px; (2) full-bleed squares: icon-16/32/48/180/192/512.png, maskable-512.png (the face and sprout must sit inside the central 80 % safe zone: if the master is too tight, extend the gradient background to make room rather than shrinking the character below recognisability, and say what you did); (3) src/app/apple-icon.png (180, full-bleed), src/app/icon.png (512), src/app/favicon.ico (an ICO whose entries are 16/32/48 PNGs, written with a tiny Node writer in scripts/brand/), replacing the old ones; (4) a web manifest icon list; (5) the OG image 1200x630: the master placed on the right of a dark #07130c canvas with the headline on the left in Manrope/Bricolage via the existing script scripts/generate-og-image.js (update it, run `npm run og:generate`, verify exactly 1200x630 and where the site expects it).',
+    'Check small sizes honestly: render 16/32/48 on white and on #07130c and LOOK at them with the Read tool. If 16 px is mush, apply a stronger unsharp mask ONLY for 16 px and re-check; never alter the artwork itself.',
+    'Component: src/components/brand/LogoMark.tsx (server component, <picture> with the AVIF/WebP/PNG tile, explicit width/height, alt "" when decorative or "CheckApp" when it stands alone, props size/decorative/priority) and Lockup.tsx (LogoMark + "CheckApp" in Bricolage Grotesque Bold via the existing --font-bricolage variable). No second logo anywhere.',
+    'docs/brand.md: the tile and full-bleed variants, minimum sizes (16 px favicon only; 28 px in the UI), clear space, what not to do (no recolouring, no stretching, no shadow added), and a manifest table of every asset with where it is used (metadata icons, manifest icons, JSON-LD logo, OG, header, footer).',
+    'Verify: every PNG/AVIF/WebP dimension with sharp metadata, `npx tsc --noEmit`. Commit: feat(brand): DiDi 3D logo kit from the master art.',
   ].join('\n'),
   { label: 'کیت برند', phase: 'لوگو', schema: DONE, effort: 'high' },
 )
@@ -425,8 +366,8 @@ log(`پایه آماده: ${foundation.summary}`)
 
 /* ============================================================ 6. BUILD === */
 phase('ساخت')
-const sectionTasks = arch.tasks.filter((t) => t.kind === 'section')
-log(`ساخت ${sectionTasks.length} سکشن به‌صورت موازی؛ هر ایجنت فقط فایل‌های خودش را می‌نویسد`)
+const sectionTasks = arch.tasks.filter((t) => t.kind === 'section' || t.kind === 'page')
+log(`ساخت ${sectionTasks.length} تسک (سکشن‌های لندینگ + صفحه‌های بازسازی‌شده) به‌صورت موازی؛ هر ایجنت فقط فایل‌های خودش را می‌نویسد`)
 
 const built = (
   await pipeline(sectionTasks, (t) => {
@@ -437,7 +378,7 @@ const built = (
         COMMON,
         GATE_RULES,
         CONTENT_RULES,
-        `\nYou build ONE section: "${t.slug}". Other agents are building the other sections at the same time in the same working tree.`,
+        `\nYou build ONE ${t.kind === 'page' ? 'page group (refactor it onto the new shell and primitives; delete what it no longer uses)' : 'landing section'}: "${t.slug ?? t.id}". Other agents are building the other tasks at the same time in the same working tree.`,
         `TASK: ${JSON.stringify(t)}`,
         `SPEC: ${JSON.stringify(spec)}`,
         `EXPERIENCE PLAN FOR THIS SECTION: ${JSON.stringify(plan)}`,
@@ -648,6 +589,6 @@ return {
   openFindings: lastVerified,
   critic,
   plan: { angle: finalPlan.angle, stack: finalPlan.stack },
-  logo: logoChoice ? { concept: logoChoice.concept, rationale: logoChoice.rationale } : null,
+  logo: kit ? { summary: kit.summary, files: kit.filesTouched } : null,
   note: green ? 'گیت قطعی روی ماتریس کامل سبز شد و هیچ blocker بصری تأییدشده‌ای نماند.' : 'سبز نشد: خروجی را تأیید نکنید؛ gate و openFindings را ببینید.',
 }
