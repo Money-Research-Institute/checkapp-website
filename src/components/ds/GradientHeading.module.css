@@ -1,0 +1,60 @@
+.heading {
+  margin: 0;
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-align: center;
+  text-wrap: balance;
+}
+.hero {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
+  letter-spacing: var(--ls-h1);
+}
+.section {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--ls-h2);
+}
+.sub {
+  font-size: var(--fs-h3);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.faq {
+  font-size: clamp(2rem, 1.2rem + 2.8vw, 3.3125rem);
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-align: left;
+}
+.left {
+  text-align: left;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .heading {
+    background-image: linear-gradient(90deg, rgb(255 255 255 / 0.6) 0%, #fff 50%, rgb(255 255 255 / 0.6) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .faq {
+    background-image: linear-gradient(100.15deg, #fff 28.966%, rgb(255 255 255 / 0.5) 105.67%);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .heading {
+    background-image: none;
+    -webkit-text-fill-color: var(--c-fg);
+    color: var(--c-fg);
+  }
+}
+@media (forced-colors: active) {
+  .heading {
+    background-image: none;
+    -webkit-text-fill-color: CanvasText;
+    color: CanvasText;
+  }
+}

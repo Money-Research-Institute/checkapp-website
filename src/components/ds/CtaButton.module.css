@@ -1,0 +1,109 @@
+.cta {
+  --cta-rise: 4px;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  overflow: hidden; /* clips the light ellipse to the pill */
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-pill);
+  background-color: var(--cta-bg);
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.deep {
+  --cta-bg: var(--c-brand-deep);
+}
+.brand {
+  --cta-bg: var(--c-brand);
+}
+
+.nav {
+  height: 56px;
+  padding: 0 20px;
+}
+.lg {
+  height: 60px;
+  min-width: 220px;
+  padding: 0 24px;
+}
+.bar {
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+}
+
+/* Bottom rim light: a 157 x 33 white ellipse, blurred 25px, centred, with its top 49px down a 60px pill. */
+.light {
+  position: absolute;
+  z-index: -1;
+  left: calc(50% + 1.5px);
+  top: 49px;
+  width: 157px;
+  height: 33px;
+  border-radius: 50%;
+  background: #fff;
+  filter: blur(25px);
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  transition: transform var(--dur-base) var(--ease-out-expo);
+}
+.nav .light,
+.bar .light {
+  top: 45px; /* same proportion on the 56px pills */
+}
+
+.arrow {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .cta:hover {
+    background-color: color-mix(in srgb, var(--cta-bg), #fff 9%);
+  }
+  .cta:hover .light {
+    transform: translate(-50%, calc(var(--cta-rise) * -1));
+  }
+}
+.cta:focus-visible .light {
+  transform: translate(-50%, calc(var(--cta-rise) * -1));
+}
+.cta:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta,
+  .light {
+    transition: none;
+  }
+  .cta:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .cta {
+    border-color: ButtonText;
+  }
+  .light {
+    display: none;
+  }
+}
