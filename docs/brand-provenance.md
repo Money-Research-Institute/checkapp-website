@@ -10,7 +10,7 @@
 
 **Made with** Google Gemini (image generation, "Create images", Nano Banana 2) on 2026-10-22, from two reference images exported from the Figma
 landing design (`FSJqiLATooQsiMWs9OISQW`): the hero crop of DiDi waving (node `2601:12438`) and "DiDi on a cloud" (node `2601:13022`).
-DiDi, the white hooded sprout-doctor, is the project's mascot (docs/landing-decisions.md D3); the alien is retired.
+DiDi, the white hooded sprout-doctor, is the project's mascot (docs/landing.md D3); the alien is retired.
 
 Prompts, in order (same chat, so each builds on the previous result):
 

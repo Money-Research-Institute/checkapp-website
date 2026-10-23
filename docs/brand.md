@@ -1,6 +1,6 @@
 # Brand kit
 
-The logo is the **3D DiDi icon** (decided in `docs/landing-decisions.md` D7, provenance in `docs/brand-provenance.md`).
+The logo is the **3D DiDi icon** (decided in `docs/landing.md` D7, provenance in `docs/brand-provenance.md`).
 Every file below is derived from `public/brand/source/didi-icon-master.png` by `scripts/brand/build-brand-kit.mjs`.
 Nothing is redrawn, recoloured or re-rendered. Regenerate with:
 
@@ -103,6 +103,6 @@ Status says whether the place already points at the kit. Everything below is wir
 
 ## Open Graph image
 
-`scripts/generate-og-image.js` draws the master (rounded 22.4 %) on the right of a `#07130c` canvas and the wordmark in Bricolage Grotesque and the headline and sub-line in Manrope (docs/landing-decisions.md D4; no health claims are baked into the raster, D1). The fonts are
+`scripts/generate-og-image.js` draws the master (rounded 22.4 %) on the right of a `#07130c` canvas and the wordmark in Bricolage Grotesque and the headline and sub-line in Manrope (docs/landing.md D4; no health claims are baked into the raster, D1). The fonts are
 committed as `scripts/brand/fonts/*.woff2` (latin subsets, SIL OFL, taken from the Next font build) so the script does not depend on `.next/`. It renders with headless Chrome (`playwright-core`, `channel: 'chrome'`,
-the same as the QA gate) and refuses to write anything that is not exactly 1200 x 630.
+the same browser as `npm run qa`) and refuses to write anything that is not exactly 1200 x 630.
