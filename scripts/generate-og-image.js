@@ -5,7 +5,7 @@
  * The DiDi master icon sits on the right of a dark #07130c canvas. Fonts follow docs/landing.md D4: the
  * wordmark is Bricolage Grotesque, everything else Manrope (shipped as scripts/brand/fonts/*.woff2, Latin and Cyrillic, so
  * this never depends on a build output). The wordmark is "checkapp", lower case, as the client spells it. No health claims
- * are baked in (D1): the gate cannot scan raster text. The master is only placed and rounded (22.4 % corners), never
+ * are baked in (D1): the claims scan cannot read raster text. The master is only placed and rounded (22.4 % corners), never
  * redrawn or recoloured.
  *
  * The Russian headline is the client's own hero headline, read from src/content/copy/ru.ts (never retyped); the line under
@@ -13,7 +13,7 @@
  *
  *   npm run og:generate
  *
- * Rendered with headless Chrome (playwright-core, the same `channel: 'chrome'` the QA gate uses).
+ * Rendered with headless Chrome (playwright-core, the same `channel: 'chrome'` `npm run qa` uses).
  */
 /* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');

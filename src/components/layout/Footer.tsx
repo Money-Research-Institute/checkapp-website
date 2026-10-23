@@ -210,7 +210,7 @@ export function Footer({ locale, region }: { locale: Locale; region?: Region }) 
         <div className={styles.meta}>
           {region ? <RegionSwitcher current={region} dict={dict} /> : null}
 
-          {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
+          {/* D1: regulatory wording survives the redesign. Exempt from the claims scan (scripts/qa/claims.mjs) by data-disclaimer. */}
           <p data-disclaimer className={styles.note}>
             {disclaimer}
           </p>

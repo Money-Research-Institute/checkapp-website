@@ -131,7 +131,7 @@
   top: 12px;
 }
 
-/* 44 x 44 minimum touch targets (WCAG 2.5.8 + the gate). `tap` sizes the element; `tap-y` only its height. */
+/* 44 x 44 minimum touch targets (WCAG 2.5.8). `tap` sizes the element; `tap-y` only its height. */
 @utility tap {
   min-width: var(--tap);
   min-height: var(--tap);

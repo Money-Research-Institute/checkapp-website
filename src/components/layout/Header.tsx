@@ -33,7 +33,7 @@ const OWN_CTA = '[data-hides-cta-bar]';
  * The one header for the whole site. Fixed, transparent over the hero, glass once the page scrolls.
  * md and up: logo + wordmark, the nav links, a 56px "Download Now" pill. Below md: logo and a 44px hamburger that opens
  * a full-screen menu. In Russian the full bar needs 1024px, so from 768 to 1023 it shows the logo, the pill and the burger.
- * The logo never shrinks or drops out to make room. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
+ * The logo never shrinks or drops out to make room. `<nav data-critical="nav">` is visible at every width (a QA sweep hit-tests it).
  * No animation library: the menu is a state flag and CSS; the glass fades with CSS transitions.
  *
  * Landscape phones (<= 500px tall) get a compact bar (see the CSS): the same 16px edge as the page, 48px high, and no download

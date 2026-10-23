@@ -80,8 +80,19 @@
   }
   .hero .title {
     text-align: start;
+    font-size: clamp(2.25rem, 0.6rem + 4vw, 4rem); /* 46 at 900, 51 at 1024, 64 from 1360: the CTA stays in the first view */
   }
   .phone {
     width: min(100%, 380px);
+  }
+}
+
+/* A phone on its side has about 300px under the header: tighter type and gaps, so the CTA is as close to the fold as the copy allows. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .copy {
+    gap: 12px;
+  }
+  .hero .title {
+    font-size: clamp(1.5rem, 8svh, 2.25rem);
   }
 }

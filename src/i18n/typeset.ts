@@ -17,7 +17,7 @@
  * U+00A0 itself, and must not retype a string to get it.
  *
  * Only plain spaces become no-break spaces: nothing is added, removed or reworded, so the text reads, copies and searches the
- * same (`\s` matches U+00A0, which the gate's claim patterns rely on). Every step is idempotent: a second run finds no plain space
+ * same (`\s` matches U+00A0, which the claims patterns (scripts/qa/claims.mjs) rely on). Every step is idempotent: a second run finds no plain space
  * in the places the first one fixed. Metadata and JSON-LD turn the no-break spaces back into plain ones (`plain`, below).
  */
 const NBSP = '\u00A0';
