@@ -445,6 +445,7 @@
      or the loop would jump. Written to out-rank the positional rules above, which only know the first copy. A card flagged
      needsReplacement (a crypto-template quote) does not travel at all: the still wall above keeps it, dimmed, as the design has it. */
   :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall .col:nth-child(n) .set:is(:first-child, [data-clone]) > .card {
+    order: 0; /* the phone layout's slot order must not reshuffle the ring */
     --rest: 1;
     min-height: var(--min-h);
     transition: opacity var(--dur-slow) var(--ease-out);

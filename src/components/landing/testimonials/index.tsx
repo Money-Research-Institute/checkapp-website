@@ -29,6 +29,8 @@ const COLUMNS = 3;
 const PER_COLUMN = 2;
 /** The Figma card heights by slot (column, row), px. The date sits on margin-top:auto, so these only set the rhythm. */
 const SLOT_HEIGHTS: readonly (readonly number[])[] = [[294, 267], [236, 258], [294, 294]];
+/** Heights for the extra cards, which have no slot in the design: the design's own range, in an order that varies down a column. */
+const EXTRA_HEIGHTS: readonly number[] = [258, 236, 267, 294, 248, 276, 240];
 
 /** Regions that show no wall: the six quotes are English placeholders (docs/landing-copy.md H4), so /ru/ has none. */
 const WITHOUT_TESTIMONIALS: readonly Region[] = ['ru'];
@@ -94,9 +96,19 @@ export function TestimonialsSection({ region }: SectionProps) {
   if (WITHOUT_TESTIMONIALS.includes(region) || !testimonials.length) return null;
   const { eyebrow, title, lede } = copy.en;
   const columns = arrange(testimonials);
-  const slots = columns.map((column, c) => column.map((t, r) => ({ t, minH: SLOT_HEIGHTS[c]?.[r] ?? 270 })));
-  // Column c's ring starts with its own cards, so the first frame is the Figma wall; the others follow in turn.
-  const rings = slots.map((_, c) => [...slots.slice(c), ...slots.slice(0, c)].flat());
+  // The moving wall needs more than the six of the design: every column carries one ring of ALL the benign quotes, and the three rings
+  // start a third of a lap apart, so no quote is on screen twice at once and no two neighbours show the same one. The lap is the
+  // design's pair for a column, then that column's share of the extras (src/content/testimonials.ts, entries 7 and on), then the next
+  // column's pair. Column c's ring is the same lap started at its own pair, so its first two cards are the still wall.
+  const extras = testimonials.slice(COLUMNS * PER_COLUMN);
+  const per = Math.floor(extras.length / COLUMNS);
+  const share = (c: number) => extras.slice(c * per, c === COLUMNS - 1 ? undefined : (c + 1) * per);
+  const lap = columns.flatMap((column, c) => [
+    ...column.map((t, r) => ({ t, minH: SLOT_HEIGHTS[c]?.[r] ?? 270 })),
+    ...share(c).map((t, i) => ({ t, minH: EXTRA_HEIGHTS[(c * 3 + i) % EXTRA_HEIGHTS.length] })),
+  ]);
+  const starts = columns.map((_, c) => columns.slice(0, c).reduce((n, column, k) => n + column.length + share(k).length, 0));
+  const rings = starts.map((start) => [...lap.slice(start), ...lap.slice(0, start)]);
   const litId = columns[1]?.[0]?.id;
 
   return (

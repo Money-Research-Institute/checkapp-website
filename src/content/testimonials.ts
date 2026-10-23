@@ -12,8 +12,15 @@
  * To replace one with a real, consented testimonial: overwrite the entry, set `placeholder: false` (the figure then carries
  * data-verified="true"), and drop `needsReplacement` and `replaceReason`. Do not add Review / AggregateRating JSON-LD for these.
  *
+ * Entries 7 and on are NOT from the design. The moving wall (D12) needs at least nine different quotes so that no quote shows twice
+ * at once, and the design has five usable ones, so seven more were WRITTEN to fill it. They are invented, the people do not exist,
+ * their avatars are initials (not photos of real people), and they say only what the app does today. They are placeholders in the
+ * same sense as the first six and carry the same flag, and they must all be replaced by real, consented testimonials before launch:
+ * a made-up endorsement shown as real is a deceptive practice under consumer-protection law (the US FTC fake-review rule, the EU
+ * unfair-commercial-practices directive). The wall marks every one of them data-verified="false" and the gate warns on each run.
+ *
  * Order matters: it is the Figma card order, column by column. The wall takes them two per column, so cards 1-2 are the left
- * column, 3-4 the centre and 5-6 the right (Alex, Emily | Sofia, Ryan | Daniel, Liam).
+ * column, 3-4 the centre and 5-6 the right (Alex, Emily | Sofia, Ryan | Daniel, Liam). The seven after those are the extras, in the order the moving wall hands them out.
  *
  * `needsReplacement` entries are a known liability, so the wall never gives them a full-brightness slot: where one would sit on
  * top of a column it swaps places with the card under it, it is always dimmed to the faded "teaser" tone, and a phone drops it.
@@ -120,6 +127,76 @@ export const testimonials: readonly Testimonial[] = [
     isoDate: '2026-02-02',
     date: 'Feb 2, 2026',
     avatar: `${AVATAR}-liam`,
+    placeholder: true,
+  },
+  {
+    id: 'priya-nair',
+    name: 'Priya Nair',
+    role: 'Product Manager',
+    quote: 'It takes ten seconds. I take the photo with my coffee, DiDi tells me what it noticed, and that is the whole routine.',
+    isoDate: '2026-01-14',
+    date: 'Jan 14, 2026',
+    avatar: `${AVATAR}-priya`,
+    placeholder: true,
+  },
+  {
+    id: 'marcus-bell',
+    name: 'Marcus Bell',
+    role: 'High-school teacher',
+    quote: 'I like that it never pushes. I scan when I feel like it, and nothing nags me for the rest of the day.',
+    isoDate: '2026-01-16',
+    date: 'Jan 16, 2026',
+    avatar: `${AVATAR}-marcus`,
+    placeholder: true,
+  },
+  {
+    id: 'hannah-fischer',
+    name: 'Hannah Fischer',
+    role: 'Graphic designer',
+    quote: 'I asked myself if it was spying on me. It is not: nothing happens until I take a photo, and I can delete my data whenever I want.',
+    isoDate: '2026-01-19',
+    date: 'Jan 19, 2026',
+    avatar: `${AVATAR}-hannah`,
+    placeholder: true,
+  },
+  {
+    id: 'omar-haddad',
+    name: 'Omar Haddad',
+    role: 'Logistics coordinator',
+    quote: 'The small nudges are the best part. Drink some water, stretch a bit. Small enough that I actually do them.',
+    isoDate: '2026-01-21',
+    date: 'Jan 21, 2026',
+    avatar: `${AVATAR}-omar`,
+    placeholder: true,
+  },
+  {
+    id: 'chloe-dubois',
+    name: 'Chloe Dubois',
+    role: 'Graduate student',
+    quote: 'Streaks in other apps made me feel guilty after a missed day. DiDi is kind about it, so I come back the next morning.',
+    isoDate: '2026-01-24',
+    date: 'Jan 24, 2026',
+    avatar: `${AVATAR}-chloe`,
+    placeholder: true,
+  },
+  {
+    id: 'yuki-tanaka',
+    name: 'Yuki Tanaka',
+    role: 'Freelance photographer',
+    quote: 'The photo scan feels almost playful. I did not expect to enjoy a health app, but here I am, opening it every day.',
+    isoDate: '2026-01-29',
+    date: 'Jan 29, 2026',
+    avatar: `${AVATAR}-yuki`,
+    placeholder: true,
+  },
+  {
+    id: 'lucas-almeida',
+    name: 'Lucas Almeida',
+    role: 'Remote developer',
+    quote: 'No dashboards, no charts to decode. Just a short note in plain words. That is why I keep opening it.',
+    isoDate: '2026-02-04',
+    date: 'Feb 4, 2026',
+    avatar: `${AVATAR}-lucas`,
     placeholder: true,
   },
 ];
