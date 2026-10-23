@@ -5,9 +5,9 @@
  *   node scripts/check-lang-fonts.mjs
  *
  * What it asserts (docs/landing-copy.md, "Regions are pages"):
- *  - <html lang="ru"> on /ru/, <html lang="en"> on every other page, the 404 included.
+ *  - <html lang="ru"> on /ru/ and /ru/download/, <html lang="en"> on every other page, the 404 included.
  *  - No English page preloads a Cyrillic font file, and none links a stylesheet that declares the Cyrillic faces twice.
- *  - /ru/ preloads the Cyrillic Manrope file, with the same `font-display: swap` and a "Manrope Fallback" as the English pages.
+ *  - every Russian page preloads the Cyrillic Manrope file, with the same `font-display: swap` and a "Manrope Fallback" as the English pages.
  *
  * It reads the built HTML and CSS only (no browser). It depends on `experimental.cssChunking: 'graph'` in next.config.ts: with the
  * default chunking, Turbopack merges the font CSS of both root layouts into every page. Exit code 1 on any failure.
@@ -44,7 +44,7 @@ for (const file of htmlFiles(OUT)) {
   if (!/<html[\s>]/.test(html)) continue;
   pages += 1;
 
-  const isRu = page === '/ru/';
+  const isRu = page === '/ru/' || page.startsWith('/ru/'); // the landing page and its Russian download page
   const lang = /<html[^>]*\slang="([^"]*)"/.exec(html)?.[1];
   if (lang !== (isRu ? 'ru' : 'en')) fail(page, `<html lang="${lang}"> but the page is ${isRu ? 'ru' : 'en'}`);
 

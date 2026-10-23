@@ -70,9 +70,27 @@ function landingAlternateRefs(siteUrl) {
   ];
 }
 
+/**
+ * The download page exists in English and Russian. The pair lists each other, so the sitemap says the same as the
+ * <link rel="alternate"> tags in the page head (src/app/(en)/(pages)/download/page.tsx and src/app/(ru)/ru/download/page.tsx).
+ */
+const DOWNLOAD_PAGES = [
+  { path: '/download/', hreflang: 'en' },
+  { path: '/ru/download/', hreflang: 'ru' },
+];
+
+function downloadAlternateRefs(siteUrl) {
+  const origin = siteUrl.replace(/\/$/, '');
+  return [
+    { href: `${origin}/download/`, hreflang: 'x-default', hrefIsAbsolute: true },
+    ...DOWNLOAD_PAGES.map(({ path, hreflang }) => ({ href: `${origin}${path}`, hreflang, hrefIsAbsolute: true })),
+  ];
+}
+
 // next-sitemap hands transform() the route as the build manifest spells it ("/eu"), whatever trailingSlash says.
 const normalize = (urlPath) => `${String(urlPath).replace(/\/+$/, '')}/`;
 const isLandingPath = (urlPath) => LANDING_PAGES.some(({ path }) => path === normalize(urlPath));
+const isDownloadPath = (urlPath) => DOWNLOAD_PAGES.some(({ path }) => path === normalize(urlPath));
 
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://checkapp.today',
@@ -92,7 +110,11 @@ module.exports = {
       changefreq: config.changefreq,
       priority: landing ? 1.0 : config.priority,
       lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
-      alternateRefs: landing ? landingAlternateRefs(config.siteUrl) : (config.alternateRefs ?? []),
+      alternateRefs: landing
+        ? landingAlternateRefs(config.siteUrl)
+        : isDownloadPath(urlPath)
+          ? downloadAlternateRefs(config.siteUrl)
+          : (config.alternateRefs ?? []),
     };
   },
   additionalPaths: async () => {

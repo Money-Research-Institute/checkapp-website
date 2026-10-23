@@ -56,4 +56,31 @@ export const ru: Dict = {
     lede: 'DiDi искал везде и не нашёл её. Давай вернём тебя туда, где всё на месте.', // DRAFT
     back: 'На главную', // DRAFT
   },
+  download: {
+    metaTitle: 'Скачать checkapp для Android', // DRAFT
+    metaDescription:
+      'Скачай APK-файл checkapp для Android и начни знакомство с DiDi, цифровым другом твоего здоровья.', // DRAFT
+    breadcrumbHome: 'Главная', // DRAFT
+    breadcrumbDownload: 'Скачать', // DRAFT
+    eyebrow: 'Android',
+    title: 'Скачай checkapp', // DRAFT
+    lede: 'Прямая установка APK для Android.', // DRAFT
+    apk: 'Скачать APK', // DRAFT
+    play: 'Открыть в Google Play', // DRAFT
+    soonTitle: 'APK скоро появится', // DRAFT
+    soonText:
+      'Мы готовим рабочую сборку для Android. Страница откроет загрузку, как только файл будет опубликован. Загляни позже или напиши на', // DRAFT
+    installTitle: 'Установка на Android', // DRAFT
+    step1: { before: 'Нажми ', strong: 'Скачать APK', after: ' на этой странице (с телефона).' }, // DRAFT
+    step2: {
+      before: 'Если телефон спросит, разреши установку из этого браузера в разделе ',
+      em: 'Установка неизвестных приложений',
+      after: '.',
+    }, // DRAFT
+    step3: { before: 'Открой скачанный файл и нажми ', strong: 'Установить', after: '.' }, // DRAFT
+    step4: 'Открой checkapp и создай аккаунт.', // DRAFT
+    beforeTitle: 'Перед установкой', // DRAFT
+    androidVersion: 'Рекомендуем Android 8.0 или новее.', // DRAFT
+    playStatus: 'Страница в Google Play ещё готовится; APK здесь — официальная прямая загрузка.', // DRAFT
+  },
 };

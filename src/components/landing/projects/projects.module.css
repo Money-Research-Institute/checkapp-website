@@ -49,10 +49,7 @@
   --pj-name-lh: 1.1;
   --pj-desc-fs: 16px;
   --pj-desc-lh: 1.4;
-  --pj-h2-fs: clamp(28px, 8.6vw, 36px);
-  --pj-h2-lh: 1.25;
-  --pj-h2-box: 100%;
-  --pj-h2-boxpx: 9999px; /* the same cap in pixels, for the Russian fit below (a percentage means something else in font-size) */
+  --pj-h2-lh: 1.2; /* one value everywhere: the heading is sized by its tile (see .heading), not by a breakpoint */
   --pj-lede-fs: 16px;
   --pj-lede-lh: 1.5;
   --pj-lede-gap: 24px;
@@ -173,9 +170,24 @@
 /* ---- title tile ---- */
 
 .titleSurface {
+  justify-content: flex-start; /* the arc rises on the right, so the heading stays on the left */
   padding-inline: var(--pj-title-pad, var(--pj-surface-pad));
   border: 2px solid var(--pj-title-edge);
   background: var(--pj-title-fill);
+}
+
+/*
+ * The arc is baked into the art: at the tile's left edge it sits about a fifth of the tile's width above the bottom, at its
+ * lowest point about an eighth, and it climbs steeply on the right (the art scales with the tile's width). The heading is
+ * centred in what is left above it, so the room under the text is reserved as padding rather than hoped for: a longer
+ * heading (the Russian one takes four lines) grows the tile instead of running onto the arc. 18cqi was measured against the
+ * arc's bright stroke at every width from 280 to 2560 (the text keeps 12px or more from it); a browser without container
+ * units keeps the plain surface padding.
+ */
+@supports (width: 1cqi) {
+  .titleSurface {
+    padding-block-end: 18cqi;
+  }
 }
 
 .art {
@@ -219,12 +231,21 @@
   }
 }
 
+/*
+ * The heading is sized by its tile (cqi: the tile is the inline-size container), not by a breakpoint, because what limits it
+ * is the room above the arc and that scales with the tile. 9.6cqi is 37.9px at 1440 and 25.7px at 320, floored at 22px for a
+ * narrower tile. (Figma's shorter copy was 48px; the replacement copy is longer, and at 48px its last line sits on the arc.)
+ * A line is at most 9.6em wide, which gives English three lines ("The future / of everyday / wellness is 4P") and Russian
+ * four at every size, so the number of lines does not depend on how wide a tablet or a foldable happens to make the tile:
+ * the lines stay short enough to end before the arc rises on the right. `balance` keeps the rag even, and the non-breaking
+ * spaces in ./copy.ts keep "4P" off a line of its own.
+ */
 .heading {
   position: relative;
   z-index: 1;
-  inline-size: min(100%, var(--pj-h2-box));
+  inline-size: min(100%, 9.6em);
   margin: 0;
-  font-size: var(--pj-h2-fs);
+  font-size: clamp(26px, 8.4vw, 36px); /* a browser without container units */
   font-weight: 500;
   line-height: var(--pj-h2-lh);
   letter-spacing: -0.02em;
@@ -234,18 +255,19 @@
   overflow-wrap: break-word;
 }
 
-/*
- * Russian runs about 15-30 % longer, and its longest word ("повседневного", 7.2em at this weight and tracking) must never be
- * cut in the middle. So the Russian heading is also capped by what fits the title tile's text box: the tile's content width
- * (cqi, the tile is the inline-size container) less the surface border and padding, capped at the 351px box on a wide screen.
- * It is never larger than the size the breakpoint asks for, so at 1440 it is within a pixel of the English 48px.
- */
 @supports (width: 1cqi) {
+  .heading {
+    font-size: clamp(22px, 9.6cqi, 40px);
+  }
+
+  /*
+   * Russian runs about 15-30 % longer, and its longest word ("повседневного", 7.2em at this weight and tracking) must never be
+   * cut in the middle. So the Russian heading is also capped by what fits the title tile's text box: the tile's content width
+   * less the surface border and padding. Only a very narrow tile or a large system font ever reaches this cap; the size above
+   * is already below it everywhere else.
+   */
   .section:lang(ru) .heading {
-    font-size: min(
-      var(--pj-h2-fs),
-      calc(min(100cqi - 4px - 2 * var(--pj-title-pad, var(--pj-surface-pad)), var(--pj-h2-boxpx)) / 7.5)
-    );
+    font-size: min(clamp(22px, 9.6cqi, 40px), calc((100cqi - 4px - 2 * var(--pj-title-pad, var(--pj-surface-pad))) / 7.5));
   }
 }
 
@@ -344,7 +366,6 @@
   .section {
     --pj-tile-min: 220px;
     --pj-title-min: 220px;
-    --pj-h2-fs: clamp(32px, 5.4vw, 40px);
     --pj-surface-pad: 24px;
     --pj-detail-gap: 12px;
     --pj-gap-x: 16px;
@@ -403,8 +424,6 @@
     --pj-name-lh: 1;
     --pj-desc-fs: clamp(16px, 2.1vw, 18px);
     --pj-desc-lh: 1.4;
-    --pj-h2-fs: clamp(32px, 4.4vw, 44px);
-    --pj-h2-lh: 1.25;
     --pj-lede-fs: 17px;
     --pj-lede-gap: 28px;
     --pj-lede-measure: min(100%, 52rem);
@@ -451,8 +470,6 @@
     --pj-name-lh: 0.9375; /* 30 / 32 */
     --pj-desc-fs: clamp(16px, 1.39vw, 20px);
     --pj-desc-lh: 1.3; /* 26 / 20 */
-    --pj-h2-fs: clamp(36px, 3.33vw, 48px);
-    --pj-h2-lh: 1.396; /* 67 / 48 */
     --pj-lede-fs: clamp(16px, 1.25vw, 18px);
     --pj-lede-gap: clamp(24px, 1.94vw, 28px);
     --pj-lede-measure: min(100%, 55rem);
@@ -500,18 +517,10 @@
   }
 }
 
-/* 1440 and up: Figma's 351px title box, kept. The English heading reads "The future of / everyday / wellness is 4P", three lines
-   as in Figma (the lone "4P" of the original copy is gone, but "everyday wellness" cannot fit on one line at 48px either way, so a
-   wider box would not change the breaks); the Russian one takes four, with the longest word whole (see the :lang(ru) fit above).
-   No text-wrap: balance here: it would re-break the lines. Below 1440 the heading balances. */
+/* 1440 and up: Figma's 18px inset for the title tile's text (the surface padding is 22px here). */
 @media (min-width: 1440px) {
   .section {
-    --pj-h2-box: 351px;
-    --pj-h2-boxpx: 351px;
     --pj-title-pad: 18px;
-  }
-  .heading {
-    text-wrap: wrap;
   }
 }
 

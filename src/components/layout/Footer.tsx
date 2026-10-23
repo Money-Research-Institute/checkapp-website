@@ -27,7 +27,8 @@
  * Regions and languages (docs/landing-copy.md): the footer is the same component on every route, in the page's language
  * (src/i18n). On a landing page it also carries the region switcher, real links to the four landing pages (each label in its
  * own language, hreflang on each, the current one aria-current="page"). The Russian page links to pages that exist in
- * English only (privacy, terms, blog, ...): those links say so with hreflang="en" and a spoken "page in English".
+ * English only (privacy, terms, blog, ...): those links say so with a visible "EN" tag, hreflang="en" and a spoken "page in
+ * English". "How it works" goes to its section of the Russian landing page instead (`shellLink`).
  *
  * The three link groups are <nav>s labelled by their visible headings; the duplicate legal links in the bottom bar are
  * hidden (display: none, so out of the accessibility tree too) on phones, where they would only repeat the Company column.
@@ -49,6 +50,7 @@ import {
 } from '@/content/copy';
 import { fill, getDict, type Dict } from '@/i18n';
 import { SITE_NAME, SOCIAL_LINKS } from '@/lib/constants';
+import { shellLink } from '@/lib/paths';
 import styles from './footer/footer.module.css';
 import { COMPANY_LINKS, CONNECT_LINKS, LEGAL_LINKS, PRODUCT_LINKS, type FooterLinkItem } from './footer/links';
 
@@ -62,8 +64,8 @@ const SAFE_GUTTER: CSSProperties = {
 
 type LinkContext = {
   dict: Dict['footer'];
-  /** The page is not in English, but the link's target is. */
-  englishTarget: boolean;
+  /** The page's language: on a Russian page a link to a page that exists in English only is marked "EN" (see `shellLink`). */
+  locale: Locale;
 };
 
 function FooterLink({ item, className, ctx }: { item: FooterLinkItem; className: string; ctx: LinkContext }) {
@@ -83,10 +85,18 @@ function FooterLink({ item, className, ctx }: { item: FooterLinkItem; className:
       </a>
     );
   }
+  const target = shellLink(item.href, ctx.locale);
   return (
-    <Link href={item.href} className={className} hrefLang={ctx.englishTarget ? 'en' : undefined}>
+    <Link href={target.href} prefetch={item.prefetch} className={className} hrefLang={target.english ? 'en' : undefined}>
       {label}
-      {ctx.englishTarget ? <span className={styles.sr}> ({ctx.dict.pageInEnglish})</span> : null}
+      {target.english ? (
+        <>
+          <span className={styles.lang} aria-hidden="true">
+            EN
+          </span>
+          <span className={styles.sr}> ({ctx.dict.pageInEnglish})</span>
+        </>
+      ) : null}
     </Link>
   );
 }
@@ -148,7 +158,7 @@ function RegionSwitcher({ current, dict }: { current: Region; dict: Dict['footer
 
 export function Footer({ locale, region }: { locale: Locale; region?: Region }) {
   const dict = getDict(locale).footer;
-  const ctx: LinkContext = { dict, englishTarget: locale !== 'en' };
+  const ctx: LinkContext = { dict, locale };
   // The client's disclaimer for the page's region. Pages that are not a landing page take the one of their language.
   const disclaimer = getRegionCopy(region ?? (locale === 'ru' ? 'ru' : 'us')).disclaimer;
 

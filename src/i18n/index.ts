@@ -1,8 +1,12 @@
 import type { Locale } from '@/content/copy';
 import { en, type Dict } from './en';
 import { ru } from './ru';
+import { typesetInPlace } from './typeset';
 
 export type { Dict } from './en';
+
+// Russian typography (a dash stays with the word before it): done once, here, so no string in ru.ts carries the invisible character.
+typesetInPlace(ru);
 
 const dictionaries: Record<Locale, Dict> = { en, ru };
 

@@ -38,8 +38,10 @@
   --c-focus: #fff;
 
   /* Type. Manrope everywhere; Inter for card UI text; Bricolage for the wordmark only (docs/landing-decisions.md D4). */
-  --fs-h1: clamp(2.25rem, 1.35rem + 3.6vw, 4rem); /* 64 at 1440 */
-  --fs-h2: clamp(1.875rem, 1.2rem + 2.6vw, 3.25rem); /* 52 */
+  /* The page's one h1 leads: on a phone it is 34 to 37px and no section h2 passes 29px, so the hero never reads as the weaker
+     heading (it was 28 to 31px against h2s of 31 to 34). Desktop is Figma's: 64 and 52 at 1440. */
+  --fs-h1: clamp(2.125rem, 1.35rem + 3.6vw, 4rem); /* 34 at 320, 36 at 390, 64 from 1280 */
+  --fs-h2: clamp(1.75rem, 1.1rem + 2.6vw, 3.25rem); /* 28 up to 430, 52 from 1230 */
   --fs-h3: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
   --fs-lede: 1.125rem; /* 18 / 27 */
   --fs-body: 1rem;
@@ -81,6 +83,13 @@
 @media (min-width: 768px) {
   :root {
     --header-h: 104px; /* 24 top + 56 bar + 24 */
+  }
+}
+/* Landscape phones: 8 top + 48 bar + 8, so the header does not take a fifth of a 390px-tall screen. Must follow the rule above.
+   The same query sits in Header.module.css and in the hero's landscape-phone layout. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-h: 64px;
   }
 }
 

@@ -86,6 +86,24 @@
 .link[aria-current="page"] {
   color: var(--c-fg);
 }
+/* "EN": a link on a Russian page whose target is an English page. The spoken cue is a sibling .sr-only span. */
+.lang {
+  flex: none;
+  margin-inline-start: 6px;
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 14px;
+  opacity: 0.75;
+}
+.panelLink .lang {
+  margin-inline-start: 10px;
+  font-size: 12px;
+  line-height: 16px;
+}
 @media (hover: hover) {
   .link:hover {
     color: var(--c-fg);
@@ -177,8 +195,8 @@
 /*
  * The bar has three shapes:
  *   < 768              logo + burger (the menu holds the links and the pill)
- *   768 to 939, ru     logo + pill + burger: the Russian labels are ~130px longer, so the links wait for 940
- *   768 up (en), 940 up (ru)   logo + links + pill
+ *   768 to 1023, ru    logo + pill + burger: the Russian labels are ~130px longer and two links carry an "EN" tag, so the links wait for 1024
+ *   768 up (en), 1024 up (ru)   logo + links + pill
  * The shell never clips: at every width the pill's right edge stays inside the gutter. Keep FULL_BAR_FROM in Header.tsx in step.
  */
 @media (min-width: 768px) {
@@ -200,7 +218,7 @@
     display: none;
   }
 }
-@media (min-width: 768px) and (max-width: 939.98px) {
+@media (min-width: 768px) and (max-width: 1023.98px) {
   .header[data-lang="ru"] .cta {
     margin-left: auto; /* brand left; pill and burger together on the right */
   }
@@ -208,7 +226,7 @@
     gap: 16px;
   }
 }
-@media (min-width: 940px) {
+@media (min-width: 1024px) {
   .header[data-lang="ru"] .links {
     display: flex;
     gap: clamp(8px, 2.8vw, 36px);
@@ -216,6 +234,50 @@
   .header[data-lang="ru"] .burger,
   .header[data-lang="ru"] .panel {
     display: none;
+  }
+}
+
+/*
+ * Landscape phones (<= 500px tall: 844 x 390, 915 x 412, 932 x 430, and the 568 to 740 wide ones that use the burger).
+ * The 104px desktop header would cover 27 % of the screen and stand 24px above a hero whose text starts at the 16px edge.
+ *   - 8px from the top and a 48px bar: --header-h is 64px here (tokens.css), so the hero's top padding follows;
+ *   - the same 16px edge as the hero (and the notch inset), the glass reaching only 8px past the logo;
+ *   - a 44px download pill, and none at all while the page's own button is on screen (data-cta-covered);
+ *   - the open menu in two columns: four 52px rows in one column (240px) pushed its button below the fold at 390 tall.
+ * Keep the 500px threshold in step with the hero's landscape-phone layout (landing/hero/hero.module.css) and --header-h.
+ */
+@media (orientation: landscape) and (max-height: 500px) {
+  .header {
+    padding-top: 8px;
+  }
+  .bar {
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  }
+  .nav {
+    gap: 16px;
+    height: 48px;
+  }
+  .nav::before {
+    inset: 0 -8px;
+  }
+  .cta {
+    --cta-nav-h: 44px;
+  }
+  .header[data-cta-covered] .cta {
+    display: none;
+  }
+  .panel {
+    gap: 12px;
+    padding: calc(var(--header-h) + 8px) max(16px, env(safe-area-inset-right, 0px))
+      calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .panelLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+  .panelLink {
+    min-height: 52px;
+    font-size: 20px;
   }
 }
 

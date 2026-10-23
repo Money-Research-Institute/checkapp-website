@@ -9,10 +9,21 @@
  *   - a green glow at the phone base ramps up with the section's scroll position (UsualWay.module.css).
  * Everything stops under prefers-reduced-motion and is simply absent where animation-timeline is unsupported.
  *
- * Every region gets the same layout and the same art; only the strings change (./copy.ts: English for /, /eu/ and /gulf/,
+ * Every region gets the same layout and the same scene; only the strings change (./copy.ts: English for /, /eu/ and /gulf/,
  * Russian drafts for /ru/). The client's final copy does not cover this section, so the words are ours. Nothing here may
  * carry a claim into a raster: the render is the app's own scan-details screen. Fonts: Manrope only (D4), through the
  * page's --font-sans.
+ *
+ * The render's phone screen (art/build.mjs):
+ *  - It is the screen of the Meet DiDi section's phone 4 ("Looks stable", "Today, 4:56 pm", the smiling DiDi), put into the same
+ *    baked 3D scene. Figma's own screen carried an orange "Needs Attention" verdict, a July 2024 date and "DIDI", which the rest of
+ *    the page (and the app's wellness wording) does not say, and the same Scan Details screen must not appear with two UIs on one
+ *    page. The "Looks stable" chip is ours, exactly as on the Meet DiDi phone: the owner decides whether the app's real status
+ *    labels should appear instead.
+ *  - /ru/ gets its own render, `usual-way-render-ru-*` and `usual-way-render-square-ru-*` (the same scene and the same Russian
+ *    screen as the Meet DiDi phone 4), so there is no English app UI left on a Russian page. The floating glass cards are icons
+ *    only, so they are the same file for both. The alt text and the pixels say the same thing in both languages.
+ *  - Re-run art/build.mjs, with the same art/screen-fit.json, when a string on the Meet DiDi phone 4 changes.
  */
 import { localeOf, type SectionProps } from '@/content/copy';
 import type { CSSProperties } from 'react';
@@ -30,7 +41,10 @@ const RENDER_SIZES =
 const DRIFT = { '--fx-from': '0px, 12px', '--fx-to': '0px, -12px' } as CSSProperties;
 
 export function UsualWaySection({ region }: SectionProps) {
-  const t = COPY[localeOf(region)];
+  const locale = localeOf(region);
+  const t = COPY[locale];
+  // The Russian page shows the Russian render of the screen (usual-way-render[-square]-ru-*).
+  const suffix = locale === 'ru' ? '-ru' : '';
 
   return (
     <section
@@ -69,14 +83,14 @@ export function UsualWaySection({ region }: SectionProps) {
         <div className={styles.stage}>
           <div className={styles.figure}>
             <Picture
-              base={`${ASSETS}/usual-way-render`}
+              base={`${ASSETS}/usual-way-render${suffix}`}
               widths={[640, 960, 1448]}
               sizes={RENDER_SIZES}
               sources={[
                 {
                   // Phones: a square crop baked from the same master (phone and the right-hand glass cards).
                   media: '(max-width: 479px)',
-                  base: `${ASSETS}/usual-way-render-square`,
+                  base: `${ASSETS}/usual-way-render-square${suffix}`,
                   widths: [540, 1086],
                   sizes: 'calc(100vw - 32px)',
                 },

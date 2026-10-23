@@ -1,5 +1,6 @@
 import { Experience } from '@/experience/Experience';
 import type { SectionProps } from '@/content/copy';
+import '@/i18n/typeset-copy'; // Russian typography of the client's copy: runs once, before any section reads it
 import { FamiliarSection } from './familiar';
 import { FaqsSection } from './faqs';
 import { FinalCtaSection } from './final-cta';

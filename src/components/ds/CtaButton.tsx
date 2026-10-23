@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
 import { trackCtaClick } from '@/lib/analytics';
+import { localizeHref } from '@/lib/paths';
 import { ArrowRightIcon } from './icons';
 import styles from './CtaButton.module.css';
 
@@ -24,7 +26,9 @@ export type CtaButtonProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href
  * The gradient-free pill CTA from the Figma landing: label + 20px arrow, a clipped white ellipse that reads as light
  * under the pill (it rises 4px on hover and :focus-visible), a 1px 30 % white border, and a 0.97 press.
  * Minimum target 44px. Any data-* attribute passes through (data-critical, data-hides-cta-bar, ...).
- * Client component only for click tracking; the markup is a plain link, so it works without JS.
+ * Client component for click tracking and for one routing rule: on the Russian site (`/ru/...`) a link to a page that has a Russian
+ * twin (the download page) goes to the twin (`localizeHref`), so the landing sections can keep passing `APP_DOWNLOAD_URL` without
+ * knowing their language. The markup is a plain link, so it works without JS.
  */
 export function CtaButton({
   href,
@@ -38,6 +42,8 @@ export function CtaButton({
   onClick,
   ...rest
 }: CtaButtonProps) {
+  const pathname = usePathname();
+  const target = external ? href : localizeHref(href, pathname);
   const resolvedTone = tone ?? (size === 'lg' ? 'brand' : 'deep');
   const cls = [styles.cta, styles[size], resolvedTone === 'brand' ? styles.brand : styles.deep, className]
     .filter(Boolean)
@@ -66,7 +72,7 @@ export function CtaButton({
   }
 
   return (
-    <Link href={href} className={cls} onClick={handleClick} {...rest}>
+    <Link href={target} className={cls} onClick={handleClick} {...rest}>
       {content}
     </Link>
   );

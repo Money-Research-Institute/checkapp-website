@@ -91,7 +91,17 @@ src/app/
   true: `experimental.cssChunking: 'graph'` (the default chunking merges the font CSS of both root layouts into every page), and the `Русский` label in the
   footer switcher, which is set in the system font on English pages (in Manrope it would trigger the Cyrillic download on `/`). `npm run check:lang-fonts` checks the
   built `out/` for all of it.
-- Footer links on `/ru/` to pages that exist only in English (privacy, terms, blog, ...) carry `hreflang="en"` and a spoken "страница на английском".
+- Footer and header links on `/ru/` to pages that exist only in English (privacy, terms, blog, ...) carry `hreflang="en"`, a visible
+  "EN" tag and a spoken "страница на английском". "Как это работает" goes to its section of the Russian page (`/ru/#how-it-works`).
+- **The download page has a Russian twin**, `/ru/download/` (`src/app/(ru)/ru/download/page.tsx`, the same `DownloadView` as `/download/`,
+  strings in `src/i18n/{en,ru}.ts` under `download`, the regulatory line is the client's Russian disclaimer). Every «Скачать checkapp»
+  button on the Russian site leads there: the landing sections keep passing `APP_DOWNLOAD_URL` and `CtaButton` swaps it by the page it
+  is on (`localizeHref`). The two download pages list each other as hreflang alternates (page head and sitemap). The Russian text on it is
+  a DRAFT for the client to approve, like the rest of the shell.
+- **Russian typography**: a dash stays with the word before it, so the browser never starts a line with «— это 4P». The client's strings
+  are verbatim, so a no-break space replaces the plain space before each « — » at render time, once: `src/i18n/typeset.ts` over the
+  client's Russian copy (`typeset-copy.ts`, imported by `SiteFrame`, `LandingPage` and the download page) and over the shell dictionary. A section's own
+  drafts in its `copy.ts` write `\u00A0` where they need it.
 
 ## The gate knows all of this
 

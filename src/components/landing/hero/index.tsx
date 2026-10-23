@@ -15,7 +15,7 @@
  * Wording (docs/landing-copy.md): the headline, the sub-line, the button label and the price small print are the client's, read from
  * src/content/copy and never retyped. The small print shows only when the region has a price (subscriptionLine is null until
  * pricing.ts has one). The eyebrow, the phone's alt text and the words on the floating cards are ours (./copy.ts, Russian marked
- * DRAFT). The plan card and the Upgrade card of the design are gone: a card with the three photo scans (tongue, face, iris)
+ * DRAFT). The phone is the same art in every region; /ru/ gets it with the screen's words in Russian (phone-ru, ./art). The plan card and the Upgrade card of the design are gone: a card with the three photo scans (tongue, face, iris)
  * stands in the plan card's place, and the Upgrade card is dropped (D1, D5, docs/landing-copy.md).
  *
  * The cards say only what the app does today (a photo scan on request and the short insight that comes back), so the design's
@@ -53,7 +53,8 @@ const bob = (duration: number, delay: number): CSSProperties =>
 
 export function HeroSection({ region }: SectionProps) {
   const copy = getRegionCopy(region);
-  const t = heroCopy[localeOf(region)];
+  const locale = localeOf(region);
+  const t = heroCopy[locale];
   const price = subscriptionLine(region);
   return (
     <section data-section="hero" data-figma-node="2601:12436" aria-labelledby="hero-heading" className={s.hero}>
@@ -159,11 +160,12 @@ export function HeroSection({ region }: SectionProps) {
             </div>
           </div>
 
-          {/* The phone: one meaningful image (whole device, UI baked in). */}
+          {/* The phone: one meaningful image (whole device, UI baked in). The Russian page gets the same screen in Russian
+              (phone-ru, made by ./art/build.mjs), so the app reads in one language from the hero down to the final phone. */}
           <div className={`${s.plane} ${s.phone}`} data-depth="12">
             <div className={`${s.exitPhone}`}>
               <Picture
-                base="/landing/hero/phone"
+                base={locale === 'ru' ? '/landing/hero/phone-ru' : '/landing/hero/phone'}
                 widths={[400, 800]}
                 sizes="(min-width: 1920px) 480px, (min-width: 768px) 400px, 300px"
                 width={800}

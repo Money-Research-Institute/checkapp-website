@@ -11,12 +11,14 @@ export type FooterLinkItem = {
   href: string;
   /** 'external' opens a new tab (rel noopener noreferrer + a spoken "(opens in a new tab)"); 'mail' is a mailto:. */
   kind?: 'external' | 'mail';
+  /** `false` keeps the router from prefetching the page (the blog: its cover photos come from a third party). See NAV_LINKS. */
+  prefetch?: false;
 };
 
 export const PRODUCT_LINKS: readonly FooterLinkItem[] = [
   { label: 'features', href: '/features/' },
   { label: 'howItWorks', href: '/how-it-works/' },
-  { label: 'blog', href: '/blog/' },
+  { label: 'blog', href: '/blog/', prefetch: false },
 ];
 
 export const COMPANY_LINKS: readonly FooterLinkItem[] = [

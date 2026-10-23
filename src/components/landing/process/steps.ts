@@ -5,9 +5,19 @@
  * Art (public/landing/process, written by scripts/assets/encode.mjs from the Figma exports):
  *   phone-<n>-<w>.avif/.webp   the three opaque phone mock-ups on black, with the neon rim and the perspective baked in.
  *                              Phone 2 is stored UN-flipped (D6): its UI text reads correctly.
+ *   phone-<n>-ru-<w>.avif/.webp the same three, with the Russian app screens (the /ru/ page).
+ *
  *   numeral-<n>-<w>.avif/.webp the big grey-green numerals (alpha, 2x of their design size). Decorative.
  *   arrow-<n>.svg              the two hand-drawn dashed loops, 1 to 2 and 2 to 3.
+ *
+ * Baked screens: the UI text inside the phones is pixels, so neither the gate's banned-claim scan nor its Cyrillic share
+ * can see it. The frames (rim, glow, perspective) come from the Figma mock-ups; the SCREENS are the scrubbed flat renders
+ * of the Meet DiDi section (public/landing/familiar, en and ru), warped onto each frame's screen quad (fitted from the
+ * frame's own screen mask, so the rim and the glow are untouched). One wording on the whole page. Whoever swaps a screen
+ * re-reads every phone at full size: photo not video, "Looks stable" not a verdict, no 2024 date, "DiDi" not "DIDI".
  */
+import type { Locale } from '@/content/copy';
+
 export interface ProcessStep {
   n: 1 | 2 | 3;
   phone: {
@@ -21,6 +31,9 @@ export interface ProcessStep {
   };
   numeral: { base: string; width: number; height: number };
 }
+
+/** The art base of a phone for a locale: the English screens, or the Russian ones (`-ru`) on /ru/. */
+export const phoneBase = (phone: ProcessStep['phone'], locale: Locale) => (locale === 'ru' ? `${phone.base}-ru` : phone.base);
 
 export const PROCESS_STEPS: readonly ProcessStep[] = [
   {

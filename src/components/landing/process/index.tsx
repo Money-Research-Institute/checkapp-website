@@ -7,7 +7,8 @@
  * gone: the document covers this block, so a section never shows the Figma or D1 text for it (docs/landing-copy.md). The
  * sentence is the step's <h3>. The sr-only h2 and the phone alt text are in ./copy.ts (en and ru).
  *
- * Same layout and art in all four regions; only the strings change. Russian runs 15-30 % longer, so every box here is built
+ * Same layout and frames in all four regions; only the strings change, and the screens inside the phones follow the language
+ * (English art on /, /eu/, /gulf/; Russian art on /ru/, see steps.ts). Russian runs 15-30 % longer, so every box here is built
  * to grow (heights come from the text, never fixed) and the sentence wraps inside its column.
  *
  * Markup: an <ol role="list"> of three <li>, each with the <h3>, a <picture> phone and an aria-hidden numeral; the two
@@ -29,12 +30,13 @@ import type { SectionProps } from '@/content/copy';
 import { Picture } from '@/components/ds/Picture';
 import { withBasePath } from '@/lib/paths';
 import { PROCESS_COPY } from './copy';
-import { PROCESS_ARROWS, PROCESS_STEPS } from './steps';
+import { PROCESS_ARROWS, PROCESS_STEPS, phoneBase } from './steps';
 import styles from './Process.module.css';
 
 export function ProcessSection({ region }: SectionProps) {
   const sentences = getRegionCopy(region).howItWorks;
-  const copy = PROCESS_COPY[localeOf(region)];
+  const locale = localeOf(region);
+  const copy = PROCESS_COPY[locale];
   return (
     <section
       id="how-it-works"
@@ -58,7 +60,7 @@ export function ProcessSection({ region }: SectionProps) {
                     <div className={styles.drift}>
                       <div className={styles.settle}>
                         <Picture
-                          base={phone.base}
+                          base={phoneBase(phone, locale)}
                           widths={phone.widths}
                           sizes={phone.sizes}
                           width={phone.width}

@@ -14,8 +14,10 @@ import type { Locale } from '@/content/copy';
  * no heart rate, no sleep, no body fat, no verdict on the body ("Normal"), nothing that happens in the background. The gate cannot see
  * aria-hidden text, so this list is the guard: keep new strings inside it.
  *
- * Every Russian string is a DRAFT until the client approves it (informal «ты», short, no medical claims). The baked-in text of the
- * phone mock-up (the app's own UI) stays English on /ru/: there is no Russian screen art yet.
+ * Every Russian string is a DRAFT until the client approves it (informal «ты», short, no medical claims). The text baked into the phone
+ * mock-up (the app's own UI) is Russian on /ru/ too: public/landing/hero/phone-ru-* is the same screen with the words the Meet DiDi
+ * phones use («Чат?», «Добрый день, Mah!», «Начать скан языка»), made by ./art/build.mjs. Those words are in the picture, so the
+ * alt text below must keep naming them the way the picture says them.
  */
 export interface HeroStrings {
   eyebrow: string;

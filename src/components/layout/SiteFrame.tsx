@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { RegionPaths, getRegionCopy, type Locale, type Region } from '@/content/copy';
 import { getDict } from '@/i18n';
+import '@/i18n/typeset-copy';
 import { CookieConsent } from './CookieConsent';
 import { Footer } from './Footer';
 import { Header } from './Header';
@@ -38,8 +39,8 @@ export function SiteFrame({
         dict={dict.header}
         homeHref={region ? RegionPaths[region] : '/'}
         ctaLabel={ctaLabel ?? dict.header.cta}
-        englishTargets={locale !== 'en'}
         englishOnlyLabel={dict.footer.pageInEnglish}
+        startCtaCovered={region !== undefined}
       />
       <main id="main">{children}</main>
       <Footer locale={locale} region={region} />

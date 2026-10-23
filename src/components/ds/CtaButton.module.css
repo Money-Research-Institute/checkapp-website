@@ -34,7 +34,7 @@
 }
 
 .nav {
-  height: 56px;
+  height: var(--cta-nav-h, 56px); /* the header shrinks it to 44px on a landscape phone */
   padding: 0 20px;
 }
 .lg {
@@ -63,7 +63,9 @@
   pointer-events: none;
   transition: transform var(--dur-base) var(--ease-out-expo);
 }
-.nav .light,
+.nav .light {
+  top: calc(var(--cta-nav-h, 56px) - 11px); /* same distance from the pill's bottom edge as on the 60px pill */
+}
 .bar .light {
   top: 45px; /* same proportion on the 56px pills */
 }

@@ -11,6 +11,9 @@
  * The Russian is a DRAFT for the client to approve. It addresses the reader as «ты». Tile 04 repeats the client's own Russian
  * phrase ("не диагнозы и не прогнозы болезней"), which the gate's claimAllow list recognises.
  *
+ * The heading carries non-breaking spaces ( ) on purpose: "4P" never sits alone on a line, and in Russian the dash stays at
+ * the end of the line it follows instead of starting the next one. projects.module.css sizes the heading so it clears the arc.
+ *
  * Numerals are not copy: index.tsx derives "01".."04" from the position.
  */
 import type { Locale } from '@/content/copy';
@@ -29,7 +32,7 @@ export interface ProjectsCopy {
 
 export const projectsCopy: Record<Locale, ProjectsCopy> = {
   en: {
-    heading: 'The future of everyday wellness is 4P',
+    heading: 'The future of everyday wellness is 4P',
     pillars: [
       {
         name: 'Personalized',
@@ -51,7 +54,7 @@ export const projectsCopy: Record<Locale, ProjectsCopy> = {
   },
   ru: {
     // DRAFT
-    heading: 'Будущее повседневного благополучия — это 4P',
+    heading: 'Будущее повседневного благополучия — это 4P',
     pillars: [
       {
         // DRAFT

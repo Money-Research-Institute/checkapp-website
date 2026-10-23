@@ -61,6 +61,35 @@ export const en = {
     lede: "DiDi looked everywhere and could not find it. Let's get you back to somewhere that exists.",
     back: 'Back to home',
   },
+  /** The download page (/download/ and its Russian twin /ru/download/). The APK flow itself lives in DownloadView. */
+  download: {
+    metaTitle: 'Download checkapp for Android',
+    metaDescription:
+      'Download the checkapp Android APK and start daily check-ins with DiDi, your AI wellness companion.',
+    breadcrumbHome: 'Home',
+    breadcrumbDownload: 'Download',
+    eyebrow: 'Android',
+    title: 'Download checkapp',
+    lede: 'Direct APK for Android.',
+    apk: 'Download APK',
+    play: 'Get it on Google Play',
+    soonTitle: 'APK coming shortly',
+    /** Ends before the contact e-mail address, which the page adds as a link. */
+    soonText:
+      "We're preparing the production Android build. This page will unlock the download as soon as the file is published. Check back soon, or email",
+    installTitle: 'Install on Android',
+    step1: { before: 'Tap ', strong: 'Download APK', after: ' on this page (from your phone).' },
+    step2: {
+      before: 'If prompted, allow installs from this browser under ',
+      em: 'Install unknown apps',
+      after: '.',
+    },
+    step3: { before: 'Open the downloaded file and tap ', strong: 'Install', after: '.' },
+    step4: 'Open checkapp and create your account.',
+    beforeTitle: 'Before you install',
+    androidVersion: 'Android 8.0 or newer recommended.',
+    playStatus: 'Google Play listing is in progress; the APK here is the official direct download.',
+  },
 };
 
 export type Dict = typeof en;

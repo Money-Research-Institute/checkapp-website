@@ -8,6 +8,7 @@ import { CtaButton } from '@/components/ds/CtaButton';
 import type { Locale } from '@/content/copy';
 import type { Dict } from '@/i18n';
 import { APP_DOWNLOAD_URL, NAV_LINKS, SITE_NAME } from '@/lib/constants';
+import { shellLink } from '@/lib/paths';
 import styles from './Header.module.css';
 
 /** Scrolled past the top? A primitive snapshot, so the header only re-renders when it flips. */
@@ -19,25 +20,36 @@ const scrolledNow = () => window.scrollY > 8;
 const scrolledOnServer = () => false;
 
 /**
- * Where the burger gives way to the links + download pill. The Russian labels are ~130px longer than the English ones, so
- * the full bar needs more room there. Keep in step with the media queries in Header.module.css.
+ * Where the burger gives way to the links + download pill. The Russian labels are ~130px longer than the English ones, and two
+ * of the three links lead to English pages and carry an "EN" tag, so the full bar needs more room there. Keep in step with the
+ * media queries in Header.module.css.
  */
-const FULL_BAR_FROM: Record<Locale, number> = { en: 768, ru: 940 };
+const FULL_BAR_FROM: Record<Locale, number> = { en: 768, ru: 1024 };
+
+/** Elements that carry the page's own download button (the hero's, the final section's, the download page's). */
+const OWN_CTA = '[data-hides-cta-bar]';
 
 /**
  * The one header for the whole site. Fixed, transparent over the hero, glass once the page scrolls.
  * md and up: logo + wordmark, the nav links, a 56px "Download Now" pill. Below md: logo and a 44px hamburger that opens
- * a full-screen menu. In Russian the full bar needs 940px, so from 768 to 939 it shows the logo, the pill and the burger.
+ * a full-screen menu. In Russian the full bar needs 1024px, so from 768 to 1023 it shows the logo, the pill and the burger.
  * The logo never shrinks or drops out to make room. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
  * No animation library: the menu is a state flag and CSS; the glass fades with CSS transitions.
+ *
+ * Landscape phones (<= 500px tall) get a compact bar (see the CSS): the same 16px edge as the page, 48px high, and no download
+ * pill while the page's own download button is on screen (`data-cta-covered`, the same signal the phone bar uses), because two
+ * identical buttons cost a third of the height of a screen that short.
+ *
+ * Links on the Russian site: the download button goes to the Russian download page (CtaButton), "How it works" to its section of
+ * the Russian landing page, and every other link to an English page, which says so with a visible "EN" tag and a spoken cue.
  */
 export function Header({
   locale,
   dict,
   homeHref,
   ctaLabel,
-  englishTargets,
   englishOnlyLabel,
+  startCtaCovered,
 }: {
   /** The page's language: sets the width at which the full bar replaces the burger. */
   locale: Locale;
@@ -47,23 +59,50 @@ export function Header({
   homeHref: string;
   /** The download button: copy.hero.cta on a landing page, the shell's default elsewhere. */
   ctaLabel: string;
-  /** The links lead to pages that exist in English only (every page but the landing pages): say so on a Russian page. */
-  englishTargets: boolean;
-  /** Spoken after such a link ("page in English"). */
+  /** Spoken after a link to a page that exists in English only ("page in English"), on a Russian page. */
   englishOnlyLabel: string;
+  /**
+   * Server-render the compact (landscape phone) bar without its download pill. True on a landing page, whose own button is in
+   * the first view; the observer settles the real state after hydration. False elsewhere.
+   */
+  startCtaCovered: boolean;
 }) {
   const pathname = usePathname();
   const scrolled = useSyncExternalStore(subscribeScroll, scrolledNow, scrolledOnServer);
   const [open, setOpen] = useState(false);
+  const [ctaCovered, setCtaCovered] = useState(startCtaCovered);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) =>
     href === homeHref ? pathname === homeHref : pathname.startsWith(href.replace(/\/$/, ''));
-  const links = [
+  const links: { href: string; label: string; english: boolean; prefetch?: false }[] = [
     { href: homeHref, label: dict.home, english: false },
-    ...NAV_LINKS.map((link) => ({ href: link.href, label: dict[link.key], english: englishTargets })),
+    ...NAV_LINKS.map((link) => ({
+      ...shellLink(link.href, locale),
+      label: dict[link.key],
+      prefetch: link.prefetch,
+    })),
   ];
+
+  // Is the page's own download button on screen? Then a landscape phone's bar drops its duplicate (CSS reads the flag).
+  useEffect(() => {
+    const targets = document.querySelectorAll(OWN_CTA);
+    if (!targets.length || !('IntersectionObserver' in window)) {
+      const frame = requestAnimationFrame(() => setCtaCovered(false));
+      return () => cancelAnimationFrame(frame);
+    }
+    const showing = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) showing.add(entry.target);
+        else showing.delete(entry.target);
+      }
+      setCtaCovered(showing.size > 0);
+    });
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [pathname]);
 
   // The burger disappears at the full-bar width: a menu left open across it would keep the page scroll-locked.
   useEffect(() => {
@@ -117,6 +156,7 @@ export function Header({
       data-lang={locale}
       data-scrolled={scrolled || undefined}
       data-open={open || undefined}
+      data-cta-covered={ctaCovered || undefined}
     >
       <div className={styles.bar}>
         <nav data-critical="nav" aria-label={dict.navLabel} className={styles.nav}>
@@ -130,12 +170,20 @@ export function Header({
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  prefetch={link.prefetch}
                   className={styles.link}
                   aria-current={isActive(link.href) ? 'page' : undefined}
                   hrefLang={link.english ? 'en' : undefined}
                 >
                   {link.label}
-                  {link.english ? <span className="sr-only"> ({englishOnlyLabel})</span> : null}
+                  {link.english ? (
+                    <>
+                      <span className={styles.lang} aria-hidden="true">
+                        EN
+                      </span>
+                      <span className="sr-only"> ({englishOnlyLabel})</span>
+                    </>
+                  ) : null}
                 </Link>
               </li>
             ))}
@@ -172,13 +220,21 @@ export function Header({
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  prefetch={link.prefetch}
                   className={styles.panelLink}
                   aria-current={isActive(link.href) ? 'page' : undefined}
                   hrefLang={link.english ? 'en' : undefined}
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
-                  {link.english ? <span className="sr-only"> ({englishOnlyLabel})</span> : null}
+                  {link.english ? (
+                    <>
+                      <span className={styles.lang} aria-hidden="true">
+                        EN
+                      </span>
+                      <span className="sr-only"> ({englishOnlyLabel})</span>
+                    </>
+                  ) : null}
                 </Link>
               </li>
             ))}

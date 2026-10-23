@@ -5,8 +5,9 @@
  *   >= 1280  --u = min(1px, 100cqw / 1440)  (0.889 at 1280, 1 at 1440), growing slowly past 1920 (1.15 at 2560, 1.2 cap)
  *   1024-1279 --u = 0.9px   cards at near-natural size, re-laid out around a centred phone
  *   < 1024    --u = 1px     cards are real flex layouts at natural text size, never scaled
- * Five modes, mobile first. Width breakpoints are container queries on the section (its own width, not the viewport):
- *   base      < 700    cascade: phone, then the Photo scans card in front of it, then DiDi's note below
+ * Six modes, mobile first. Width breakpoints are container queries on the section (its own width, not the viewport):
+ *   base      < 540    cascade: phone, then the Photo scans card in front of it, then DiDi's note below
+ *   540-699            small tablets and unfolded foldables: the phone at about its 700 size, the two cards side by side below it
  *   700-1023           flank-compact: the two cards flank the phone and tuck behind it (iPad mini and up get the real composition)
  *   1024-1279          small laptop: the desktop composition without the Streak card
  *   >= 1280            desktop: the 1440 composition, scaled by --u
@@ -156,7 +157,7 @@
 }
 
 .lede {
-  max-width: 34ch;
+  max-width: 40ch; /* on a phone the whole width between the gutters: a narrower column left Russian at six lines and pushed the phone off the first screen */
   margin: 16px 0 0;
   color: var(--c-fg-body);
   font-size: 15px;
@@ -707,16 +708,52 @@
   height: calc(24 * var(--u));
 }
 
-/* Foldables (inner screen about 600 wide): the cascade has room to spread, so the two cards sit 8 % in from each side. */
-@container (min-width: 600px) and (max-width: 699px) {
-  .rail {
-    margin-left: 8cqw;
+/* From about 480 the section is wider than a phone: the text column opens to the measure it has from 700 up (the headline is 450 to
+   640px wide here, and a 311px paragraph under it looked like a leftover from the phone layout). */
+@container (min-width: 480px) {
+  .lede {
+    max-width: 62ch;
+    font-size: 16px;
+    line-height: 24px;
   }
-  /* a card as wide as the phone, straight over it: stepped to the side it would leave the phone's own button peeking out beside it */
+}
+
+/* Small tablets and unfolded foldables (540-699): wider than a phone, narrower than the 700 composition, whose cards need about 250px
+   on each side of the phone. A card laid over the phone here would hide a quarter of it, and a card tucked behind it would be too
+   narrow for its three scans. So the phone stays centred at about the size it has at 700 and the two cards sit side by side below it,
+   over the part of the phone that has already faded out: the same two cards in the same order (DiDi's note left, the scans right),
+   and a hero about as tall as the one at 700 instead of 200px taller. Two columns of 230px or more are what the cards need, which
+   is why this starts at 540 and not at 480, where the lede opens up. */
+@container (min-width: 540px) and (max-width: 699px) {
+  .inner {
+    --pw: clamp(260px, 50cqw, 280px); /* 280 from 560 up: the phone of the 700 composition, so nothing jumps at 700 */
+    --ph: calc(var(--pw) * 797 / 400);
+  }
+  .stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 12px;
+    padding-inline: var(--gutter);
+  }
+  .phone {
+    grid-column: 1 / -1;
+  }
+  .rail,
   .scans {
-    justify-self: center;
-    width: var(--pw);
-    margin-right: 0;
+    grid-row: 2;
+    justify-self: stretch;
+    width: auto;
+    margin: calc(var(--ph) * 0.84 * -0.16) 0 0; /* only into the faded bottom of the phone: the part that still shows stays clear */
+  }
+  .rail {
+    grid-column: 1;
+  }
+  .scans {
+    grid-column: 2;
+  }
+  /* the note is alone in its plane (the scan header above it is not shown below 1024), so it needs no gap to anything and tops line up */
+  .note {
+    margin-top: 0;
   }
 }
 
@@ -1083,10 +1120,12 @@
   }
 }
 
-/* ------------------------------------------------------------------ short portrait phones (320 x 568) */
+/* ------------------------------------------------------------------ short portrait phones (up to 700 tall) */
 
-/* With the 72px sticky bar the CTA must stay above it: drop the badge, tighten the type and the gaps. */
-@media (max-height: 600px) and (max-width: 767px) and (orientation: portrait) {
+/* The hero gives way by priority: the headline, then the button, then the phone. On a 640 or 667 tall screen the eyebrow, the least
+   of them, took the 52px that kept DiDi's face below the fold (at 360 x 640 the phone showed its status bar and a greeting, no mascot).
+   It goes first; from 700 up there is room for all of it. */
+@media (max-height: 700px) and (max-width: 767px) and (orientation: portrait) {
   .inner {
     padding-top: calc(var(--header-h) + 6px);
   }
@@ -1096,6 +1135,10 @@
   .hero .title {
     margin-top: 0;
   }
+}
+
+/* 320 x 568: with the 72px sticky bar the button must stay above it, so the type and the gaps tighten as well. */
+@media (max-height: 600px) and (max-width: 767px) and (orientation: portrait) {
   .lede {
     margin-top: 10px;
     font-size: 14px;
