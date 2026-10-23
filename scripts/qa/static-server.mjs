@@ -1,17 +1,12 @@
-/**
- * Minimal static host for the exported site (trailingSlash-aware). Shared by the gate and by
- * `node scripts/qa/serve.mjs`, so what gets tested is served the way GitHub Pages serves it.
- */
+/** Minimal static host for the exported site (trailingSlash-aware), so what `npm run qa` tests is served the way GitHub Pages serves it. */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join } from 'node:path';
 
 const MIME = {
-  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.gif': 'image/gif', '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2', '.woff': 'font/woff', '.mp4': 'video/mp4', '.webm': 'video/webm', '.txt': 'text/plain',
-  '.xml': 'application/xml', '.glb': 'model/gltf-binary', '.ktx2': 'image/ktx2', '.wasm': 'application/wasm',
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif',
+  '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.txt': 'text/plain', '.xml': 'application/xml',
 };
 
 /** Resolve a URL path to a file the way a static host with trailingSlash does. */
