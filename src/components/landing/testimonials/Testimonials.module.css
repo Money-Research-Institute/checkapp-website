@@ -51,6 +51,26 @@
 
 /* ---------------------------------------------------------------- wall */
 
+/* .track and .set are structure only (the marquee below uses them): off the marquee they vanish, so .col lays out the cards exactly
+   as it did when they were its children, and only the first two cards of the first copy show. The second copy never does. */
+.stage {
+  position: relative;
+}
+.track,
+.set {
+  display: contents;
+}
+.set[data-clone] {
+  display: none;
+}
+/* written to out-rank the flagged-card rule below, which would otherwise show a flagged ring card in the still wall */
+.section .wall .col .set:first-child > .card:nth-child(n + 3) {
+  display: none;
+}
+.toggle {
+  display: none;
+}
+
 .wall {
   display: flex;
   flex-direction: column;
@@ -75,16 +95,16 @@
 .col:nth-child(3) {
   display: none; /* the right column is dropped first */
 }
-.col:nth-child(1) > .card:nth-child(1) {
+.col:nth-child(1) > .track > .set:first-child > .card:nth-child(1) {
   order: 1;
 }
-.col:nth-child(2) > .card:nth-child(1) {
+.col:nth-child(2) > .track > .set:first-child > .card:nth-child(1) {
   order: 2;
 }
-.col:nth-child(2) > .card:nth-child(2) {
+.col:nth-child(2) > .track > .set:first-child > .card:nth-child(2) {
   order: 3;
 }
-.col:nth-child(1) > .card:nth-child(2) {
+.col:nth-child(1) > .track > .set:first-child > .card:nth-child(2) {
   order: 4; /* the faded teaser */
   --rest: var(--rest-teaser);
 }
@@ -127,7 +147,7 @@
 }
 
 /* the one lit card (centre top in the design): a glow baked as a radial falloff that the card clips (no blur filter) */
-.col:nth-child(2) > .card:nth-child(1) {
+.card[data-lit='true'] {
   --glow: radial-gradient(
     circle at 95% 90%,
     rgb(65 119 60 / 0.21) 0,
@@ -228,10 +248,10 @@
   .col:nth-child(2) {
     margin-top: 32px;
   }
-  .col:nth-child(1) > .card:nth-child(2) {
+  .col:nth-child(1) > .track > .set:first-child > .card:nth-child(2) {
     --rest: 1; /* the left column's second card is a full card again: only the right column's row is the teaser */
   }
-  .col:nth-child(3) > .card {
+  .col:nth-child(3) > .track > .set:first-child > .card {
     --rest: var(--rest-teaser);
   }
 }
@@ -255,8 +275,8 @@
   .col:nth-child(3) {
     display: none;
   }
-  .col:nth-child(1) > .card:nth-child(2),
-  .col:nth-child(2) > .card:nth-child(2) {
+  .col:nth-child(1) > .track > .set:first-child > .card:nth-child(2),
+  .col:nth-child(2) > .track > .set:first-child > .card:nth-child(2) {
     --rest: var(--rest-teaser);
   }
 }
@@ -283,28 +303,28 @@
     grid-column: auto;
   }
   /* the bottom row rests at .55; the top row is full. Same specificity as the rules above, so order wins. */
-  .col:nth-child(1) > .card:nth-child(2),
-  .col:nth-child(2) > .card:nth-child(2),
-  .col:nth-child(3) > .card:nth-child(2) {
+  .col:nth-child(1) > .track > .set:first-child > .card:nth-child(2),
+  .col:nth-child(2) > .track > .set:first-child > .card:nth-child(2),
+  .col:nth-child(3) > .track > .set:first-child > .card:nth-child(2) {
     --rest: var(--rest-teaser);
   }
-  .col:nth-child(3) > .card:nth-child(1) {
+  .col:nth-child(3) > .track > .set:first-child > .card:nth-child(1) {
     --rest: 1;
   }
   /* the Figma card heights; the date sits on margin-top:auto, so a longer quote simply grows its card */
-  .col:nth-child(1) > .card:nth-child(1) {
+  .col:nth-child(1) > .track > .set:first-child > .card:nth-child(1) {
     min-height: 294px;
   }
-  .col:nth-child(1) > .card:nth-child(2) {
+  .col:nth-child(1) > .track > .set:first-child > .card:nth-child(2) {
     min-height: 267px;
   }
-  .col:nth-child(2) > .card:nth-child(1) {
+  .col:nth-child(2) > .track > .set:first-child > .card:nth-child(1) {
     min-height: 236px;
   }
-  .col:nth-child(2) > .card:nth-child(2) {
+  .col:nth-child(2) > .track > .set:first-child > .card:nth-child(2) {
     min-height: 258px;
   }
-  .col:nth-child(3) > .card {
+  .col:nth-child(3) > .track > .set:first-child > .card {
     min-height: 294px;
   }
 }
@@ -353,11 +373,108 @@
   .card[data-once-state='played'] {
     animation: rise var(--dur-slow) var(--ease-out) both;
   }
-  .col:nth-child(2) > .card[data-once-state='played'] {
+  .col:nth-child(2) .card[data-once-state='played'] {
     animation-delay: 80ms;
   }
-  .col:nth-child(3) > .card[data-once-state='played'] {
+  .col:nth-child(3) .card[data-once-state='played'] {
     animation-delay: 160ms;
+  }
+}
+
+
+/* ---------------------------------------------------------------- the marquee (960 and up, motion allowed, tier 1 or 2)
+ *
+ * The finished wall above stays the default. Only when the engine has published a tier (html[data-fx]) and the visitor has not asked
+ * for less motion do the columns start to travel UP, all at the same speed so the wall keeps its rhythm: each column is a track of
+ * two identical copies of its ring and moves by exactly one copy (-50 %), so the loop has no seam. The columns start where the Figma
+ * wall stands (the --stagger padding gives the +13.5 / +47 / 0 tops), the wall is a fixed window with a dissolve at both ends,
+ * and it stops off-screen (the engine's data-paused) and from the pause button; hover or keyboard focus stops only the column they are in, so the rest of the wall keeps moving. Transform only.
+ */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 960px) {
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .section {
+    --wall-h: 700px; /* two rows of the Figma wall and the start of a third rising into the dissolve */
+    --marquee-dur: 72s; /* about 25px a second: a card takes ten seconds to pass */
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall {
+    height: var(--wall-h);
+    align-items: start;
+    overflow: clip;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 72px, #000 calc(100% - var(--fade)), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 72px, #000 calc(100% - var(--fade)), transparent 100%);
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col {
+    min-height: 0;
+    margin-top: 0;
+    animation: none; /* no scroll drift on a column that is already travelling */
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .track {
+    display: flex;
+    flex-direction: column;
+    animation: marquee var(--marquee-dur) linear infinite;
+    will-change: transform;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col:nth-child(1) .set {
+    --stagger: 13.5px;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col:nth-child(2) .set {
+    --stagger: 47px;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col:nth-child(3) .set {
+    --stagger: 0px;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .set,
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .set[data-clone] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding-block: var(--stagger, 0px) var(--gap); /* the period is one whole copy: its stagger and its trailing gap included */
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall .col:nth-child(n) .set:first-child > .card:nth-child(n + 3) {
+    display: flex;
+  }
+  /* Every card travels at full strength (the dissolve is the mask's) at the height the design gives its slot, the same in both copies
+     or the loop would jump. Written to out-rank the positional rules above, which only know the first copy. A card flagged
+     needsReplacement (a crypto-template quote) does not travel at all: the still wall above keeps it, dimmed, as the design has it. */
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall .col:nth-child(n) .set:is(:first-child, [data-clone]) > .card {
+    --rest: 1;
+    min-height: var(--min-h);
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall .col:nth-child(n) .set:is(:first-child, [data-clone]) > .card[data-needs-replacement='true'] {
+    display: none;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .track[data-paused='true'],
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col:hover .track,
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .col:focus-within .track,
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .wall[data-marquee='paused'] .track {
+    animation-play-state: paused;
+  }
+  :global(html:is([data-fx='t1'], [data-fx='t2'])) .toggle {
+    position: absolute;
+    inset-inline-end: 12px;
+    inset-block-end: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tap);
+    height: var(--tap);
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    border-radius: var(--radius-pill);
+    background: rgb(0 0 0 / 0.6);
+    color: var(--c-fg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 

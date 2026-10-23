@@ -294,8 +294,12 @@
   .cta {
     --cta-nav-h: 44px;
   }
+  /* Hidden, not removed: display:none took the pill's ~270px out of the row, so the links slid right and back every time the page's
+     own button scrolled on and off screen (CLS 0.06 to 0.12 at 844 x 390). The slot stays, the pill just fades. */
   .header[data-cta-covered] .cta {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
   }
   .panel {
     gap: 12px;

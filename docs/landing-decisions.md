@@ -104,3 +104,19 @@ the block-to-section map: `docs/landing-copy.md`. The gate walks all four.
 
 H1 the US "Digital Diagnostic" sentence is not shown; H2 no price is shown until the client supplies one; H3 lower-case `checkapp`; H4 no testimonials on `/ru/`. D5 is narrowed: the two
 plan spots show the three scans, because "weekly report" and "90-day history" are not things the app does today.
+
+## D11. Hero cards: the design's look, only true words  (decided after a review panel, 23.10.2026)
+
+The owner asked whether the hero should get the Figma cards back (smartwatch "Connected", Heart Rate, Sleep, Body Composition, the Premium+ plan with its crown, the tilted Upgrade card)
+and left the call to us. Panel verdicts: art (the Figma orbit of glass cards with a few accent colours and the mascot is the page's signature; a green-on-green stand-in looked dull),
+marketing and conversion (one idea per hero: take a photo, get an insight; a plan card with "Subscribe Now" competes with the one CTA; the client's own Gulf line says "no dashboard overload"),
+compliance (heart rate, sleep, body fat and a trial advertise features the app does not have, a store-listing and consumer-protection problem), product (cards should mirror real app screens).
+Decision: restore the **composition, glass, accent colours and mascot**, keep the **words true**. Smartwatch card = finished-scan card; Heart Rate / Sleep = Color / Coating; Body Composition gauge = a
+Moisture gauge (dry to moist, no red, no grade; the app's own scan screen says "Slightly dry"); Premium+ = the three photo scans; the tilted Upgrade card = the same card with DiDi holding a camera and
+"Send me a photo", labelled "Start a scan". Not brought back: wearables, vitals, body fat, plans, trials, crowns. Reversible if the client wants the original and accepts the claims (it also needs the
+copy rules in docs/landing-copy.md relaxed by a reviewed gate change).
+
+## D12. Testimonials move  (decided by the project owner's suggestion, 23.10.2026)
+
+From 960 px, with motion allowed and the engine at tier 1 or 2, the three columns travel up at one steady speed (about 25 px a second), start where the Figma wall stands, dissolve at both ends, stop off-screen and from a pause button (WCAG 2.2.2); hover or keyboard focus stops only the column it is in, so on a short screen the rest of the wall keeps moving. Everywhere else the finished Figma wall stays. The needsReplacement card (a crypto-template quote) does not travel; it stays on the
+still wall, dimmed, as D2 decided. Only five distinct quotes feed three moving columns, so the same quote can appear twice on screen: real, consented testimonials fix that.

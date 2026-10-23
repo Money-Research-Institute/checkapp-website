@@ -266,7 +266,8 @@
   width: min(300px, calc(100cqw - 40px));
   margin: 10px 0 0 12px;
 }
-.streak {
+.streak,
+.mascot {
   display: none;
 }
 
@@ -484,14 +485,6 @@
   font-size: calc(12.905 * var(--u));
   line-height: calc(20.279 * var(--u));
 }
-.noteText {
-  display: block;
-  padding: 0 calc(14.749 * var(--u) + var(--tuck)) calc(5 * var(--u)) calc(14.749 * var(--u));
-  color: #e6e6e6;
-  font-size: calc(12.905 * var(--u));
-  line-height: calc(20.279 * var(--u));
-  text-wrap: pretty;
-}
 .goal {
   display: flex;
   flex-wrap: wrap; /* Russian is longer: the value drops under its label instead of squeezing it */
@@ -510,6 +503,123 @@
   font-weight: 500;
   line-height: calc(25.81 * var(--u));
   text-align: right;
+}
+
+/* the gauge (where the Body Composition gauge stood): a bar from dry to moist, a knob, and the reading in a tip above it.
+   Plain colours, no red: the three zones describe, they do not grade. */
+.gauge {
+  display: flex;
+  flex-direction: column;
+  gap: calc(7 * var(--u));
+  padding: calc(30 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) calc(2 * var(--u)) calc(14.749 * var(--u));
+}
+.gaugeTrack {
+  position: relative;
+  display: block;
+  --at: 28%;
+}
+.gaugeBar {
+  position: relative;
+  display: block;
+  height: calc(13.83 * var(--u));
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e9c46a 0%, #a7d96b 34%, #52d0a0 66%, #4cb6ee 100%);
+}
+.gaugeKnob {
+  position: absolute;
+  top: 50%;
+  left: var(--at);
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  margin: calc(-6 * var(--u)) 0 0 calc(-6 * var(--u));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 calc(1.5 * var(--u)) rgb(0 0 0 / 0.45);
+}
+.gaugeTip {
+  position: absolute;
+  left: var(--at);
+  bottom: calc(100% + 8 * var(--u));
+  padding: calc(3 * var(--u)) calc(8 * var(--u));
+  border-radius: calc(6 * var(--u));
+  background: #2f7a2b;
+  color: #fff;
+  font-size: calc(11.5 * var(--u));
+  font-weight: 600;
+  line-height: calc(15 * var(--u));
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.gaugeTip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: calc(-4 * var(--u));
+  border: calc(4 * var(--u)) solid transparent;
+  border-top-color: #2f7a2b;
+}
+.gaugeZones {
+  display: flex;
+  justify-content: space-between;
+  color: #cecece;
+  font-size: calc(12.9 * var(--u));
+  line-height: calc(17 * var(--u));
+}
+
+/* DiDi's prompt, 160 x 184, rotated 22deg (desktop only, half behind the phone's right edge). The plane is its bounding box. */
+.mascotCard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(160 * var(--u));
+  height: calc(184 * var(--u));
+  margin: calc(-92 * var(--u)) 0 0 calc(-80 * var(--u));
+  overflow: hidden;
+  border-radius: calc(14 * var(--u));
+  background:
+    linear-gradient(var(--c-glass), var(--c-glass)),
+    rgb(9 16 9 / 0.92);
+  transform: rotate(22deg);
+}
+.mascotArt {
+  display: block;
+  width: calc(100% - 12 * var(--u));
+  height: calc(82 * var(--u));
+  margin: calc(6 * var(--u)) calc(6 * var(--u)) 0;
+  border-radius: calc(10 * var(--u));
+  object-fit: cover;
+  object-position: 38% 40%;
+}
+.mascotText {
+  display: block;
+  padding: calc(8 * var(--u)) calc(12 * var(--u)) 0;
+  color: #fff;
+  font-size: calc(12.9 * var(--u));
+  font-weight: 500;
+  line-height: calc(17 * var(--u));
+  text-wrap: pretty;
+}
+.mascotFoot {
+  position: absolute;
+  inset: auto 0 calc(9 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mascotCta {
+  color: #62dc59;
+  font-size: calc(13 * var(--u));
+  font-weight: 600;
+  line-height: calc(18 * var(--u));
+}
+.mascotTime {
+  position: absolute;
+  inset-inline-end: calc(12 * var(--u));
+  bottom: calc(1 * var(--u));
+  color: #a7a7a7;
+  font-size: calc(9.5 * var(--u));
+  line-height: calc(12 * var(--u));
 }
 
 /* scans card, 358 x 145: stands where the Premium+ plan card stood (the plan spots show the three scans, never a plan) */
@@ -996,6 +1106,18 @@
   .streak .float {
     height: 100%;
   }
+  .mascot {
+    top: calc(197.7 * var(--u));
+    left: calc(850.4 * var(--u));
+    z-index: 4;
+    display: block;
+    width: calc(217.3 * var(--u));
+    height: calc(230.6 * var(--u)); /* the bounding box of a 160 x 184 card turned 22 degrees */
+  }
+  .exitMascot,
+  .mascot .float {
+    height: 100%;
+  }
 }
 
 /* ------------------------------------------------------------------ 1473+ : ultrawide */
@@ -1081,7 +1203,8 @@
   }
   .rail,
   .scans,
-  .streak {
+  .streak,
+  .mascot {
     display: none;
   }
   .floor {
@@ -1195,6 +1318,11 @@
         transform: translate(-40px, 16px);
       }
     }
+    @keyframes kfMascot {
+      to {
+        transform: translate(38px, 18px);
+      }
+    }
     @keyframes kfPhone {
       to {
         transform: translateY(-4%) perspective(1200px) rotateX(4deg);
@@ -1204,6 +1332,7 @@
       .exitRail,
       .exitScans,
       .exitStreak,
+      .exitMascot,
       .exitPhone {
         animation-duration: 1ms;
         animation-timing-function: linear;
@@ -1219,6 +1348,9 @@
       }
       .exitStreak {
         animation-name: kfStreak;
+      }
+      .exitMascot {
+        animation-name: kfMascot;
       }
       .exitPhone {
         animation-name: kfPhone;

@@ -6,7 +6,7 @@ import type { Locale } from '@/content/copy';
  *
  * What is here:
  *  - the eyebrow above the headline and the alt text of the phone mock-up;
- *  - the words on the floating UI cards (scan result, readings, DiDi's note, scans, streak). The cards are illustration, aria-hidden,
+ *  - the words on the floating UI cards (scan result, readings, the moisture gauge, scans, streak, DiDi's prompt). The cards are illustration, aria-hidden,
  *    and the numbers on them are mock-ups, so they are translated like any other visible string.
  *
  * What the cards may say (docs/landing-copy.md, "What the app can honestly claim"): the app takes photo scans of the tongue, face and iris,
@@ -27,8 +27,10 @@ export interface HeroStrings {
   result: { title: string; status: string; time: string };
   /** The two readings DiDi notes on a tongue photo: its color and its coating. */
   readings: { color: string; colorValue: string; coating: string; coatingValue: string };
-  /** DiDi's short answer: what the app sends back, and the one small next step for the day. */
-  note: { title: string; sub: string; text: string; next: string; nextValue: string };
+  /** One reading of the photo on a gauge (moisture of the tongue, as the app's own scan screen shows it), and the one small next step. */
+  gauge: { title: string; sub: string; tip: string; zones: readonly [string, string, string]; next: string; nextValue: string };
+  /** DiDi asking for a photo: the tilted card behind the phone, where the design's Upgrade card stood. */
+  mascot: { alt: string; text: string; cta: string; time: string };
   /** The card that takes the place of the paid-plan card: the three photo scans the app has today. */
   scans: { title: string; sub: string; tongue: string; face: string; iris: string };
   streak: {
@@ -48,12 +50,19 @@ export const heroCopy: Record<Locale, HeroStrings> = {
       'The checkapp home screen on a phone: DiDi, the digital health companion, says good afternoon above a button that starts a tongue scan.',
     result: { title: 'Tongue scan', status: 'Insight ready', time: '12:17 pm' },
     readings: { color: 'Color', colorValue: 'Light pink', coating: 'Coating', coatingValue: 'Thin' },
-    note: {
-      title: 'DiDi’s note',
-      sub: 'A short wellness insight',
-      text: 'Thanks for the photo. Here is what I noticed, in plain words, and one small step for today.',
+    gauge: {
+      title: 'Moisture',
+      sub: 'Read from your photo',
+      tip: 'Slightly dry',
+      zones: ['Dry', 'Balanced', 'Moist'],
       next: 'Next step',
       nextValue: 'Drink more water',
+    },
+    mascot: {
+      alt: 'DiDi holding a camera',
+      text: 'Want a closer look, Mah? Send me a photo.',
+      cta: 'Start a scan',
+      time: '4:56',
     },
     scans: {
       title: 'Photo scans',
@@ -85,12 +94,23 @@ export const heroCopy: Record<Locale, HeroStrings> = {
       coating: 'Налёт', // DRAFT
       coatingValue: 'Тонкий', // DRAFT
     },
-    note: {
-      title: 'Заметка DiDi', // DRAFT
-      sub: 'Короткий wellness-разбор', // DRAFT
-      text: 'Спасибо за фото. Вот что я заметил, простыми словами, и один маленький шаг на сегодня.', // DRAFT
+    gauge: {
+      title: 'Влажность', // DRAFT
+      sub: 'По твоему фото', // DRAFT
+      tip: 'Чуть сухо', // DRAFT
+      zones: [
+        'Сухо', // DRAFT
+        'Норма', // DRAFT
+        'Влажно', // DRAFT
+      ],
       next: 'Следующий шаг', // DRAFT
       nextValue: 'Выпей воды', // DRAFT
+    },
+    mascot: {
+      alt: 'DiDi с камерой', // DRAFT
+      text: 'Хочешь присмотреться, Mah? Пришли фото.', // DRAFT
+      cta: 'Начать скан', // DRAFT
+      time: '4:56',
     },
     scans: {
       title: 'Фото-сканы', // DRAFT

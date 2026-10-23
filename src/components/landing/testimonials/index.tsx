@@ -15,16 +15,20 @@
  * top slot: arrange() swaps them under the card below, and the stylesheet dims them wherever they land and drops them on a phone.
  * So the cards a reader sees first are the ones the page can stand behind, while all six stay on the wall as D2 decided.
  */
+import type { CSSProperties } from 'react';
 import type { Region, SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
 import { SectionIntro } from '@/components/ds/SectionIntro';
 import { testimonials, type Testimonial } from '@/content/testimonials';
 import { withBasePath } from '@/lib/paths';
 import { copy } from './copy';
+import { MarqueeToggle } from './MarqueeToggle';
 import styles from './Testimonials.module.css';
 
 const COLUMNS = 3;
 const PER_COLUMN = 2;
+/** The Figma card heights by slot (column, row), px. The date sits on margin-top:auto, so these only set the rhythm. */
+const SLOT_HEIGHTS: readonly (readonly number[])[] = [[294, 267], [236, 258], [294, 294]];
 
 /** Regions that show no wall: the six quotes are English placeholders (docs/landing-copy.md H4), so /ru/ has none. */
 const WITHOUT_TESTIMONIALS: readonly Region[] = ['ru'];
@@ -42,7 +46,7 @@ function arrange(list: readonly Testimonial[]): Testimonial[][] {
     });
 }
 
-function Card({ t }: { t: Testimonial }) {
+function Card({ t, minH, lit, once }: { t: Testimonial; minH: number; lit: boolean; once: boolean }) {
   const avatar = (width: 84 | 126) => withBasePath(`${t.avatar}-${width}.webp`);
   return (
     <figure
@@ -50,7 +54,9 @@ function Card({ t }: { t: Testimonial }) {
       data-verified={t.placeholder ? 'false' : 'true'}
       data-placeholder={t.placeholder ? 'true' : undefined}
       data-needs-replacement={t.needsReplacement ? 'true' : undefined}
-      data-once=""
+      data-lit={lit ? 'true' : undefined}
+      data-once={once ? '' : undefined}
+      style={{ '--min-h': `${minH}px` } as CSSProperties}
     >
       <figcaption className={styles.who}>
         {/* A 42px circle: the 84 / 126 px files are its 2x and 3x. Static export has no image optimiser, so a plain <img>. */}
@@ -88,6 +94,10 @@ export function TestimonialsSection({ region }: SectionProps) {
   if (WITHOUT_TESTIMONIALS.includes(region) || !testimonials.length) return null;
   const { eyebrow, title, lede } = copy.en;
   const columns = arrange(testimonials);
+  const slots = columns.map((column, c) => column.map((t, r) => ({ t, minH: SLOT_HEIGHTS[c]?.[r] ?? 270 })));
+  // Column c's ring starts with its own cards, so the first frame is the Figma wall; the others follow in turn.
+  const rings = slots.map((_, c) => [...slots.slice(c), ...slots.slice(0, c)].flat());
+  const litId = columns[1]?.[0]?.id;
 
   return (
     <section
@@ -104,14 +114,30 @@ export function TestimonialsSection({ region }: SectionProps) {
           lede={lede}
           headingId="testimonials-heading"
         />
-        <div className={styles.wall}>
-          {columns.map((column, c) => (
-            <div key={c} className={styles.col} data-fx="drift">
-              {column.map((t) => (
-                <Card key={t.id} t={t} />
-              ))}
-            </div>
-          ))}
+        <div className={styles.stage}>
+          {/* Three columns. Each carries the whole ring of cards, starting with its own two (the Figma wall), then the other
+              columns' cards, twice: the second copy is what the marquee scrolls into. Without the marquee (no JS, reduced
+              motion, phones, the low tier) only the first two cards of the first copy show: the finished Figma wall. */}
+          <div className={styles.wall} data-marquee-root>
+            {columns.map((_, c) => (
+              <div key={c} className={styles.col} data-fx="drift">
+                <div className={styles.track} data-fx="marquee">
+                  {[false, true].map((clone) => (
+                    <div
+                      key={clone ? 'clone' : 'set'}
+                      className={styles.set}
+                      {...(clone ? { 'aria-hidden': true, inert: true, 'data-clone': '' } : {})}
+                    >
+                      {rings[c].map(({ t, minH }, i) => (
+                        <Card key={t.id} t={t} minH={minH} lit={t.id === litId} once={!clone && i < PER_COLUMN} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <MarqueeToggle />
         </div>
       </Container>
     </section>

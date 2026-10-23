@@ -15,11 +15,11 @@
  * Wording (docs/landing-copy.md): the headline, the sub-line, the button label and the price small print are the client's, read from
  * src/content/copy and never retyped. The small print shows only when the region has a price (subscriptionLine is null until
  * pricing.ts has one). The eyebrow, the phone's alt text and the words on the floating cards are ours (./copy.ts, Russian marked
- * DRAFT). The phone is the same art in every region; /ru/ gets it with the screen's words in Russian (phone-ru, ./art). The plan card and the Upgrade card of the design are gone: a card with the three photo scans (tongue, face, iris)
- * stands in the plan card's place, and the Upgrade card is dropped (D1, D5, docs/landing-copy.md).
+ * DRAFT). The phone is the same art in every region; /ru/ gets it with the screen's words in Russian (phone-ru, ./art).
  *
- * The cards say only what the app does today (a photo scan on request and the short insight that comes back), so the design's
- * smartwatch, Heart Rate, Sleep and Body Composition cards are replaced by a finished-scan card, two readings and DiDi's note.
+ * The cards say only what the app does today (a photo scan on request and the short insight that comes back). So the design's
+ * smartwatch, Heart Rate, Sleep and Body Composition cards are a finished-scan card, two readings and a moisture gauge; the plan
+ * card is the three photo scans; the Upgrade card is DiDi asking for a photo (D1, D5, docs/landing-copy.md). Same places, same glass.
  * The headline and the sub-line go through KeepHyphenated, so "check-in" and "once-a-year" never break after the hyphen.
  * Past 1473px the floor poster is narrower than the section, so a pair of side strips (the poster's own edge columns, extended)
  * carries the green atmosphere out to the screen edges instead of leaving black walls.
@@ -33,7 +33,7 @@ import { GradientHeading } from '@/components/ds/GradientHeading';
 import { Picture } from '@/components/ds/Picture';
 import { GlCanvas } from '@/experience/GlCanvas';
 import { APP_DOWNLOAD_URL } from '@/lib/constants';
-import { NoteCard, ReadingTiles, ResultCard, ScansCard, StreakCard } from './cards';
+import { GaugeCard, MascotCard, ReadingTiles, ResultCard, ScansCard, StreakCard } from './cards';
 import { heroCopy } from './copy';
 import { KeepHyphenated } from './keep-hyphenated';
 import s from './hero.module.css';
@@ -145,8 +145,17 @@ export function HeroSection({ region }: SectionProps) {
                 <ResultCard t={t.result} />
                 <div className={s.checks}>
                   <ReadingTiles t={t.readings} />
-                  <NoteCard t={t.note} />
+                  <GaugeCard t={t.gauge} />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* DiDi's prompt: the tilted card at the phone's right edge, where the Upgrade card stood. Desktop only. */}
+          <div className={`${s.plane} ${s.mascot}`} data-depth="30">
+            <div className={s.exitMascot}>
+              <div className={s.float} data-fx="bob" style={bob(7.2, 2.4)}>
+                <MascotCard t={t.mascot} />
               </div>
             </div>
           </div>

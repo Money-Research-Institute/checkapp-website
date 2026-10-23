@@ -87,9 +87,9 @@ function startOnce(reduced: boolean): () => void {
 
 /* ---------------------------------------------------------------- [data-fx="bob"] */
 
-/** The idle bob is the page's one infinite CSS loop: pause it while it is off-screen. */
+/** The idle bob and the testimonials marquee are the page's infinite CSS loops: pause them while they are off-screen. */
 function startBobPause(): () => void {
-  const els = document.querySelectorAll('[data-fx="bob"]');
+  const els = document.querySelectorAll('[data-fx="bob"], [data-fx="marquee"]');
   if (!els.length) return noop;
   const io = new IntersectionObserver(
     (entries) => {

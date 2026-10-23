@@ -23,8 +23,10 @@ import s from './hero.module.css';
  * Every size is calc(N * var(--u)) in hero.module.css, so the whole composition scales with the 1440 grid.
  *
  * The cards show only what the app does today: a photo scan of the tongue, face or iris on request, and the short wellness
- * insight that comes back (docs/landing-copy.md). The design's smartwatch, Heart Rate, Sleep and Body Composition cards are gone:
- * they advertised wearable sync and body readings the app does not have. The same Figma glass vocabulary carries the replacements.
+ * insight that comes back (docs/landing-copy.md). The design's smartwatch, Heart Rate, Sleep and Body Composition cards were
+ * wearable sync and body readings the app does not have, and its Premium+ and Upgrade cards sold a plan it cannot sell: each has a
+ * stand-in in the same glass, in the same place, with the same accent colours (scan, two readings, a gauge, the three scans, DiDi's
+ * prompt), so the composition is the design's and every word on it is true.
  *
  * The element marked data-once plays a one-shot when it first comes into view (the engine's [data-once] machine): the check
  * of the finished scan pops in once. The resting state is the finished frame, so no-JS, T0 and reduced motion all show the
@@ -97,26 +99,63 @@ export function ReadingTiles({ t }: { t: HeroStrings['readings'] }) {
 }
 
 /**
- * DiDi's short answer, where the Body Composition gauge stood: a line of plain words and the one small next step. It carries no
- * reading about the body and no verdict, only what the app sends back after a photo (docs/landing-copy.md).
+ * One reading on a gauge, where the Body Composition gauge stood: how moist the tongue looks in the photo, the way the app's own
+ * scan screen words it ("Slightly dry"), and the one small next step. The bar runs from dry to moist through plain colours, no red, and
+ * its three zones are descriptions, not grades: no number, no "Normal", no verdict on the body (docs/landing-copy.md).
  */
-export function NoteCard({ t }: { t: HeroStrings['note'] }) {
+export function GaugeCard({ t }: { t: HeroStrings['gauge'] }) {
   return (
     <div className={`${s.glass} fx-edge ${s.note}`} aria-hidden="true">
       <div className={s.noteHead}>
         <span className={s.noteTitle}>{t.title}</span>
-        <span className={s.noteSub}>
-          <KeepHyphenated>{t.sub}</KeepHyphenated>
+        <span className={s.noteSub}>{t.sub}</span>
+      </div>
+      <div className={s.gauge}>
+        <span className={s.gaugeTrack}>
+          <span className={s.gaugeTip}>{t.tip}</span>
+          <span className={s.gaugeBar}>
+            <span className={s.gaugeKnob} />
+          </span>
+        </span>
+        <span className={s.gaugeZones}>
+          {t.zones.map((zone) => (
+            <span key={zone}>{zone}</span>
+          ))}
         </span>
       </div>
-      <span className={s.noteText}>
-        <KeepHyphenated>{t.text}</KeepHyphenated>
-      </span>
       <div className={s.goal}>
         <span>{t.next}</span>
         <span className={s.goalValue}>{t.nextValue}</span>
       </div>
       <Glow right={25} top={24} />
+    </div>
+  );
+}
+
+/**
+ * DiDi asking for a photo: the tilted card behind the phone's right edge (desktop only), where the design's Upgrade card stood. Same
+ * glass, same tilt and the same character art (DiDi with a camera, Figma 2601:12499); the words invite a photo instead of selling a
+ * plan, and the label is the scan, not an upgrade. A card the size of its picture would be a poster, so the picture is a window.
+ */
+export function MascotCard({ t }: { t: HeroStrings['mascot'] }) {
+  return (
+    <div className={`${s.glass} fx-edge ${s.mascotCard}`} aria-hidden="true">
+      <Picture
+        base="/landing/hero/didi-cam"
+        widths={[360, 720]}
+        sizes="170px"
+        width={720}
+        height={405}
+        alt=""
+        className={s.mascotArt}
+      />
+      <span className={s.mascotText}>
+        <KeepHyphenated>{t.text}</KeepHyphenated>
+      </span>
+      <span className={s.mascotFoot}>
+        <span className={s.mascotCta}>{t.cta}</span>
+        <span className={s.mascotTime}>{t.time}</span>
+      </span>
     </div>
   );
 }
