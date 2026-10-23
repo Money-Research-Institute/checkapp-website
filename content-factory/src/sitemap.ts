@@ -91,7 +91,7 @@ function buildBlogEntry(
 
 function readSitemap(): { urlset: { url: SitemapEntry[] } } {
   const SITEMAP_PATH = getSitemapPath();
-  let sitemap: { urlset: { url: SitemapEntry[] } } = { urlset: { url: [] } };
+  const sitemap: { urlset: { url: SitemapEntry[] } } = { urlset: { url: [] } };
 
   if (fs.existsSync(SITEMAP_PATH)) {
     const parser = new XMLParser({ ignoreAttributes: false });

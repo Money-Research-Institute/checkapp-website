@@ -40,7 +40,7 @@ const seen = new Set(badReport.issues.map((i) => i.id)); // any severity: the po
 for (const id of PLANTED) check(seen.has(id), `catches ${id}`);
 
 console.log('wrong-language fixture (lang="ru" and Russian text on a page that must be English)');
-const wl = run('wronglang');
+run('wronglang');
 const wlReport = JSON.parse(await readFile(resolve(ROOT, '.qa/selftest/wronglang.json'), 'utf8'));
 const wlSeen = new Set(wlReport.issues.map((i) => i.id));
 for (const id of ['lang-mismatch', 'lang-content']) check(wlSeen.has(id), `catches ${id}`);

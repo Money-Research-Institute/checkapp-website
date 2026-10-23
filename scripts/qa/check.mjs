@@ -17,7 +17,7 @@
 import { chromium } from 'playwright-core';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
-import { extname, join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serve, candidates } from './static-server.mjs';
 import { cyrillicShare, findClaims, findPlaceholders, findUnsupported } from './claims.mjs';
