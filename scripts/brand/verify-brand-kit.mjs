@@ -19,6 +19,7 @@ for (const n of HAIRLINE_SIZES) for (const f of FORMATS) expected.push({ file: `
 for (const f of FULL_BLEED) expected.push({ file: f.file, w: f.size, h: f.size, format: 'png' });
 for (const f of FAVICON) expected.push({ file: `public/brand/icons/favicon-${f.canvas}.png`, w: f.canvas, h: f.canvas, format: 'png' });
 expected.push({ file: 'public/og-default.png', w: 1200, h: 630, format: 'png' });
+expected.push({ file: 'public/og-default-ru.png', w: 1200, h: 630, format: 'png' });
 
 const sharpFormat = { avif: 'heif', webp: 'webp', png: 'png' };
 let bad = 0;

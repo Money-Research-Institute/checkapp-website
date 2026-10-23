@@ -62,8 +62,10 @@ export function LogoMark({ size = 40, decorative = false, priority = false, clas
     ...(hairline ? null : { filter: TILE_SHADOW }),
   };
 
+  // The <picture> is the flex item wherever the mark sits in a row. It must not shrink: the global `img { max-width: 100% }`
+  // would then resolve against a 0-wide parent and the tile would vanish (it did in the /ru/ header between 768 and 860).
   return (
-    <picture>
+    <picture style={{ display: 'block', flex: 'none', width: px, height: px }}>
       <source type="image/avif" srcSet={srcSet(prefix, ladder, px, 'avif')} />
       <source type="image/webp" srcSet={srcSet(prefix, ladder, px, 'webp')} />
       <img

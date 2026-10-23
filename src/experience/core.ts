@@ -48,17 +48,30 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 /* ---------------------------------------------------------------- [data-once] */
 
 /**
- * absent attribute = final state. At boot an element gets data-once-state="armed" (CSS may show the start frame only
- * under [data-once-state="armed"]); on its first >= 35 % intersection it becomes "played" and CSS runs the one-shot.
- * Reduced motion never arms anything: the finished frame stays.
+ * absent attribute = final state. At boot an element that is BELOW (or above) the first view gets data-once-state="armed"
+ * (CSS may show the start frame only under [data-once-state="armed"]); on its first >= 35 % intersection it becomes
+ * "played" and CSS runs the one-shot. Reduced motion never arms anything: the finished frame stays.
+ *
+ * An element that already shows on screen when this chunk boots is left alone, in its finished state. The chunk boots after
+ * LCP and idle, so by then the user has been looking at that element for a while (a reload that restored the scroll, a
+ * back-navigation, an anchor, the whole hero): arming it would snap it back to its start frame and replay, which reads as a
+ * glitch on content they were already reading.
  */
 function startOnce(reduced: boolean): () => void {
   const els = document.querySelectorAll('[data-once]');
   if (reduced || !els.length) return noop;
-  els.forEach((el) => el.setAttribute('data-once-state', 'armed'));
+  // An observer reports every target once, right after observe(), with its real (clip-aware) visibility: that first report
+  // decides between "already on screen: leave it finished" and "off screen: arm it".
+  const decided = new Set<Element>();
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
+        if (!decided.has(e.target)) {
+          decided.add(e.target);
+          if (e.isIntersecting) io.unobserve(e.target);
+          else e.target.setAttribute('data-once-state', 'armed');
+          continue;
+        }
         const tall = !!e.rootBounds && e.intersectionRect.height >= e.rootBounds.height * 0.5;
         if (e.isIntersecting && (e.intersectionRatio >= 0.35 || tall)) {
           e.target.setAttribute('data-once-state', 'played');

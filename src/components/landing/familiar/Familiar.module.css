@@ -7,7 +7,9 @@
  *            zig-zag scales with the phone: 0, .493W, .071W, .571W.
  *   600-899  2 x 2 with the stagger (every second phone sits 56px lower).
  *   strip    < 600, and landscape phones (short and not wide): a native scroll-snap "day strip". The wrapper scrolls,
- *            the next slide peeks. The strip block is written after the others and overrides them.
+ *            the next slide peeks (a fifth of it: slides are min(264px, 64vw)), its screen already on and with a faint green
+ *            rim so it reads as a phone and not as a dark edge, and a pager of four dots sits under the strip. The strip block
+ *            is written after the others and overrides them.
  * Under the phones sits the client's "what it does now" line with the three scan chips (.scope): one row from 1024, stacked below.
  * Russian runs 15-30% longer: nothing here has a fixed height, and the lede / h2 / captions are checked in /ru/ at every width.
  *
@@ -22,7 +24,7 @@
   --fam-side: var(--gutter); /* page gutter beside the content */
   --fam-pad: 20px; /* card padding */
   --fam-line: 60px; /* connector length */
-  --fam-s: min(280px, 78vw); /* slide width on the strip */
+  --fam-s: min(264px, 64vw); /* slide width on the strip: the next phone peeks about a fifth of its width */
   position: relative;
   isolation: isolate;
   /* 40px, not Figma's 0: the pill sits in the last 53px of the usual-way frame there, and that overlap stays out of the DOM. */
@@ -392,7 +394,7 @@
   /* The scroller: focusable and named (axe: scrollable-region-focusable), bleeding to both screen edges. */
   .strip {
     display: block;
-    margin: 32px calc(var(--fam-side) * -1) 0;
+    margin: 16px calc(var(--fam-side) * -1) 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
@@ -411,7 +413,7 @@
     margin: 0;
     /* Slide 1 centred; the next one peeks. */
     padding-inline: max(16px, env(safe-area-inset-left, 0px), calc((100vw - var(--fam-s)) / 2));
-    padding-bottom: 16px;
+    padding-block: 16px; /* room for the phones' rim glow, which the scroller would otherwise clip */
   }
   .day {
     flex: 0 0 var(--fam-s);
@@ -424,6 +426,21 @@
   .day:nth-child(even) {
     margin-top: 24px; /* the zig-zag, as a small rhythm */
   }
+  /* A faint green rim: on the black page the peeking phone is a lit screen and a metal edge, and this is what makes the edge read. */
+  .device {
+    isolation: isolate;
+  }
+  .device::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0.5% 1.2%;
+    border-radius: 16% / 7.8%;
+    box-shadow:
+      0 0 0 1px rgb(138 238 128 / 0.22),
+      0 0 22px rgb(138 238 128 / 0.14);
+    pointer-events: none;
+  }
   .cap {
     gap: 12px;
   }
@@ -433,6 +450,77 @@
   .text {
     font-size: 14px;
     line-height: 1.4;
+  }
+}
+
+/* The pager (FamiliarPager): one 44 x 44 hit area per dot, so four of them are 176px wide. Only where the strip scrolls. */
+.pager {
+  display: none;
+}
+@media (max-width: 599.98px), (orientation: landscape) and (max-height: 500px) and (max-width: 940px) {
+  .pager {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+  }
+}
+.dot {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dot:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -6px;
+  border-radius: 12px;
+}
+/* An 8px dot (white at .45: 4.4:1 on the black page, over the 3:1 a control needs) with a larger green one that fades in over it. */
+.dotMark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.45);
+}
+.dotMark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--c-accent);
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.dot[aria-current='true'] .dotMark::after {
+  opacity: 1;
+  transform: scale(1.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dotMark::after {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .dotMark {
+    background: GrayText;
+  }
+  .dot[aria-current='true'] .dotMark {
+    background: Highlight;
+  }
+  .device::before {
+    display: none;
   }
 }
 
@@ -609,7 +697,8 @@
     }
 
     /* The strip: the same three beats, keyed to each slide's entrance along it (no vertical parallax, so the drift is
-       off). Slide 1 is centred at rest, so it starts fully on; the peeking slide wakes up as it is swiped in. */
+       off). Slide 1 is centred at rest, so it starts fully on; the peeking slide is lit by the time its fifth is showing, and
+       its connector and caption build as it is swiped in. */
     @media (max-width: 599.98px), (orientation: landscape) and (max-height: 500px) and (max-width: 940px) {
       .device::after {
         animation-name: screen-on;
@@ -617,7 +706,7 @@
         animation-timing-function: linear;
         animation-fill-mode: both;
         animation-timeline: view(inline);
-        animation-range: entry 0% entry 55%;
+        animation-range: entry 0% entry 20%; /* the peeking phone shows about 20%: it is already lit at rest */
       }
       .line {
         animation-name: line-draw;

@@ -34,6 +34,7 @@ export function SiteFrame({
         {dict.skipLink}
       </a>
       <Header
+        locale={locale}
         dict={dict.header}
         homeHref={region ? RegionPaths[region] : '/'}
         ctaLabel={ctaLabel ?? dict.header.cta}
@@ -42,7 +43,7 @@ export function SiteFrame({
       />
       <main id="main">{children}</main>
       <Footer locale={locale} region={region} />
-      <MobileCtaBar label={ctaLabel ?? dict.mobileBar.cta} />
+      <MobileCtaBar label={ctaLabel ?? dict.mobileBar.cta} startHidden={region !== undefined} />
       <CookieConsent dict={dict.cookie} />
     </>
   );

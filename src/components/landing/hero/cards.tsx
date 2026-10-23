@@ -1,13 +1,14 @@
 import type { CSSProperties } from 'react';
 import { Picture } from '@/components/ds/Picture';
 import type { HeroStrings } from './copy';
+import { KeepHyphenated } from './keep-hyphenated';
 import {
-  ConnectedDot,
+  CheckGlyph,
+  DropGlyph,
   FaceGlyph,
-  HeartTick,
   IrisGlyph,
-  MoonGlyph,
-  SyncGlyph,
+  LayersGlyph,
+  StatusDot,
   TickAhead,
   TickDone,
   TickToday,
@@ -21,9 +22,13 @@ import s from './hero.module.css';
  * from ./copy.ts in the page's language (the region's `locale`), so /ru/ has no English on them.
  * Every size is calc(N * var(--u)) in hero.module.css, so the whole composition scales with the 1440 grid.
  *
- * Elements marked data-once play a one-shot when they first come into view (the engine's [data-once] machine): the
- * body-fat knob slides in, the heart gives one soft beat, the sync glyph turns once. The resting state is the finished
- * frame, so no-JS, T0 and reduced motion all show the design as drawn.
+ * The cards show only what the app does today: a photo scan of the tongue, face or iris on request, and the short wellness
+ * insight that comes back (docs/landing-copy.md). The design's smartwatch, Heart Rate, Sleep and Body Composition cards are gone:
+ * they advertised wearable sync and body readings the app does not have. The same Figma glass vocabulary carries the replacements.
+ *
+ * The element marked data-once plays a one-shot when it first comes into view (the engine's [data-once] machine): the check
+ * of the finished scan pops in once. The resting state is the finished frame, so no-JS, T0 and reduced motion all show the
+ * design as drawn.
  */
 
 type GlowVars = CSSProperties & { '--gx': number; '--gy': number };
@@ -35,31 +40,27 @@ function Glow({ right, bottom, top }: { right: number; bottom?: number; top?: nu
   return <span className={top === undefined ? s.glow : `${s.glow} ${s.glowTop}`} style={style} aria-hidden="true" />;
 }
 
-export function WatchCard({ t }: { t: HeroStrings['watch'] }) {
+/**
+ * The header of a finished scan, where the smartwatch card stood in the design: the scan, that DiDi's insight is back, and when.
+ * The thumb is the scan's own glyph, the same mark the Photo scans card uses.
+ */
+export function ResultCard({ t }: { t: HeroStrings['result'] }) {
   return (
-    <div className={`${s.glass} fx-edge ${s.watch}`} aria-hidden="true" data-once>
-      <span className={s.watchThumb}>
-        <Picture
-          base="/landing/hero/watch"
-          widths={[114, 171]}
-          sizes="58px"
-          width={171}
-          height={171}
-          alt=""
-          className={s.watchImg}
-        />
+    <div className={`${s.glass} fx-edge ${s.result}`} aria-hidden="true" data-once>
+      <span className={s.resultThumb}>
+        <TongueGlyph className={s.resultGlyph} />
       </span>
-      <span className={s.watchText}>
+      <span className={s.resultText}>
         <span className={s.status}>
-          <ConnectedDot className={s.dot} />
-          <span className={s.statusLabel}>{t.connected}</span>
+          <StatusDot className={s.dot} />
+          <span className={s.statusLabel}>{t.title}</span>
         </span>
-        <span className={s.syncRow}>
-          <span className={s.syncLead}>
-            <SyncGlyph className={s.sync} />
-            <span>{t.lastSync}</span>
+        <span className={s.stampRow}>
+          <span className={s.stampLead}>
+            <CheckGlyph className={s.check} />
+            <span>{t.status}</span>
           </span>
-          <span className={s.syncTime}>{t.time}</span>
+          <span className={s.stampTime}>{t.time}</span>
         </span>
       </span>
       <Glow right={49} bottom={63.5} />
@@ -67,26 +68,27 @@ export function WatchCard({ t }: { t: HeroStrings['watch'] }) {
   );
 }
 
-export function VitalTiles({ t }: { t: HeroStrings['vitals'] }) {
+/** The two readings of a tongue photo, in the tile pair where Heart Rate and Sleep stood: color and coating. */
+export function ReadingTiles({ t }: { t: HeroStrings['readings'] }) {
   return (
     <div className={s.vitals}>
-      <div className={`${s.glass} fx-edge ${s.tile}`} aria-hidden="true" data-once>
+      <div className={`${s.glass} fx-edge ${s.tile}`} aria-hidden="true">
         <span className={s.iconCircle} style={{ background: '#ffebee' }}>
-          <HeartTick className={s.heart} />
+          <DropGlyph className={s.tileGlyph} />
         </span>
         <span className={s.tileText}>
-          <span className={s.tileLabel}>{t.heartRate}</span>
-          <span className={s.tileValue}>{t.heartValue}</span>
+          <span className={s.tileLabel}>{t.color}</span>
+          <span className={s.tileValue}>{t.colorValue}</span>
         </span>
         <Glow right={24.9} bottom={41.2} />
       </div>
       <div className={`${s.glass} fx-edge ${s.tile}`} aria-hidden="true">
         <span className={s.iconCircle} style={{ background: '#e3f2fd' }}>
-          <MoonGlyph className={s.moon} />
+          <LayersGlyph className={s.tileGlyph} />
         </span>
         <span className={s.tileText}>
-          <span className={s.tileLabel}>{t.sleep}</span>
-          <span className={s.tileValue}>{t.sleepValue}</span>
+          <span className={s.tileLabel}>{t.coating}</span>
+          <span className={s.tileValue}>{t.coatingValue}</span>
         </span>
         <Glow right={24.5} bottom={41.2} />
       </div>
@@ -94,28 +96,25 @@ export function VitalTiles({ t }: { t: HeroStrings['vitals'] }) {
   );
 }
 
-export function BodyCompositionCard({ t }: { t: HeroStrings['body'] }) {
+/**
+ * DiDi's short answer, where the Body Composition gauge stood: a line of plain words and the one small next step. It carries no
+ * reading about the body and no verdict, only what the app sends back after a photo (docs/landing-copy.md).
+ */
+export function NoteCard({ t }: { t: HeroStrings['note'] }) {
   return (
-    <div className={`${s.glass} fx-edge ${s.body}`} aria-hidden="true" data-once>
-      <div className={s.bodyHead}>
-        <span className={s.bodyTitle}>{t.title}</span>
-        <span className={s.bodyState}>{t.state}</span>
-      </div>
-      <div className={s.progress}>
-        <span className={s.bar} />
-        <span className={s.rider}>
-          <span className={s.tip}>{t.value}</span>
-          <span className={s.knob} />
-        </span>
-        <span className={s.scale}>
-          {t.scale.map((label) => (
-            <span key={label}>{label}</span>
-          ))}
+    <div className={`${s.glass} fx-edge ${s.note}`} aria-hidden="true">
+      <div className={s.noteHead}>
+        <span className={s.noteTitle}>{t.title}</span>
+        <span className={s.noteSub}>
+          <KeepHyphenated>{t.sub}</KeepHyphenated>
         </span>
       </div>
+      <span className={s.noteText}>
+        <KeepHyphenated>{t.text}</KeepHyphenated>
+      </span>
       <div className={s.goal}>
-        <span>{t.fat}</span>
-        <span className={s.goalValue}>{t.value}</span>
+        <span>{t.next}</span>
+        <span className={s.goalValue}>{t.nextValue}</span>
       </div>
       <Glow right={25} top={24} />
     </div>

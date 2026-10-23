@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { RegionHreflang, RegionPaths, Regions, getRegionCopy, type Locale, type Region } from '@/content/copy';
-import { DEFAULT_OG_IMAGE, LOGO_URL, SITE_NAME, SITE_URL } from './constants';
+import { DEFAULT_OG_IMAGE, DEFAULT_OG_IMAGE_RU, LOGO_URL, SITE_NAME, SITE_URL } from './constants';
 
 type PageMeta = {
   title: string;
@@ -93,8 +93,8 @@ export function breadcrumbSchema(items: { name: string; path: string }[]) {
 }
 
 /**
- * Structured data stays in English (it is for crawlers, not for the page's reader). The only thing that follows the page is
- * `inLanguage` on the app, so a Russian page says it is Russian.
+ * Structured data is for crawlers, so the organization stays in English. The app follows the page's language: `inLanguage`
+ * and, on the Russian page, the description (see mobileApplicationSchema).
  */
 export function organizationSchema() {
   return {
@@ -111,14 +111,19 @@ export function organizationSchema() {
   };
 }
 
+/** The app's description per language. English is ours; Russian is the client's own hero subheadline (never retyped here). */
+const AppDescription: Record<Locale, string> = {
+  en: 'A wellness companion app: take a photo of your tongue, face or iris and DiDi shares a short wellness insight, only when you ask. Not a medical device.',
+  ru: getRegionCopy('ru').hero.subheadline,
+};
+
 export function mobileApplicationSchema(locale: Locale = 'en') {
   return {
     '@context': 'https://schema.org',
     '@type': 'MobileApplication',
     name: SITE_NAME,
     inLanguage: locale,
-    description:
-      'A wellness companion app: take a photo of your tongue, face or iris and DiDi shares a short wellness insight, only when you ask. Not a medical device.',
+    description: AppDescription[locale],
     applicationCategory: 'HealthApplication',
     operatingSystem: 'Android',
     image: LOGO_URL,
@@ -130,6 +135,9 @@ export function mobileApplicationSchema(locale: Locale = 'en') {
 
 /** The Open Graph locale of each landing page. */
 const OgLocale: Record<Region, string> = { us: 'en_US', eu: 'en_IE', gulf: 'en_AE', ru: 'ru_RU' };
+
+/** The share image (Open Graph, Twitter) of each language: a Russian page must not unfurl with an English card. */
+const LandingOgImage: Record<Locale, string> = { en: DEFAULT_OG_IMAGE, ru: DEFAULT_OG_IMAGE_RU };
 
 /** The <title> of each landing page (docs/landing-copy.md: wordmark first, then DiDi in the page's language). */
 const LandingTitle: Record<Locale, string> = {
@@ -149,6 +157,7 @@ export function landingMetadata(region: Region): Metadata {
     title: LandingTitle[copy.locale],
     description: copy.hero.subheadline,
     path: RegionPaths[region],
+    ogImage: LandingOgImage[copy.locale],
     languages,
     locale: OgLocale[region],
     alternateLocales: Regions.filter((r) => r !== region).map((r) => OgLocale[r]),

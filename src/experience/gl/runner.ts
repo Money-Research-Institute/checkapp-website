@@ -37,6 +37,8 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
   const poster = stage?.querySelector<HTMLImageElement>('[data-webgl-poster]');
   if (!stage || !poster) return noop; // contract broken: the canvas stays in "fallback" and the poster stays the page
 
+  // The section that clips the stage (overflow: clip). Scroll-exit is measured against it, see sceneState().
+  const host = stage.closest('[data-section]') ?? stage;
   const fitMode = canvas.dataset.posterFit === 'contain' ? 'contain' : 'cover';
   const [posX, posY] = parsePosition(canvas.dataset.posterPos);
   const quality = env.quality;
@@ -45,6 +47,7 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
   const fineQuery = matchMedia('(hover: hover) and (pointer: fine)');
 
   let scene: Scene | null = null;
+  let ctx: SceneContext | null = null;
   let texture: WebGLTexture | null = null;
   let uploadedSrc = '';
   const posterSize = { width: 1, height: 1 };
@@ -153,18 +156,31 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
   /* ------------------------------------------------------------ frames */
 
   function sceneState() {
+    // Reduced motion draws ONE still frame, and that frame is the poster: no scroll term, no pointer, at any scroll position.
+    if (reduced) {
+      state.scroll = 0;
+      state.exit = 0;
+      state.pointer.x = state.pointer.y = 0;
+      state.onScreen = onScreen;
+      return;
+    }
     const vh = window.innerHeight;
     const r = stage!.getBoundingClientRect();
     state.scroll = clamp((vh - r.top) / (vh + r.height), 0, 1);
-    state.exit = clamp(-r.top / Math.max(r.height, 1), 0, 1);
+    // exit: how far the VISIBLE floor has scrolled out of the top. The section clips the stage, so its visible part starts at
+    // max(stage top, section top). Measuring from the stage's own top breaks wherever the stage pokes out above the section
+    // (a landscape phone: the 3:4 floor box is taller than the hero) and dims the very first frame by ~40 %. With the
+    // section's top as the floor, exit is exactly 0 at scrollY = 0 in every layout, and unchanged where the stage sits inside.
+    const h = host === stage ? r : host.getBoundingClientRect();
+    const top = Math.max(r.top, h.top);
+    state.exit = clamp(-top / Math.max(r.bottom - top, 1), 0, 1);
     state.onScreen = onScreen;
-    return r;
   }
 
   function drawOnce(dt: number) {
     if (!scene || lost || disposed) return;
     sceneState();
-    scene.draw(t, dt, state);
+    scene.draw(reduced ? 0 : t, dt, state); // reduced: t = 0, so every additive term is 0 and the frame is the poster
     if (firstPending) onFirstFrame();
   }
 
@@ -290,7 +306,7 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
       uploadTexture();
       const instance = mod.default();
       scene = instance;
-      const ctx: SceneContext = {
+      const sceneCtx: SceneContext = {
         gl,
         canvas,
         posterImage: poster!,
@@ -301,7 +317,8 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
         quality,
         reducedMotion: reduced,
       };
-      await instance.init(ctx);
+      ctx = sceneCtx;
+      await instance.init(sceneCtx);
       if (disposed || lost) return;
       await env.idle();
       if (disposed || lost) return;
@@ -359,8 +376,18 @@ export function runCanvas(claim: GlClaim, env: GlEnv): () => void {
 
   const onReduce = () => {
     reduced = reduceQuery.matches;
+    if (ctx) ctx.reducedMotion = reduced;
+    if (reduced) {
+      // Switching on mid-run: forget the running clock and the damped pointer, so the still frame is the t = 0 frame (the
+      // poster), not whatever pulse phase the loop happened to be in.
+      t = 0;
+      targetX = targetY = 0;
+    }
     sync();
-    if (reduced) debouncedStill();
+    if (ready && !lost && !disposed) {
+      applySize(); // the scene sizes its mote count from ctx.reducedMotion
+      renderNow();
+    }
   };
   reduceQuery.addEventListener('change', onReduce);
 

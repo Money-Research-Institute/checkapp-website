@@ -51,7 +51,11 @@ export interface SceneState {
   pointer: { x: number; y: number };
   /** 0..1: how far the stage has travelled through the viewport (0 entering at the bottom, 1 gone at the top). */
   scroll: number;
-  /** 0..1: how much of the stage has scrolled out of the top of the viewport. 0 while it is fully below the fold edge. */
+  /**
+   * 0..1: how far the visible part of the stage has scrolled out of the top of the viewport. The stage is clipped by its
+   * [data-section], so this is measured from the section's top when the stage pokes out above it: exactly 0 at scrollY = 0
+   * in every layout. Always 0 under reduced motion (the single still frame is the poster).
+   */
   exit: number;
   onScreen: boolean;
 }
@@ -67,7 +71,8 @@ export interface Scene {
   /**
    * Draw one frame into the default framebuffer. `t` is seconds of DRAWN time since the first frame (it does not
    * advance while paused, so every additive term is exactly 0 on the first frame, where the canvas must equal the
-   * poster). `dt` is clamped to 0.05. Under reduced motion this runs once per resize with dt = 0.
+   * poster). `dt` is clamped to 0.05. Under reduced motion this runs once per resize with t = 0, dt = 0, exit = 0 and a
+   * centred pointer, whatever the scroll position: the still frame is the poster.
    */
   draw(t: number, dt: number, state: SceneState): void;
   /** Delete every GL object you created. Called on teardown, never on context loss (the context is already gone). */

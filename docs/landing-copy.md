@@ -66,7 +66,9 @@ sections above, 404). Put them in `src/components/landing/<slug>/copy.ts` (`{ en
 
 `src/i18n/` holds the dictionaries (`en`, `ru`) for the header, mobile CTA bar, cookie notice, footer labels and 404: no i18n library, a
 typed accessor, static export. The legal and blog pages stay English. Each landing page sets its own `<title>`, description (the hero
-subheadline is a good one), canonical, `hreflang` alternates and `og:locale`, and is in the sitemap.
+subheadline is a good one), canonical, `hreflang` alternates, `og:locale` and share image (`/og-default-ru.png` on `/ru/`: the client's
+Russian headline, made by `npm run og:generate`), and is in the sitemap. The app's JSON-LD description on `/ru/` is the Russian hero
+subheadline.
 
 ## How the four pages are built
 

@@ -2,11 +2,15 @@
  * Testimonials wall (Figma 2601:13023, 1320 x 954).
  *
  * Layout per width (mobile first):
- *   < 600          one column, ordered Alex, Sofia, Ryan, Emily (Liam and Daniel are display:none; Emily is the faded teaser)
- *   600 - 959      two columns (Alex+Emily | Sofia+Ryan) plus a full-width Daniel | Liam row, the teaser row, faded
+ *   < 600          one column, ordered by slot (left top, centre top, centre bottom, left bottom); the right column and any flagged
+ *                  card are display:none, and the last card shown is the faded teaser
+ *   600 - 959      two columns (left | centre) plus a full-width row of the right column's two cards, the teaser row, faded
  *   960 - 1023     three tighter columns
  *   1024 and up    three columns; 1280 and up is the Figma measure (3 x 424, gap 24 inside 1320)
  *   landscape phone (<= 500px tall): two columns, no teaser row
+ *
+ * A card flagged needsReplacement (data-needs-replacement) is never at full brightness and is dropped on a phone; index.tsx also
+ * seats it under its column's other card, so the bright row is the benign one. See src/content/testimonials.ts.
  *
  * The DOM is three column wrappers of two cards each. Each wrapper is an independent flex stack, vertically centred in the
  * tallest one: that is what lands the tops at +13.5 / +47 / 0 at 1440 (stacks of 585 / 518 / 612 px in a 612 px box).
@@ -69,19 +73,19 @@
   --fx-to: 0px, -24px;
 }
 .col:nth-child(3) {
-  display: none; /* Daniel (leftover template quote) and Liam: dropped first */
+  display: none; /* the right column is dropped first */
 }
 .col:nth-child(1) > .card:nth-child(1) {
-  order: 1; /* Alex */
+  order: 1;
 }
 .col:nth-child(2) > .card:nth-child(1) {
-  order: 2; /* Sofia */
+  order: 2;
 }
 .col:nth-child(2) > .card:nth-child(2) {
-  order: 3; /* Ryan */
+  order: 3;
 }
 .col:nth-child(1) > .card:nth-child(2) {
-  order: 4; /* Emily, the faded teaser */
+  order: 4; /* the faded teaser */
   --rest: var(--rest-teaser);
 }
 
@@ -115,7 +119,14 @@
   border-radius: inherit;
 }
 
-/* the one lit card: Sofia's glow, baked as a radial falloff that the card clips (no blur filter) */
+/* A card flagged needsReplacement (src/content/testimonials.ts) is never at full brightness, whichever slot it lands in, and the
+   single phone column has no room for it. Five classes of specificity, so it out-ranks the positional --rest rules below. */
+.section .wall .col .card[data-needs-replacement='true'] {
+  --rest: var(--rest-teaser);
+  display: none;
+}
+
+/* the one lit card (centre top in the design): a glow baked as a radial falloff that the card clips (no blur filter) */
 .col:nth-child(2) > .card:nth-child(1) {
   --glow: radial-gradient(
     circle at 95% 90%,
@@ -172,11 +183,6 @@
   overflow-wrap: break-word;
 }
 
-/* Daniel's quote is a little wider in the design (378 px, four lines); it is the placeholder that gets replaced anyway */
-.col:nth-child(3) > .card:nth-child(1) .quote p {
-  max-inline-size: none;
-}
-
 /* pinned to the bottom of the card whatever its min-height */
 .date {
   display: block;
@@ -208,18 +214,22 @@
     gap: var(--gap);
     min-width: 0;
   }
-  /* Daniel | Liam: a full-width row under the two columns, the faded teaser */
+  /* the right column's two cards: a full-width row under the two columns, the faded teaser */
   .col:nth-child(3) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-column: 1 / -1;
+  }
+  /* two columns have room for the flagged cards again, dimmed (the rule above) */
+  .section .wall .col .card[data-needs-replacement='true'] {
+    display: flex;
   }
   /* two columns of equal height would sit level: drop the right one a little, the way the 3-column wall staggers */
   .col:nth-child(2) {
     margin-top: 32px;
   }
   .col:nth-child(1) > .card:nth-child(2) {
-    --rest: 1; /* Emily is a full card again: only the Daniel | Liam row is the teaser */
+    --rest: 1; /* the left column's second card is a full card again: only the right column's row is the teaser */
   }
   .col:nth-child(3) > .card {
     --rest: var(--rest-teaser);
@@ -272,7 +282,7 @@
     display: flex;
     grid-column: auto;
   }
-  /* bottom row (Emily, Ryan, Liam) rests at .55; the top row is full. Same specificity as the rules above, so order wins. */
+  /* the bottom row rests at .55; the top row is full. Same specificity as the rules above, so order wins. */
   .col:nth-child(1) > .card:nth-child(2),
   .col:nth-child(2) > .card:nth-child(2),
   .col:nth-child(3) > .card:nth-child(2) {

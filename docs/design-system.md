@@ -62,7 +62,10 @@ Only `Experience.tsx` (about 1 KB gzipped) is in the initial bundle; it is mount
 entry (or window load + 3 s) and an idle, scroll-quiet moment it imports two chunks with bare `import()` calls:
 
 1. **`core`** (about 2 KB gz): publishes `<html data-fx="t1">`, runs the DOM controllers, and claims a WebGL2 context for T2.
-   - `[data-once]`: gets `data-once-state="armed"` at boot, `"played"` on first 35 % intersection. No attribute = final state.
+   - `[data-once]`: an element that is OFF screen at boot gets `data-once-state="armed"` (the start frame) and `"played"` on its
+     first 35 % intersection. An element already on screen at boot (the hero, a reload that restored the scroll, an anchor) is
+     left alone: no attribute = final state, so nothing blinks out and replays under a reader's eyes. The decision is the
+     observer's first report, so ancestors that clip count.
    - `[data-depth="<px>"]` (`data-depth-y`, `data-depth-k`, optional `data-depth-root`): pointer parallax on fine pointers,
      written to the CSS `translate` property with `x += (target - x) * (1 - e^(-k dt))`. One rAF loop that sleeps when settled.
    - `[data-fx="bob"]` off-screen pause.
@@ -74,10 +77,27 @@ Tiers (published as `html[data-fx]`): **t0** CSS only (saveData, forced-colors, 
 WebGL2, software renderer, < 4 cores / 4 GB, give-up after sustained slowness, context lost), **t2** core + GL. The only QA
 override is `window.__QA_FORCE_GL === true`, set by the gate; there is no URL or storage override.
 
+Scroll-exit (`SceneState.exit`) is measured against the stage's `[data-section]`, not the stage box: it is exactly 0 at
+`scrollY = 0` in every layout (a landscape phone's floor box is taller than its hero). Under reduced motion the one still frame is
+drawn with `t = 0`, `exit = 0` and a centred pointer at any scroll position, so it is the poster; toggling reduced motion on a
+running page redraws that frame.
+
 To add a scene: implement `Scene` (`src/experience/types.ts`), register it in `scenes.ts` and `sceneIds.ts`, and render
 `<GlCanvas scene="..." />` next to a `<Picture data-webgl-poster>` inside a stage that reserves its `aspect-ratio`. The poster is
 the texture (`ctx.posterTexture`, `ctx.posterFit(w, h)`), so frame 0 equals the poster and every additive term must be 0 at
 `t = 0`. Shader helpers (`linkProgram`, `uniformLocations`, `FULLSCREEN_VS`) are in `gl/util.ts`.
+
+## Shell chrome (`src/components/layout`)
+
+- **Header**: three shapes. Below 768 the logo and a burger. From 768 the logo, the links and the download pill; the Russian labels
+  are ~130 px longer, so `/ru/` shows logo + pill + burger from 768 to 939 and the full bar from 940 (`FULL_BAR_FROM` in
+  `Header.tsx`, the media queries in `Header.module.css`). The logo never shrinks (`LogoMark` pins its `<picture>`), and the pill's
+  right edge stays inside the gutter at every width: a sweep that checks the rect of every header link against the viewport and the
+  gutter, for every locale, is the way to test a change here (the gate's overflow check cannot see clipped content).
+- **MobileCtaBar**: server-rendered hidden on a landing page (the hero's CTA is in the first view), then settled silently by the
+  observer; only later changes slide (`data-animate`). It also steps aside while the cookie notice is open (`html[data-consent-open]`).
+- **CookieConsent**: after the first input or 8 s. A slim card on phones, a one-row strip on short landscape screens. It is held
+  back (laid out, invisible) while its box would cover a `data-critical` element, and appears once scrolling or resizing clears it.
 
 ## Assets
 
@@ -85,3 +105,6 @@ the texture (`ctx.posterTexture`, `ctx.posterFit(w, h)`), so frame 0 equals the 
 `<name>-<w>.avif` and `.webp`. Commit the output under `public/landing/<slug>/`, never the raw export. Every URL goes through
 `withBasePath`; CSS-referenced art is passed in as an inline custom property built in TSX. No claim text in rasters (the gate
 cannot scan them).
+
+`npm run og:generate` writes the two share cards, `public/og-default.png` (English pages) and `public/og-default-ru.png` (`/ru/`,
+headline read from the client's copy). `landingMetadata` picks the card by language.

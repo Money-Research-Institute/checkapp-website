@@ -6,11 +6,11 @@
  *   1024-1279 --u = 0.9px   cards at near-natural size, re-laid out around a centred phone
  *   < 1024    --u = 1px     cards are real flex layouts at natural text size, never scaled
  * Five modes, mobile first. Width breakpoints are container queries on the section (its own width, not the viewport):
- *   base      < 768    cascade: phone, then the Body Composition and scans cards in front of it
- *   768-1023           flank-compact: the two cards flank the phone and tuck behind it
+ *   base      < 700    cascade: phone, then the Photo scans card in front of it, then DiDi's note below
+ *   700-1023           flank-compact: the two cards flank the phone and tuck behind it (iPad mini and up get the real composition)
  *   1024-1279          small laptop: the desktop composition without the Streak card
  *   >= 1280            desktop: the 1440 composition, scaled by --u
- *   >= 1473            ultrawide: the floor poster stops growing and fades out at both sides
+ *   >= 1473            ultrawide: the floor poster stops growing; its own edge columns, extended, carry the glow out to the screen edges
  * plus a landscape-phone layout (media query, because it is about height): two columns, the phone only.
  *
  * Motion is CSS only and every rule sits in prefers-reduced-motion: no-preference; the resting style of each element is
@@ -32,7 +32,6 @@
   --ua: max(1px, 100cqw / 1440); /* the top ambient glow always spans the section */
   --pw: clamp(224px, 66cqw, 300px); /* phone width in the cascade */
   --ph: calc(var(--pw) * 797 / 400); /* full phone height */
-  --knob: 29.9%; /* body-fat knob, as a share of the bar */
   --tuck: 0px; /* how far the flank-compact cards hide behind the phone: their content stays clear of it */
   position: relative;
   isolation: isolate;
@@ -62,19 +61,64 @@
   max-width: none;
 }
 
-/* Ultrawide only: green haze where the floor poster has faded out, so the sides are not a black wall. */
-.sideGlow {
+/*
+ * Ultrawide only (>= 1473): the floor poster is a fixed 1471 x --uf box, so past it the hero would be a lit pad with dead black walls.
+ * The reach strips carry the atmosphere out to the screen edges: each is the poster's own outermost 24 columns (their color down the
+ * rows, lines included, sampled from floor-1492), stretched sideways. They sit above the floor and only ever ADD light (screen).
+ * The strips carry the same black fade over the poster's upper part as the floor does (the floorFade overlay), baked into their stops.
+ * Where the poster fades out (its 15 % edge mask, and the shader's twin of it) the strip fades out over the same distance, a little
+ * slower than linear because the pool rises steeply just inside the poster's edge, so the two cross-fade without a dip. Beyond the
+ * poster's edge the strip fades to black at the screen edge over the whole distance: a long glow on 2560 and 3440, a short one on
+ * 1920. No raster, no request.
+ */
+.reach {
   display: none;
   position: absolute;
   z-index: 1;
-  left: 0;
-  right: 0;
+  /* as wide as the section, not the stage (a centred 1440 column on ultrawide); as tall as the floor box, so the strips line up with the poster */
+  left: calc(50% - 50cqw);
+  width: 100cqw;
   bottom: 0;
-  height: calc(560 * var(--u));
-  background:
-    radial-gradient(60% 70% at 50% 100%, rgb(39 98 33 / 0.28), rgb(22 56 22 / 0.14) 45%, transparent 75%);
-  mix-blend-mode: screen;
+  height: calc(893 * var(--uf));
+  overflow: clip;
+  mix-blend-mode: screen; /* on the wrapper: a blend mode only sees its own stacking context, and the wrapper's z-index makes one */
   pointer-events: none;
+}
+.reachSide {
+  --x0: calc(50cqw - 735.7 * var(--uf)); /* where the poster box starts, from the screen edge */
+  --fade: calc(220.7 * var(--uf)); /* the poster's edge fade: 15 % of its width */
+  --dither-a: 0.045;
+  position: absolute;
+  top: 0;
+  width: calc(var(--x0) + var(--fade));
+  height: calc(978 * var(--uf)); /* the whole poster: its bottom 85 px are cropped by the box, as the floor's are */
+}
+.reachL {
+  --side: 90deg;
+  --reach-art: linear-gradient(180deg, rgb(0 0 0) 0%, rgb(0 1 0) 4.84%, rgb(0 2 1) 9.68%, rgb(0 2 1) 14.52%, rgb(0 3 1) 19.35%, rgb(1 4 1) 24.19%, rgb(1 6 2) 29.03%, rgb(1 7 2) 33.87%, rgb(2 10 4) 38.71%, rgb(2 12 5) 43.55%, rgb(3 15 5) 48.39%, rgb(4 20 7) 53.23%, rgb(7 27 10) 58.06%, rgb(10 35 12) 62.9%, rgb(13 45 17) 67.74%, rgb(19 57 23) 72.58%, rgb(19 59 23) 74.6%, rgb(19 59 23) 74.9%, rgb(20 60 23) 75.2%, rgb(20 60 23) 75.5%, rgb(19 60 23) 75.81%, rgb(19 60 23) 76.11%, rgb(19 61 23) 76.41%, rgb(20 64 24) 76.71%, rgb(31 82 35) 77.02%, rgb(39 94 41) 77.32%, rgb(36 89 39) 77.62%, rgb(24 71 29) 77.92%, rgb(22 66 25) 78.23%, rgb(22 65 27) 78.53%, rgb(22 65 27) 78.83%, rgb(22 65 25) 79.13%, rgb(22 65 25) 79.44%, rgb(22 65 25) 79.74%, rgb(22 65 25) 80.04%, rgb(22 64 25) 80.34%, rgb(22 64 26) 80.65%, rgb(22 65 26) 80.95%, rgb(27 73 30) 81.25%, rgb(41 96 43) 81.55%, rgb(40 96 42) 81.85%, rgb(26 74 31) 82.16%, rgb(23 67 28) 82.46%, rgb(23 66 27) 82.76%, rgb(22 67 26) 83.06%, rgb(21 68 25) 83.37%, rgb(23 69 27) 83.67%, rgb(24 70 28) 83.97%, rgb(26 79 30) 84.27%, rgb(51 119 53) 84.58%, rgb(78 166 75) 84.88%, rgb(63 135 60) 85.18%, rgb(22 64 25) 85.48%, rgb(22 60 27) 85.79%, rgb(19 57 24) 86.09%, rgb(19 55 22) 86.39%, rgb(17 53 21) 86.69%, rgb(16 51 20) 87%, rgb(16 49 20) 87.3%, rgb(16 47 20) 87.6%, rgb(15 46 19) 87.9%, rgb(12 39 16) 90.32%, rgb(10 34 15) 92.74%, rgb(9 29 13) 95.16%, rgb(7 25 12) 97.58%, rgb(5 23 10) 99.9%);
+  left: 0;
+}
+.reachR {
+  --side: 270deg;
+  --reach-art: linear-gradient(180deg, rgb(0 0 0) 0%, rgb(0 0 0) 4.84%, rgb(0 1 0) 9.68%, rgb(0 2 1) 14.52%, rgb(0 3 1) 19.35%, rgb(1 4 1) 24.19%, rgb(1 5 2) 29.03%, rgb(1 6 2) 33.87%, rgb(1 8 3) 38.71%, rgb(2 11 4) 43.55%, rgb(3 13 5) 48.39%, rgb(4 18 7) 53.23%, rgb(7 25 9) 58.06%, rgb(10 34 13) 62.9%, rgb(14 45 19) 67.74%, rgb(20 60 24) 72.58%, rgb(23 67 27) 74.6%, rgb(24 67 28) 74.9%, rgb(24 68 28) 75.2%, rgb(25 68 29) 75.5%, rgb(24 70 29) 75.81%, rgb(24 71 29) 76.11%, rgb(24 70 29) 76.41%, rgb(24 71 28) 76.71%, rgb(24 71 29) 77.02%, rgb(25 72 29) 77.32%, rgb(25 73 29) 77.62%, rgb(26 74 30) 77.92%, rgb(27 75 31) 78.23%, rgb(29 80 31) 78.53%, rgb(41 98 44) 78.83%, rgb(43 102 46) 79.13%, rgb(34 92 39) 79.44%, rgb(27 78 31) 79.74%, rgb(27 77 30) 80.04%, rgb(28 77 30) 80.34%, rgb(28 78 31) 80.65%, rgb(28 78 32) 80.95%, rgb(28 78 32) 81.25%, rgb(28 79 31) 81.55%, rgb(28 79 31) 81.85%, rgb(28 78 32) 82.16%, rgb(28 80 31) 82.46%, rgb(32 90 36) 82.76%, rgb(49 114 52) 83.06%, rgb(49 113 49) 83.37%, rgb(31 89 35) 83.67%, rgb(26 81 31) 83.97%, rgb(28 81 35) 84.27%, rgb(28 82 34) 84.58%, rgb(58 133 58) 84.88%, rgb(60 133 59) 85.18%, rgb(41 104 42) 85.48%, rgb(69 148 70) 85.79%, rgb(59 131 64) 86.09%, rgb(27 79 32) 86.39%, rgb(25 69 29) 86.69%, rgb(24 67 27) 87%, rgb(20 62 23) 87.3%, rgb(19 59 23) 87.6%, rgb(19 57 22) 87.9%, rgb(15 46 18) 90.32%, rgb(12 38 17) 92.74%, rgb(10 32 14) 95.16%, rgb(8 27 13) 97.58%, rgb(7 25 13) 99.9%);
+  right: 0;
+}
+.reachSide {
+  --reach-mask: linear-gradient(
+    var(--side),
+    transparent 0,
+    rgb(0 0 0 / 0.1) calc(var(--x0) * 0.25),
+    rgb(0 0 0 / 0.36) calc(var(--x0) * 0.5),
+    rgb(0 0 0 / 0.72) calc(var(--x0) * 0.75),
+    #000 var(--x0),
+    rgb(0 0 0 / 0.82) calc(var(--x0) + var(--fade) * 0.25),
+    rgb(0 0 0 / 0.62) calc(var(--x0) + var(--fade) * 0.5),
+    rgb(0 0 0 / 0.38) calc(var(--x0) + var(--fade) * 0.75),
+    transparent calc(var(--x0) + var(--fade))
+  );
+  background: var(--reach-art);
+  -webkit-mask-image: var(--reach-mask);
+  mask-image: var(--reach-mask);
 }
 
 /* ------------------------------------------------------------------ copy */
@@ -107,6 +151,10 @@
   letter-spacing: -0.039em;
   text-wrap: balance; /* one client string, two balanced lines: never a stranded word, in English or in Russian */
 }
+.keep {
+  white-space: nowrap; /* a hyphenated compound ("check-in", "once-a-year") moves to the next line whole, never after its hyphen */
+}
+
 .lede {
   max-width: 34ch;
   margin: 16px 0 0;
@@ -134,7 +182,7 @@
   text-wrap: balance;
 }
 
-/* ------------------------------------------------------------------ stage (base = cascade, below 768) */
+/* ------------------------------------------------------------------ stage (base = cascade, below 700) */
 
 .stage {
   position: relative;
@@ -159,6 +207,9 @@
   bottom: 0;
   aspect-ratio: 3 / 4; /* the tall poster crop is 720 x 960: 1 to 1 with the canvas */
   overflow: clip;
+  /* The tall crop fills the width of a phone with the pool of light, which reads as neon next to the wide floor; the group (poster, canvas
+     and fade together, so every tier agrees) sits at 80 % until the wide composition takes over at 700. */
+  opacity: 0.8;
   pointer-events: none;
 }
 .poster {
@@ -188,29 +239,31 @@
   display: none;
 }
 
-/* Cascade: the phone is cropped at 84 % and fades out; the cards hang in front of it. */
+/* Cascade: the phone is cropped at 84 % and fades out. The Photo scans card (the on-message one) hangs in front of it, so it is in
+   the first view on a phone; DiDi's note sits below it, out of the way. */
 .phone {
   grid-row: 1;
   z-index: 4;
   width: var(--pw);
   height: calc(var(--ph) * 0.84);
   overflow: clip;
-  -webkit-mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 66%, transparent 100%);
-}
-.rail {
-  grid-row: 2;
-  z-index: 6;
-  justify-self: start;
-  width: min(300px, calc(100cqw - 40px));
-  margin: calc(var(--ph) * 0.84 * -0.38) 0 0 12px;
+  /* fades out a little sooner than the art alone would: the phone's own bottom widget ("4 days") would otherwise ghost between the two cards */
+  -webkit-mask-image: linear-gradient(to bottom, #000 54%, transparent 90%);
+  mask-image: linear-gradient(to bottom, #000 54%, transparent 90%);
 }
 .scans {
-  grid-row: 3;
+  grid-row: 2;
   z-index: 6;
   justify-self: end;
   width: min(300px, calc(100cqw - 40px));
-  margin: 10px 12px 0 0;
+  margin: calc(var(--ph) * 0.84 * -0.4) 12px 0 0;
+}
+.rail {
+  grid-row: 3;
+  z-index: 6;
+  justify-self: start;
+  width: min(300px, calc(100cqw - 40px));
+  margin: 10px 0 0 12px;
 }
 .streak {
   display: none;
@@ -288,32 +341,30 @@
   bottom: auto;
 }
 
-/* watch / sync card, 330 x 86.6 */
-.watch {
+/* finished-scan header, 330 x 86.6 (the smartwatch card of the design: same box, same type, a scan instead of a watch) */
+.result {
   display: none;
   align-items: center;
   gap: calc(11.061 * var(--u));
   padding: calc(14.749 * var(--u));
 }
-.watchThumb {
-  position: relative;
+.resultThumb {
+  display: grid;
   flex: none;
+  place-items: center;
+  box-sizing: border-box;
   width: calc(57.151 * var(--u));
   height: calc(57.151 * var(--u));
-  overflow: clip;
+  border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: calc(9.218 * var(--u));
-  background: rgb(255 255 255 / 0.05);
+  background: rgb(255 255 255 / 0.06);
+  color: var(--c-mint);
 }
-.watchImg {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
+.resultGlyph {
+  width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
 }
-.watchText {
+.resultText {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -326,7 +377,7 @@
   gap: calc(5.531 * var(--u));
 }
 .dot,
-.sync {
+.check {
   flex: none;
   width: calc(14.749 * var(--u));
   height: calc(14.749 * var(--u));
@@ -337,7 +388,7 @@
   line-height: normal;
   white-space: nowrap;
 }
-.syncRow {
+.stampRow {
   display: flex;
   gap: calc(2.765 * var(--u));
   font-size: calc(12.905 * var(--u));
@@ -345,17 +396,17 @@
   line-height: calc(18.436 * var(--u));
   white-space: nowrap;
 }
-.syncLead {
+.stampLead {
   display: flex;
   align-items: center;
   gap: calc(5.531 * var(--u));
 }
-.syncTime {
+.stampTime {
   padding-left: calc(3.6 * var(--u));
   color: #cfc9c9;
 }
 
-/* Heart Rate / Sleep Duration tiles, 162 x 64.5 */
+/* Color / Coating reading tiles, 162 x 64.5 (the Heart Rate / Sleep pair of the design) */
 .vitals {
   display: none;
   gap: calc(6.453 * var(--u));
@@ -380,8 +431,7 @@
   height: calc(36.872 * var(--u));
   border-radius: 50%;
 }
-.heart,
-.moon {
+.tileGlyph {
   width: calc(22.123 * var(--u));
   height: calc(22.123 * var(--u));
 }
@@ -405,107 +455,48 @@
   line-height: calc(25.81 * var(--u));
 }
 
-/* Body Composition, 330 x 175.7 */
-.body {
+/* DiDi's note, 330 x ~160 (where the Body Composition gauge stood): a line of plain words and the one small next step */
+.note {
   display: flex;
   flex-direction: column;
   gap: calc(7.374 * var(--u));
   width: 100%;
   margin-top: calc(7.374 * var(--u));
-  /* In the cascade (below 768) this card hangs in front of the phone's bright screen, where 6 % white glass would leave the
-     white text unreadable: a dark body under the same tint keeps it above AA. From 768 the card sits beside or behind the phone. */
+  /* In the cascade (below 700) this card hangs over the bright floor, where 6 % white glass would leave the white text unreadable:
+     a dark body under the same tint keeps it above AA. From 700 the card sits beside or behind the phone, over the dim part of the floor. */
   background:
     linear-gradient(var(--c-glass), var(--c-glass)),
     rgb(9 16 9 / 0.9);
 }
-.bodyHead {
+.noteHead {
   display: flex;
   flex-direction: column;
   padding: calc(14.749 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) 0 calc(14.749 * var(--u));
 }
-.bodyTitle {
+.noteTitle {
   font-size: calc(14.749 * var(--u));
   font-weight: 600;
   line-height: calc(25.81 * var(--u));
 }
-.bodyState {
+.noteSub {
   color: #cecece;
   font-size: calc(12.905 * var(--u));
   line-height: calc(20.279 * var(--u));
 }
-.progress {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: calc(9.218 * var(--u));
-  padding: calc(18.436 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) 0 calc(14.749 * var(--u));
-}
-/* blue > green > yellow > orange > red, the stops of the Figma chart (2601:12477) */
-.bar {
+.noteText {
   display: block;
-  height: calc(13.827 * var(--u));
-  border-radius: calc(6.913 * var(--u));
-  background: linear-gradient(90deg, #6fd1ff 0%, #66f886 33.62%, #f8f271 48.5%, #f19872 73.5%, #ff5555 100%);
-}
-/* The rider is as wide as the bar, so translateX(%) of its own width is a share of the bar: the knob and its tooltip ride
-   by percentage and stay right at every card width. */
-.rider {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(14.749 * var(--u));
-  right: calc(14.749 * var(--u) + var(--tuck));
-  transform: translateX(var(--knob));
-  pointer-events: none;
-}
-.knob {
-  position: absolute;
-  top: calc(18.436 * var(--u) + 6.9135 * var(--u));
-  left: 0;
-  width: calc(11.983 * var(--u));
-  height: calc(11.983 * var(--u));
-  margin: calc(-5.9915 * var(--u)) 0 0 calc(-5.9915 * var(--u));
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 calc(11.06 * var(--u)) rgb(0 0 0 / 0.35);
-}
-.tip {
-  position: absolute;
-  top: calc(-15.67 * var(--u));
-  left: 0;
-  padding: calc(5.531 * var(--u)) calc(7.374 * var(--u));
-  border-radius: calc(7.374 * var(--u));
-  background: var(--c-brand-deep);
-  color: #fff;
-  font-size: calc(11.061 * var(--u));
-  font-weight: 500;
-  line-height: calc(12.905 * var(--u));
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-.tip::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: calc(-6.36 * var(--u));
-  width: calc(11.983 * var(--u));
-  height: calc(6.453 * var(--u));
-  background: var(--c-brand-deep);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
-  transform: translateX(-50%);
-}
-.scale {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto; /* the last label hugs the right edge, as in Figma; fits down to a 260 card */
-  color: #cecece;
-  font-size: calc(11.061 * var(--u));
-  line-height: calc(16.592 * var(--u));
-  white-space: nowrap;
+  padding: 0 calc(14.749 * var(--u) + var(--tuck)) calc(5 * var(--u)) calc(14.749 * var(--u));
+  color: #e6e6e6;
+  font-size: calc(12.905 * var(--u));
+  line-height: calc(20.279 * var(--u));
+  text-wrap: pretty;
 }
 .goal {
   display: flex;
+  flex-wrap: wrap; /* Russian is longer: the value drops under its label instead of squeezing it */
   align-items: center;
   justify-content: space-between;
+  column-gap: calc(12 * var(--u));
   padding: calc(7.374 * var(--u)) calc(14.749 * var(--u) + var(--tuck)) calc(7.374 * var(--u)) calc(14.749 * var(--u));
   border-top: 1px solid rgb(234 234 234 / 0.1);
   color: #cecece;
@@ -513,9 +504,11 @@
   line-height: calc(20.279 * var(--u));
 }
 .goalValue {
+  margin-left: auto;
   color: #fff;
   font-weight: 500;
   line-height: calc(25.81 * var(--u));
+  text-align: right;
 }
 
 /* scans card, 358 x 145: stands where the Premium+ plan card stood (the plan spots show the three scans, never a plan) */
@@ -603,12 +596,10 @@
   height: calc(24 * var(--u));
 }
 .scanLabel {
-  max-width: 100%;
-  overflow: clip;
+  /* never an ellipsis: a longer word ("Радужка") may spill a few px into the 8px gap between the columns, which is invisible */
   font-size: calc(12.9 * var(--u));
   font-weight: 500;
   line-height: calc(18 * var(--u));
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -717,28 +708,33 @@
 }
 
 /* Foldables (inner screen about 600 wide): the cascade has room to spread, so the two cards sit 8 % in from each side. */
-@container (min-width: 600px) and (max-width: 767px) {
+@container (min-width: 600px) and (max-width: 699px) {
   .rail {
     margin-left: 8cqw;
   }
+  /* a card as wide as the phone, straight over it: stepped to the side it would leave the phone's own button peeking out beside it */
   .scans {
-    margin-right: 8cqw;
+    justify-self: center;
+    width: var(--pw);
+    margin-right: 0;
   }
 }
 
-/* ------------------------------------------------------------------ 768+ : the stage is a box the planes sit in */
+/* ------------------------------------------------------------------ 700+ : the stage is a box the planes sit in */
 
-@container (min-width: 768px) {
+/* 700, not 768: an iPad mini (744) and a 700 to 767 window get the real composition (the cards flank a centred phone) instead of the
+   phone cascade stretched over a tablet, and there is no 1px jump from a different design at 768. */
+@container (min-width: 700px) {
   .inner {
     --pw: clamp(280px, 36.5cqw, 300px);
     --ph: calc(var(--pw) * 797 / 400);
-    /* the cards tuck behind the phone by as much as the width needs: 60px at 768, 16px from about 1000 */
+    /* the cards tuck behind the phone by as much as the width needs: 60px up to about 770, 16px from about 1000 */
     --ov: clamp(16px, calc((580px + var(--pw) - 100cqw + 32px) / 2), 60px);
     --tuck: var(--ov);
     padding-top: calc(var(--header-h) + 25 * var(--u));
   }
 
-  .body {
+  .note {
     background: var(--c-glass);
   }
 
@@ -782,6 +778,7 @@
 
   /* the floor poster keeps the 1471 x 893 box of Figma's "image 297", cropped from the top, anchored to the hero's bottom */
   .floor {
+    opacity: 1;
     left: calc(50% - 735.7 * var(--uf));
     right: auto;
     width: calc(1471.4 * var(--uf));
@@ -796,7 +793,7 @@
     height: calc(978 * var(--uf));
   }
 
-  /* flank-compact: the Body Composition card to the left and the scans card to the right, tucked 60px behind the phone */
+  /* flank-compact: DiDi's note to the left and the scans card to the right, tucked 60px behind the phone */
   .phone {
     top: 0;
     left: calc(50% - var(--pw) / 2);
@@ -807,10 +804,11 @@
     mask-image: none;
   }
   .rail {
-    top: calc(var(--ph) * 0.28);
+    /* high enough that the whole card clears the 150px black fade at the bottom of the stage, even with a Russian note */
+    top: calc(var(--ph) * 0.16);
     left: auto;
     right: calc(50% + var(--pw) / 2 - var(--ov));
-    width: min(280px, calc(50% + var(--pw) / 2 - var(--ov) - 16px));
+    width: min(280px, calc(50% - var(--pw) / 2 + var(--ov) - 16px)); /* the room left of the phone, less a 16px gutter */
     z-index: 2;
   }
   .scans {
@@ -828,15 +826,9 @@
   }
 }
 
-/* With the tucked cards the bar is only ~190px: 'Average' goes from the scale and 'Normal' from the header (the tooltip would sit on it). */
-@container (min-width: 768px) and (max-width: 1023px) {
-  .bodyState {
-    display: none;
-  }
-  .scale {
-    grid-template-columns: 1fr 1fr auto;
-  }
-  .scale span:nth-child(3) {
+/* With the card tucked behind the phone the note has only ~165px of room: its sub-line (a repeat of what the card says) goes. */
+@container (min-width: 700px) and (max-width: 1023px) {
+  .noteSub {
     display: none;
   }
 }
@@ -881,7 +873,7 @@
     left: calc(50% + 177.8 * var(--u));
     width: calc(358 * var(--u));
   }
-  .watch {
+  .result {
     display: flex;
   }
   .vitals {
@@ -986,7 +978,7 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 15%, #000 85%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0, #000 15%, #000 85%, transparent 100%);
   }
-  .sideGlow {
+  .reach {
     display: block;
   }
 }
@@ -1057,6 +1049,7 @@
   }
   .floor {
     /* wider than the screen and centred on the second column, so the glow sits under the phone and no edge shows */
+    opacity: 1;
     left: -17%;
     right: auto;
     width: 190%;
@@ -1120,50 +1113,22 @@
 
 @media (prefers-reduced-motion: no-preference) {
   /* one-shots: the engine arms [data-once] at boot and plays it on the first 35 % intersection; no attribute = finished */
-  .body[data-once-state='armed'] .rider {
-    transform: translateX(0%);
+  /* the check of the finished scan pops in once, as the card first comes into view */
+  .result[data-once-state='armed'] .check {
+    opacity: 0;
+    transform: scale(0);
   }
-  .body[data-once-state='played'] .rider {
-    animation: knobSlide 1100ms var(--ease-out-expo) both;
+  .result[data-once-state='played'] .check {
+    animation: checkPop 700ms var(--ease-out-expo) both;
   }
-  @keyframes knobSlide {
+  @keyframes checkPop {
     from {
-      transform: translateX(0%);
+      opacity: 0;
+      transform: scale(0);
     }
     to {
-      transform: translateX(var(--knob));
-    }
-  }
-  .tile[data-once-state='played'] .heart {
-    animation: heartbeat 900ms var(--ease-out) both;
-  }
-  @keyframes heartbeat {
-    0%,
-    100% {
+      opacity: 1;
       transform: scale(1);
-    }
-    16% {
-      transform: scale(1.24);
-    }
-    32% {
-      transform: scale(1);
-    }
-    48% {
-      transform: scale(1.14);
-    }
-    68% {
-      transform: scale(1);
-    }
-  }
-  .watch[data-once-state='played'] .sync {
-    animation: syncTurn 1000ms var(--ease-out-expo) both;
-  }
-  @keyframes syncTurn {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
     }
   }
 
@@ -1192,7 +1157,7 @@
         transform: translateY(-4%) perspective(1200px) rotateX(4deg);
       }
     }
-    @container (min-width: 768px) {
+    @container (min-width: 700px) {
       .exitRail,
       .exitScans,
       .exitStreak,
@@ -1229,8 +1194,7 @@
   .scrim {
     background: #16210d;
   }
-  .bodyState,
-  .scale,
+  .noteSub,
   .goal {
     color: #e6e6e6;
   }
@@ -1243,7 +1207,8 @@
   }
   .scanCard::after,
   .scrim,
-  .glow {
+  .glow,
+  .reach {
     display: none;
   }
 }

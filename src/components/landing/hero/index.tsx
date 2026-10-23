@@ -17,6 +17,12 @@
  * pricing.ts has one). The eyebrow, the phone's alt text and the words on the floating cards are ours (./copy.ts, Russian marked
  * DRAFT). The plan card and the Upgrade card of the design are gone: a card with the three photo scans (tongue, face, iris)
  * stands in the plan card's place, and the Upgrade card is dropped (D1, D5, docs/landing-copy.md).
+ *
+ * The cards say only what the app does today (a photo scan on request and the short insight that comes back), so the design's
+ * smartwatch, Heart Rate, Sleep and Body Composition cards are replaced by a finished-scan card, two readings and DiDi's note.
+ * The headline and the sub-line go through KeepHyphenated, so "check-in" and "once-a-year" never break after the hyphen.
+ * Past 1473px the floor poster is narrower than the section, so a pair of side strips (the poster's own edge columns, extended)
+ * carries the green atmosphere out to the screen edges instead of leaving black walls.
  */
 import { getRegionCopy, localeOf, subscriptionLine } from '@/content/copy';
 import type { SectionProps } from '@/content/copy';
@@ -27,8 +33,9 @@ import { GradientHeading } from '@/components/ds/GradientHeading';
 import { Picture } from '@/components/ds/Picture';
 import { GlCanvas } from '@/experience/GlCanvas';
 import { APP_DOWNLOAD_URL } from '@/lib/constants';
-import { BodyCompositionCard, ScansCard, StreakCard, VitalTiles, WatchCard } from './cards';
+import { NoteCard, ReadingTiles, ResultCard, ScansCard, StreakCard } from './cards';
 import { heroCopy } from './copy';
+import { KeepHyphenated } from './keep-hyphenated';
 import s from './hero.module.css';
 
 /**
@@ -62,16 +69,17 @@ export function HeroSection({ region }: SectionProps) {
             {...eager}
           />
         </div>
-        <div className={s.sideGlow} aria-hidden="true" />
 
         <div className={s.copy}>
           <Eyebrow strong className={s.badge}>
             {t.eyebrow}
           </Eyebrow>
           <GradientHeading as="h1" size="hero" id="hero-heading" data-critical="headline" className={s.title}>
-            {copy.hero.headline}
+            <KeepHyphenated>{copy.hero.headline}</KeepHyphenated>
           </GradientHeading>
-          <p className={s.lede}>{copy.hero.subheadline}</p>
+          <p className={s.lede}>
+            <KeepHyphenated>{copy.hero.subheadline}</KeepHyphenated>
+          </p>
           <CtaButton
             href={APP_DOWNLOAD_URL}
             size="lg"
@@ -92,7 +100,7 @@ export function HeroSection({ region }: SectionProps) {
             <Picture
               base="/landing/hero/floor"
               widths={[640, 1080, 1492]}
-              sizes="(min-width: 768px) 1472px, 100vw"
+              sizes="(min-width: 700px) 1472px, 100vw"
               width={1492}
               height={992}
               alt=""
@@ -101,7 +109,7 @@ export function HeroSection({ region }: SectionProps) {
               className={s.poster}
               sources={[
                 {
-                  media: '(max-width: 767px) and (orientation: portrait)',
+                  media: '(max-width: 699px) and (orientation: portrait)',
                   base: '/landing/hero/floor-tall',
                   widths: [360, 720],
                   sizes: '100vw',
@@ -112,24 +120,32 @@ export function HeroSection({ region }: SectionProps) {
             <div className={s.floorFade} aria-hidden="true" />
           </div>
 
-          {/* Left rail: watch, Heart Rate + Sleep, Body Composition. From 768 down only Body Composition is shown. */}
-          <div className={`${s.plane} ${s.rail}`} data-depth="26">
-            <div className={s.exitRail}>
-              <div className={s.float} data-fx="bob" style={bob(6.4, 0.4)}>
-                <WatchCard t={t.watch} />
-                <div className={s.checks}>
-                  <VitalTiles t={t.vitals} />
-                  <BodyCompositionCard t={t.body} />
-                </div>
-              </div>
-            </div>
+          {/* Past 1473px the poster is narrower than the section: its own edge columns, extended, carry the glow to the screen edges. */}
+          <div className={s.reach} aria-hidden="true">
+            <span className={`${s.reachSide} ${s.reachL} fx-dither`} />
+            <span className={`${s.reachSide} ${s.reachR} fx-dither`} />
           </div>
 
-          {/* Scans: the three photo scans the app has today, where the Premium+ plan card stood (D5, docs/landing-copy.md). */}
+          {/* Scans: the three photo scans the app has today, where the Premium+ plan card stood (D5, docs/landing-copy.md).
+              On a phone it comes first and leads the cascade; from 700 up it flanks the phone on the right. */}
           <div className={`${s.plane} ${s.scans}`} data-depth="26">
             <div className={s.exitScans}>
               <div className={s.float} data-fx="bob" style={bob(5.6, 1.1)}>
                 <ScansCard t={t.scans} />
+              </div>
+            </div>
+          </div>
+
+          {/* Left rail: what comes back from a scan. A finished-scan header and the two readings from 1024 up; DiDi's note
+              at every width. On a phone it sits below the scans card, out of the first view. */}
+          <div className={`${s.plane} ${s.rail}`} data-depth="26">
+            <div className={s.exitRail}>
+              <div className={s.float} data-fx="bob" style={bob(6.4, 0.4)}>
+                <ResultCard t={t.result} />
+                <div className={s.checks}>
+                  <ReadingTiles t={t.readings} />
+                  <NoteCard t={t.note} />
+                </div>
               </div>
             </div>
           </div>

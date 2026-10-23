@@ -46,6 +46,7 @@
 }
 
 .brand {
+  flex: none; /* the logo and the wordmark never give up width to the links or the pill */
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -58,6 +59,7 @@
   font-size: 18px;
   font-weight: 700;
   line-height: 28px;
+  white-space: nowrap;
 }
 
 .links {
@@ -172,6 +174,13 @@
   color: var(--c-fg);
 }
 
+/*
+ * The bar has three shapes:
+ *   < 768              logo + burger (the menu holds the links and the pill)
+ *   768 to 939, ru     logo + pill + burger: the Russian labels are ~130px longer, so the links wait for 940
+ *   768 up (en), 940 up (ru)   logo + links + pill
+ * The shell never clips: at every width the pill's right edge stays inside the gutter. Keep FULL_BAR_FROM in Header.tsx in step.
+ */
 @media (min-width: 768px) {
   .header {
     padding-top: 24px;
@@ -179,15 +188,33 @@
   .nav {
     gap: 24px;
   }
-  .links {
-    display: flex;
-    gap: clamp(8px, 2.8vw, 36px);
-  }
   .cta {
     display: block;
   }
-  .burger,
-  .panel {
+  .header:not([data-lang="ru"]) .links {
+    display: flex;
+    gap: clamp(8px, 2.8vw, 36px);
+  }
+  .header:not([data-lang="ru"]) .burger,
+  .header:not([data-lang="ru"]) .panel {
+    display: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 939.98px) {
+  .header[data-lang="ru"] .cta {
+    margin-left: auto; /* brand left; pill and burger together on the right */
+  }
+  .header[data-lang="ru"] .nav {
+    gap: 16px;
+  }
+}
+@media (min-width: 940px) {
+  .header[data-lang="ru"] .links {
+    display: flex;
+    gap: clamp(8px, 2.8vw, 36px);
+  }
+  .header[data-lang="ru"] .burger,
+  .header[data-lang="ru"] .panel {
     display: none;
   }
 }

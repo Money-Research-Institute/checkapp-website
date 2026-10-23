@@ -16,6 +16,11 @@
  *   landscape phone (>= 700 wide, <= 520 tall): two columns, compact rows
  * Everything below is a default that is already the finished frame; motion is an enhancement at the end.
  *
+ * Type scale: card text is one fluid token, clamp(14px, 10.4px + 0.32vw, 16px), that never steps DOWN as the viewport grows
+ * (it was 14 on phones and 12 on desktop, which read as tiny on dark cards and worse in Cyrillic). 14px is the floor
+ * everywhere, 15px at 1440, 16px from about 1750. Bigger text means taller cards, so the vertical padding gives a little
+ * back at 1366+ to keep the stage near Figma's 532 for the English one-line statements.
+ *
  * Regions: the same layout and art for /, /eu/, /gulf/ and /ru/; only the strings change (./copy.ts). Russian runs 15-30 %
  * longer, so nothing is sized to the English text: the headline wraps to 3 lines on phones, the lede to 3-5, the statement
  * rows grow (the row track is minmax(min-content, 1fr), so one long statement lifts all four and the figure follows).
@@ -33,7 +38,7 @@
   --uw-card-pad: 16px;
   --uw-card-radius: 20px;
   --uw-card-min: 0px;
-  --uw-card-text: 14px;
+  --uw-card-text: clamp(14px, calc(10.4px + 0.32vw), 16px); /* floor 14, never smaller on a bigger screen */
   --uw-card-lh: 1.5;
   --uw-card-edge: rgb(255 255 255 / 0.06);
   --uw-glow-x: 34%; /* where the phone base sits in the square crop */
@@ -222,7 +227,7 @@
   column-gap: 12px;
   align-items: baseline;
   min-height: var(--uw-card-min);
-  padding: var(--uw-card-pad);
+  padding: var(--uw-card-pad-y, var(--uw-card-pad)) var(--uw-card-pad);
   border-radius: var(--uw-card-radius);
   background: linear-gradient(180deg, var(--c-surface-a), var(--c-surface-b));
   /* an inset ring, not a border: it adds nothing to the box, so 4 x 118 + 3 x 20 stays exactly the render's 532 */
@@ -266,7 +271,6 @@
     --uw-row-gap: 16px;
     --uw-card-pad: 24px;
     --uw-card-radius: 24px;
-    --uw-card-text: 13px;
     --uw-card-lh: 1.45;
   }
 
@@ -319,8 +323,7 @@
     --uw-col-gap: 32px;
     --uw-row-gap: 12px;
     --uw-card-pad: 16px;
-    --uw-card-text: 12px;
-    --uw-card-lh: 1.3334; /* 16px, as in Figma */
+    --uw-card-lh: 1.45; /* Figma's 16px line was for 12px text; at 14 to 16px, 1.45 keeps Cyrillic open */
     --uw-card-edge: rgb(0 0 0 / 0.06); /* Figma's own border: invisible on dark, it only keeps the box model honest */
   }
 
@@ -365,8 +368,9 @@
   .root {
     --uw-col-gap: 48px;
     --uw-row-gap: 20px;
-    --uw-card-pad: 32px;
-    --uw-card-min: 118px; /* 26 + 12 + 16 + 2 x 32: the floor, never a height */
+    --uw-card-pad: 32px; /* inline: the measure the statements wrap in */
+    --uw-card-pad-y: 28px; /* block: 32 in Figma, 4 less per side to pay for the larger text */
+    --uw-card-min: 116px; /* 26 + 12 + 1 line (about 22) + 2 x 28: the floor, never a height */
   }
 }
 
@@ -400,9 +404,9 @@
     --uw-col-gap: 24px;
     --uw-row-gap: 10px;
     --uw-card-pad: 12px;
+    --uw-card-pad-y: 12px; /* a wide short window (>= 1366 x 520) would otherwise keep the 28 from above */
     --uw-card-radius: 20px;
     --uw-card-min: 0px;
-    --uw-card-text: 13px;
     --uw-card-lh: 1.4;
   }
 

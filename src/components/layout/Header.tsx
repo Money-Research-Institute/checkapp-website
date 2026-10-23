@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { LogoMark } from '@/components/brand/LogoMark';
 import { CtaButton } from '@/components/ds/CtaButton';
+import type { Locale } from '@/content/copy';
 import type { Dict } from '@/i18n';
 import { APP_DOWNLOAD_URL, NAV_LINKS, SITE_NAME } from '@/lib/constants';
 import styles from './Header.module.css';
@@ -18,18 +19,28 @@ const scrolledNow = () => window.scrollY > 8;
 const scrolledOnServer = () => false;
 
 /**
+ * Where the burger gives way to the links + download pill. The Russian labels are ~130px longer than the English ones, so
+ * the full bar needs more room there. Keep in step with the media queries in Header.module.css.
+ */
+const FULL_BAR_FROM: Record<Locale, number> = { en: 768, ru: 940 };
+
+/**
  * The one header for the whole site. Fixed, transparent over the hero, glass once the page scrolls.
  * md and up: logo + wordmark, the nav links, a 56px "Download Now" pill. Below md: logo and a 44px hamburger that opens
- * a full-screen menu. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
+ * a full-screen menu. In Russian the full bar needs 940px, so from 768 to 939 it shows the logo, the pill and the burger.
+ * The logo never shrinks or drops out to make room. `<nav data-critical="nav">` is visible at every width (the gate hit-tests it).
  * No animation library: the menu is a state flag and CSS; the glass fades with CSS transitions.
  */
 export function Header({
+  locale,
   dict,
   homeHref,
   ctaLabel,
   englishTargets,
   englishOnlyLabel,
 }: {
+  /** The page's language: sets the width at which the full bar replaces the burger. */
+  locale: Locale;
   /** The shell strings (src/i18n), chosen by the page's language. */
   dict: Dict['header'];
   /** Where the logo and "Home" go: `/` on English pages, the region's own landing page (`/ru/`) on the others. */
@@ -53,6 +64,16 @@ export function Header({
     { href: homeHref, label: dict.home, english: false },
     ...NAV_LINKS.map((link) => ({ href: link.href, label: dict[link.key], english: englishTargets })),
   ];
+
+  // The burger disappears at the full-bar width: a menu left open across it would keep the page scroll-locked.
+  useEffect(() => {
+    const query = matchMedia(`(min-width: ${FULL_BAR_FROM[locale]}px)`);
+    const close = () => {
+      if (query.matches) setOpen(false);
+    };
+    query.addEventListener('change', close);
+    return () => query.removeEventListener('change', close);
+  }, [locale]);
 
   // Menu open: lock page scroll, move focus into the menu, Escape closes, Tab stays inside (menu + button).
   useEffect(() => {
@@ -91,7 +112,12 @@ export function Header({
   }, [open]);
 
   return (
-    <header className={styles.header} data-scrolled={scrolled || undefined} data-open={open || undefined}>
+    <header
+      className={styles.header}
+      data-lang={locale}
+      data-scrolled={scrolled || undefined}
+      data-open={open || undefined}
+    >
       <div className={styles.bar}>
         <nav data-critical="nav" aria-label={dict.navLabel} className={styles.nav}>
           <Link href={homeHref} className={styles.brand} onClick={() => setOpen(false)}>

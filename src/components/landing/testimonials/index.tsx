@@ -5,11 +5,15 @@
  * <figure> carries data-verified="false" until a real entry replaces it; the QA gate reports that as a warning on purpose.
  *
  * The .fx-dither noise layer sits on each card, not on the wall: on the #000 page a wall-wide layer lifts the black gaps between
- * the cards by up to 4/255 and draws a faint rectangle. Banding only matters inside the card fills and Sofia's glow anyway.
+ * the cards by up to 4/255 and draws a faint rectangle. Banding only matters inside the card fills and the lit card's glow anyway.
  *
  * Structure: header (SectionIntro) + wall. The wall is three independent flex columns, two cards each, vertically centred in the
  * tallest one, which is what staggers their tops (+13.5 / +47 / 0 px at 1440). Layout per width lives in Testimonials.module.css:
- * 3 columns from 960 px, 2 columns plus a faded Daniel | Liam row from 600 px, 1 column (Alex, Sofia, Ryan, Emily) below.
+ * 3 columns from 960 px, 2 columns plus a faded third-column row from 600 px, 1 column below.
+ *
+ * Entries flagged needsReplacement (a crypto-template quote, a claim the page may not make) never take a column's full-brightness
+ * top slot: arrange() swaps them under the card below, and the stylesheet dims them wherever they land and drops them on a phone.
+ * So the cards a reader sees first are the ones the page can stand behind, while all six stay on the wall as D2 decided.
  */
 import type { Region, SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
@@ -24,6 +28,19 @@ const PER_COLUMN = 2;
 
 /** Regions that show no wall: the six quotes are English placeholders (docs/landing-copy.md H4), so /ru/ has none. */
 const WITHOUT_TESTIMONIALS: readonly Region[] = ['ru'];
+
+/**
+ * The Figma order, two cards per column, except that a flagged card on top of a column trades places with the unflagged card
+ * under it. Order inside a column is the only thing that changes, so each column keeps its two cards and its stagger.
+ */
+function arrange(list: readonly Testimonial[]): Testimonial[][] {
+  return Array.from({ length: COLUMNS }, (_, c) => list.slice(c * PER_COLUMN, (c + 1) * PER_COLUMN))
+    .filter((column) => column.length > 0)
+    .map((column) => {
+      const [top, under] = column;
+      return top.needsReplacement && under && !under.needsReplacement ? [under, top] : column;
+    });
+}
 
 function Card({ t }: { t: Testimonial }) {
   const avatar = (width: 84 | 126) => withBasePath(`${t.avatar}-${width}.webp`);
@@ -70,9 +87,7 @@ function Card({ t }: { t: Testimonial }) {
 export function TestimonialsSection({ region }: SectionProps) {
   if (WITHOUT_TESTIMONIALS.includes(region) || !testimonials.length) return null;
   const { eyebrow, title, lede } = copy.en;
-  const columns = Array.from({ length: COLUMNS }, (_, c) => testimonials.slice(c * PER_COLUMN, (c + 1) * PER_COLUMN)).filter(
-    (column) => column.length > 0,
-  );
+  const columns = arrange(testimonials);
 
   return (
     <section

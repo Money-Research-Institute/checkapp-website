@@ -25,7 +25,7 @@ export const ru: Dict = {
     label: 'Согласие на cookie', // DRAFT
     text: 'Мы используем cookie, чтобы сайт работал лучше и чтобы понимать, как им пользуются.', // DRAFT
     privacy: 'Политика конфиденциальности', // DRAFT
-    necessary: 'Только необходимые', // DRAFT
+    necessary: 'Только нужные', // DRAFT: short enough to share a 320px row with «Принять все»
     accept: 'Принять все', // DRAFT
   },
   footer: {

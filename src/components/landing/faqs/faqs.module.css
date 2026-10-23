@@ -4,8 +4,9 @@
  *   rows at 1440 (list-local y)   001 closed 0-79 (no rule above)  |  rule A y79 (GREEN, the lamp rail)
  *                                 002 OPEN 79-264 (69.5 above the text, 60.6 below)  |  rule B  |  003 closed, pitch 131
  *                                 004 closed (no rule below). Closed row = 52 + 27 + 52, or 38.5 + 54 + 38.5 centred.
- *   columns                       number 140 | question max 263 | answer max 502 (right edge 131 from the container
- *                                 edge) | toggle 24 in a 44px box, its right edge on the container edge.
+ *   columns                       number 140 | question 263 in Figma, 280-340 here (--q-w: the Russian questions are
+ *                                 longer than the English ones Figma drew) | answer max 502 (right edge 131 from the
+ *                                 container edge) | toggle 24 in a 44px box, its right edge on the container edge.
  *
  * Every layout switch is a CONTAINER query on the list's own width (.stage), never a viewport query, so 200 % zoom and
  * narrow embeds land in the right arrangement:
@@ -180,6 +181,8 @@
   font-weight: 700;
   line-height: 26px;
   letter-spacing: -0.2px;
+  /* A question that does not fit on one line splits into two even halves, not a long line and a one-word stub. */
+  text-wrap: balance;
 }
 
 /* The glyph sits in a 44px box so the whole target is comfortable; the box overhangs the container edge by 10px so the
@@ -348,6 +351,22 @@
   );
 }
 
+/* ------------------------------------------------------------------ the narrowest phones (list <= 300, a 320 viewport) */
+
+/* 288px of list leaves 236px for a question once the toggle column and its gap are taken out, and Russian
+   «Где обрабатываются данные?» needs 249 at 17px, so it broke into a line and a stub. The toggle's 44px box already hangs
+   10px past the column, so the column can be 34px (the same box, the same 24px mark, nothing moves), and the question
+   steps down to 16px: 246px of room for 234px of text. Anything still longer wraps balanced (.q). */
+@container faq-list (max-width: 300px) {
+  .summary {
+    grid-template-columns: minmax(0, 1fr) 34px;
+  }
+  .q {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
 /* ------------------------------------------------------------------ >= 600: [64 number | body | toggle] */
 
 @container faq-list (min-width: 540px) {
@@ -413,8 +432,16 @@
   .list {
     --num-w: clamp(72px, 10.6cqw, 140px); /* 140 at 1320 */
     --end-w: clamp(64px, 9.92cqw, 131px); /* the answer's right edge sits 131 from the container edge */
-    /* 502 at 1320; below that it gives way so at least 48px stay between the 263px question and the answer. */
-    --ans-w: min(502px, calc(100cqw - var(--num-w) - var(--end-w) - 311px));
+    /* The question column. Figma draws it 263px wide, which only just holds the longest English question (259px); the
+       Russian ones run longer ("Где обрабатываются данные?" is 264px) and a column cut to the English text left
+       "данные?" alone on a second line. So the column is a RANGE that follows the list: 280 up to a 965px list (the
+       longest Russian question plus 16px of margin; any wider would take a line off the open row's answer at 1024), then
+       growing to 340 from 1172 on. The text still starts where Figma starts it; only the empty space after the question
+       changes, which the answer's fixed right edge does not care about. A question longer than this wraps balanced (.q),
+       never as a word and a stub. */
+    --q-w: clamp(280px, 29cqw, 340px);
+    /* 502 at 1320; below that it gives way so at least 48px stay between the question column and the answer. */
+    --ans-w: min(502px, calc(100cqw - var(--num-w) - var(--end-w) - var(--q-w) - 48px));
     --pad-c: var(--pad);
     --pad-ot: 68.5px; /* + the 1px rule = 69.5, the cone is 69 tall */
     --pad-ob: 60.6px;
@@ -427,7 +454,7 @@
     --r1: calc(27px + var(--pad));
   }
   .summary {
-    grid-template-columns: var(--num-w) 263px minmax(0, 1fr) 44px;
+    grid-template-columns: var(--num-w) var(--q-w) minmax(0, 1fr) 44px;
     column-gap: 0;
   }
   .glyph {
@@ -449,7 +476,7 @@
   @container faq-list (min-width: 900px) {
     .item {
       display: grid;
-      grid-template-columns: var(--num-w) 263px minmax(0, 1fr) var(--ans-w) var(--end-w);
+      grid-template-columns: var(--num-w) var(--q-w) minmax(0, 1fr) var(--ans-w) var(--end-w);
     }
     /* Closed rows are 131 tall with their content centred (52 / 38.5 padding); the first and last rows are 79, with
        their content against the heading gap and the section margin. */
