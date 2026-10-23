@@ -3,15 +3,15 @@
  * client's (src/content/copy, `howItWorks`) and are read in index.tsx; nobody retypes them here.
  *
  * What is left is the sr-only heading and the alt text of the three phone mock-ups. They describe the screens and say only
- * what the app does today (photo scans of the tongue, face and iris; docs/landing-copy.md): no "video", no history, no
+ * what the app does today (photo scans of the tongue, face and iris; docs/landing.md): no "video", no history, no
  * trends. Spelling: `checkapp` (lower case) and `DiDi`.
  *
- * Every Russian string is a DRAFT until the client approves it (docs/landing-copy.md).
+ * Every Russian string is a DRAFT until the client approves it (docs/landing.md).
  *
- * The screens inside the phones are baked into the raster art, which the gate cannot read, so they are checked by eye
- * (see steps.ts, "Baked screens"). Each one says what the app does today, in the same words as the Meet DiDi phones: a
- * photo request and a photo bubble (no video), "Looks stable" (no verdict on the body), "Today" (no stale date), "DiDi".
- * The Russian page gets its own Russian art (phone-<n>-ru-*), so /ru/ has no English UI text in the images either.
+ * The screens inside the phones are baked into the raster art, which the claims scan cannot read, so they are checked by eye. Each
+ * one says what the app does today, in the same words as the app: a photo request and a photo bubble (no video), "Looks stable"
+ * (no verdict on the body), "Today" (no stale date), "DiDi". The Russian page gets its own Russian art (phone-<n>-ru-*), so /ru/
+ * has no English UI text in the images either.
  */
 import type { Locale } from '@/content/copy';
 

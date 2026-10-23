@@ -21,12 +21,6 @@
   line-height: 1.25;
   letter-spacing: -0.02em;
 }
-.faq {
-  font-size: clamp(2rem, 1.2rem + 2.8vw, 3.3125rem);
-  line-height: 1.2;
-  letter-spacing: 0;
-  text-align: left;
-}
 .left {
   text-align: left;
 }
@@ -38,9 +32,6 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-  }
-  .faq {
-    background-image: linear-gradient(100.15deg, #fff 28.966%, rgb(255 255 255 / 0.5) 105.67%);
   }
 }
 

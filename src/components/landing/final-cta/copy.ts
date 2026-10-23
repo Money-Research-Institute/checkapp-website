@@ -8,7 +8,7 @@
  *   - the button label is the hero's `hero.cta` (the same download call, in the region's own words).
  *
  * What is left is the alt text of the phone. Docs/landing-decisions.md D5 replaced Figma's paywall screen ("Upgrade Your CheckApp,
- * Free | Pro | Premium+") and docs/landing-copy.md narrowed it to the three scans, so the phone shows the app's home screen with
+ * Free | Pro | Premium+") and docs/landing.md narrowed it to the three scans, so the phone shows the app's home screen with
  * a Tongue / Face / Iris button each: the same three photo scans "what it does now" lists. It says nothing about plans, prices,
  * history or reports. The labels baked into that picture (greeting, "Talk?", the three buttons, "Start a scan") exist in an
  * English and a Russian render (public/landing/final-cta/phone-en|ru-*), so /ru/ shows Russian image text as well.

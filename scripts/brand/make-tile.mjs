@@ -1,5 +1,5 @@
 /**
- * The DiDi logo tile, with the light-surface treatment (docs/landing-decisions.md D7).
+ * The DiDi logo tile, with the light-surface treatment (docs/landing.md D7).
  *
  * The master is cream, which disappears on white pages, so the tile is lifted off them:
  *   - from 32 px up: a soft shadow on a padded transparent canvas (the owner's choice: shadow only, no rim);

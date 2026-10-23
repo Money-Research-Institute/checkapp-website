@@ -6,7 +6,7 @@ import styles from './Section.module.css';
 
 /**
  * Inner-page building blocks. Every inner page is: <PageShell> <PageHero/> <Section/>... </PageShell>.
- * (The landing sections have their own components in src/components/landing/.)
+ * (The landing sections are in src/components/landing/.)
  */
 
 /** Wraps a page's content and clears the fixed header (`--header-h`). Not a landmark: the layout owns <main>. */

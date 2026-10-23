@@ -10,7 +10,7 @@ export type FaqItem = { question: string; answer: ReactNode };
 /**
  * FAQ list for inner pages: native <details name=...> (exclusive, keyboard and screen-reader support for free, works
  * without JS), a plus/minus glyph and open-tracking. `defaultOpen` is the index opened in the static HTML.
- * Landing FAQ has its own lamp treatment in src/components/landing/faqs; this is the plain version.
+ * The landing FAQ (src/components/landing/faqs) uses it too.
  */
 export function Faq({
   items,

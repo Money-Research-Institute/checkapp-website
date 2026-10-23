@@ -3,8 +3,8 @@ import type { ElementType, HTMLAttributes, ReactNode } from 'react';
 type Size = 'wide' | 'narrow' | 'prose';
 
 const WIDTH: Record<Size, string> = {
-  wide: 'var(--measure)', // 1320: Projects, testimonials, FAQ, final CTA, footer
-  narrow: 'var(--measure-narrow)', // 1280: hero, usual-way, familiar
+  wide: 'var(--measure)', // 1320: testimonials, final CTA, footer
+  narrow: 'var(--measure-narrow)', // 1280: hero, process, FAQ
   prose: 'var(--measure-prose)', // legal text, blog
 };
 

@@ -1,10 +1,7 @@
-import { familiarCopy } from '@/components/landing/familiar/copy';
 import { FAQS_COPY } from '@/components/landing/faqs/copy';
 import { finalCtaCopy } from '@/components/landing/final-cta/copy';
 import { heroCopy } from '@/components/landing/hero/copy';
 import { PROCESS_COPY } from '@/components/landing/process/copy';
-import { projectsCopy } from '@/components/landing/projects/copy';
-import { COPY as usualWayCopy } from '@/components/landing/usual-way/copy';
 import { getRegionCopy, Regions } from '@/content/copy';
 import { typesetInPlace } from './typeset';
 
@@ -22,7 +19,7 @@ for (const region of Regions) {
   const copy = getRegionCopy(region);
   typesetInPlace(copy, copy.locale);
 }
-for (const copy of [familiarCopy, FAQS_COPY, finalCtaCopy, heroCopy, PROCESS_COPY, projectsCopy, usualWayCopy]) {
+for (const copy of [FAQS_COPY, finalCtaCopy, heroCopy, PROCESS_COPY]) {
   typesetInPlace(copy.en, 'en');
   typesetInPlace(copy.ru, 'ru');
 }

@@ -1,680 +1,84 @@
 /*
- * "How it works" (Figma 1440 x 2300, unframed). Three phones, three numbered steps, two dashed arrows.
- *
- * Each step is a numeral and ONE sentence (the client's, in the region's language: .text). Figma's title + blurb pair is
- * gone, so the sentence takes the weight of the title and the size between the two. It is never upper-cased: that would
- * print "DiDi" as "DIDI" and "checkapp" as "CHECKAPP". Russian runs 15-30 % longer: heights come from the text, the
- * sentence wraps inside its column, and nothing here is a fixed height.
- *
- * Every layout switch is a CONTAINER query on the section's own width (.frame), never a viewport query, so 200 % zoom
- * and narrow embeds land in the right layout. The one exception is the landscape-phone layout, which is about the
- * device's height and so also checks (orientation) and (max-height).
- *
- *   base       < 360   one column, no arrows
- *   >= 360             one column, small arrows between the steps
- *   >= 600             compact zig-zag rows (46 / 54 grid, phone and text swap sides)
- *   >= 680             ... with the arrows in the gap between the phones
- *   >= 1000            the artboard: .stage is 1440 x 2300 scaled, children placed as % of it
- *   landscape phone    (max-height: 500px) and < 1000: two-column rows, arrows dropped
- *   >= 1500 viewport   haze + dither in the margins around the 1440 stage
- *
- * Rules of the road (docs/experience-playbook.md): transform / opacity only in motion, every motion has a reduced-motion
- * path (the DEFAULT style is the final frame), nothing the animation touches sits under overflow hidden/auto, arrows
- * never take pointer events and never sit on text (an arrow that cannot fit is dropped, text is never shrunk for it).
- * Phone art is baked: a perspective tilt and a neon rim. Nothing here rotates it. Phone 2 is un-flipped (D6).
+ * "How it works": three steps, each a phone and one sentence. Phones: one column. From 900px: a zig-zag, phone and text swap sides.
+ * Nothing here has a fixed height (Russian runs 15-30 % longer): heights come from the art and the text.
  */
-
 .root {
-  position: relative;
-  background: var(--c-bg);
-  color: var(--c-fg);
-  /* Nothing in here may ever widen the page. `clip` (not hidden) so it is not a scroll container for the view() timelines. */
+  padding-block: clamp(40px, 8vw, 96px);
   overflow-x: clip;
 }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* ---------- ultrawide margins ---------- */
-.haze {
-  display: none;
-}
-
-.frame {
-  container: process-frame / inline-size;
-}
-
-.stage {
-  container-type: inline-size;
-  position: relative;
-  z-index: 1;
-  inline-size: min(100%, 1440px);
-  margin-inline: auto;
-}
-
-/* =====================================================================================================
-   Base: one column. phone, then numeral + sentence.
-   ===================================================================================================== */
-
 .steps {
-  --pad-l: max(clamp(16px, 5cqw, 24px), env(safe-area-inset-left, 0px));
-  --pad-r: max(clamp(16px, 5cqw, 24px), env(safe-area-inset-right, 0px));
-  --num-h: clamp(40px, calc(40px + (100cqw - 320px) * 0.2286), 56px); /* 40 at 320, 56 from 390 */
+  display: grid;
+  gap: clamp(40px, 8vw, 72px);
+  max-width: calc(var(--measure-narrow) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
   list-style: none;
-  margin: 0;
-  padding: 56px var(--pad-r) 56px var(--pad-l);
-  display: flex;
-  flex-direction: column;
 }
 
 .step {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  justify-items: center;
   gap: 20px;
-  padding-bottom: 56px;
-}
-.step:last-child {
-  padding-bottom: 0;
 }
 
-/* The phone frame crops the black padding of the art (the middle 80 % of the width) except phone 2, which is uncropped. */
+/* The art is an opaque picture on black whose edges carry a faint glow: feather it into the page so no rectangle shows. */
 .phone {
-  --ph-w: min(74cqw, 300px, calc(min(72svh, 600px) * 8 / 15));
-  position: relative;
-  flex: none;
-  inline-size: var(--ph-w);
-  aspect-ratio: 8 / 15;
-}
-.phone1 {
-  align-self: flex-start;
-}
-.phone2 {
-  --ph-w: min(74cqw, 300px, calc(min(72svh, 600px) * 860 / 1829));
-  align-self: flex-end;
-  aspect-ratio: 860 / 1829;
-}
-.phone3 {
-  align-self: flex-start;
-  margin-inline-start: 8cqw;
-}
-
-.drift,
-.settle,
-.settle picture,
-.settle img {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-}
-.settle img {
-  object-fit: cover;
-  object-position: 50% 50%;
-}
-
-/*
- * The art is an opaque PNG-turned-AVIF on black. Its edge rows and columns carry a faint glow (up to ~19/255), which
- * would print as a hard line where the frame crops it, so every phone is feathered into the page black. Phone 2 also
- * fades its bottom 17 % out, as in Figma (a #000 overlay, here a mask so it stays blend-safe).
- */
-.settle {
-  --fade-x: 7%;
-  --fade-top: 1.2%;
-  --fade-bottom: 98.8%;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent 100%),
-    linear-gradient(180deg, transparent 0, #000 var(--fade-top), #000 var(--fade-bottom), transparent 100%);
+  --fade: 7%;
+  width: auto;
+  max-width: 100%;
+  height: clamp(360px, 62svh, 560px);
+  object-fit: contain;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent),
+    linear-gradient(transparent, #000 2%, #000 98%, transparent);
   -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent 100%),
-    linear-gradient(180deg, transparent 0, #000 var(--fade-top), #000 var(--fade-bottom), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent),
+    linear-gradient(transparent, #000 2%, #000 98%, transparent);
   mask-composite: intersect;
 }
-.phone2 .settle {
-  --fade-x: 2%;
-  --fade-bottom: 82.8%;
-}
 
-/* Numeral and sentence on one row. */
 .copy {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  column-gap: 12px;
+  gap: 14px;
+  max-width: 34rem;
 }
 
-/* The numeral is a decorative <picture> in a box whose aspect-ratio comes from inline style (its own art). */
+.copy > picture {
+  flex: none;
+}
 .numeral {
   display: block;
-  justify-self: start;
-  inline-size: auto;
-  block-size: var(--num-h);
-}
-.numeral picture,
-.numeral img {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  max-inline-size: none;
+  width: auto;
+  height: 52px;
 }
 
-/* The step sentence (an <h3>). Sentence case on purpose, see the header. 20 to 24px on a phone, never smaller. */
 .text {
   margin: 0;
-  min-inline-size: 0;
-  font-family: var(--font-sans);
-  font-size: clamp(1.25rem, 0.95rem + 1.7cqw, 1.5rem);
+  font-size: clamp(1.25rem, 0.95rem + 1.7vw, 1.75rem);
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
   text-wrap: balance;
   overflow-wrap: break-word;
-  color: var(--c-fg);
 }
 
-/* The dashed arrows are decoration: out of the accessibility tree, out of the pointer path, out of the text. */
-.arrow {
-  display: none;
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-  user-select: none;
-}
-.arrow img {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-}
-.arrow1 {
-  aspect-ratio: 277.3 / 230.2;
-}
-.arrow2 {
-  aspect-ratio: 306.9 / 168.2;
-}
-
-@container process-frame (min-width: 360px) {
-  /* Small connectors, about 46 % of their artboard size, in a band reserved under the step so nothing ever shifts. */
-  .step1 {
-    padding-bottom: 138px; /* 106 + 16 + 16 */
-  }
-  .step2 {
-    padding-bottom: 109px; /* 77 + 16 + 16 */
-  }
-  .arrow {
-    display: block;
-    inset-inline: 0;
-    margin-inline: auto;
-    bottom: 16px;
-  }
-  .arrow1 {
-    inline-size: 127.6px;
-  }
-  .arrow2 {
-    inline-size: 141.2px;
-  }
-}
-
-/* =====================================================================================================
-   600 - 999: compact zig-zag rows
-   ===================================================================================================== */
-
-@container process-frame (min-width: 600px) {
-  .steps {
-    --pw: min(clamp(230px, 38cqw, 330px), calc(85svh * 8 / 15)); /* phone width; never taller than 85svh */
-    --pad-x: clamp(24px, 4cqw, 32px);
-    --pad-l: max(var(--pad-x), env(safe-area-inset-left, 0px));
-    --pad-r: max(var(--pad-x), env(safe-area-inset-right, 0px));
-    --num-h: clamp(66px, calc(66px + (100cqw - 600px) * 0.0357), 72px); /* 66 at 600, 72 from 768 */
-    padding-block: 72px;
-  }
-
-  .step,
-  .step:nth-child(even) {
-    display: grid;
-    align-items: center;
-    column-gap: clamp(16px, 3cqw, 32px);
-    padding-bottom: 0;
-  }
+@media (min-width: 900px) {
   .step {
-    grid-template-columns: minmax(0, 46fr) minmax(0, 54fr);
-  }
-  .step:nth-child(even) {
-    grid-template-columns: minmax(0, 54fr) minmax(0, 46fr);
-  }
-  /* Each row climbs into the one above (desktop overlap is ~0.30 of a phone, here 0.22) so the phones still interleave. */
-  .step2 {
-    margin-block-start: calc(var(--pw) * 15 / 8 * -0.22);
-  }
-  .step3 {
-    margin-block-start: calc(var(--pw) * 1829 / 860 * -0.22);
-  }
-
-  .phone,
-  .phone3 {
-    --ph-w: var(--pw);
-    grid-row: 1;
-    grid-column: 1;
-    justify-self: start;
-    align-self: center;
-    margin-inline: 0;
-  }
-  .phone2 {
-    --ph-w: min(var(--pw), calc(85svh * 860 / 1829));
-    grid-column: 2;
-    justify-self: end;
-  }
-  .settle {
-    --fade-x: 6%;
-  }
-  .phone2 .settle {
-    --fade-x: 2%;
-  }
-
-  .copy {
-    grid-row: 1;
-    grid-column: 2;
-    column-gap: 14px;
-  }
-  .step:nth-child(even) .copy {
-    grid-column: 1;
-  }
-
-  .text {
-    font-size: clamp(1.25rem, 2.9cqw, 1.75rem); /* 20 at 600, 22 at 768, 28 at 970 */
-    line-height: 1.22;
-  }
-
-  /* The arrow lives in the gap between the two phones at the seam between the rows: free of both texts. */
-  .step1,
-  .step2 {
-    padding-bottom: 0;
-  }
-  .arrow {
-    display: none;
-  }
-}
-
-@container process-frame (min-width: 680px) {
-  /* Shown only once the gap between the phones is wide enough for it (it may overlap the phones' feathered edge a little).
-     Never at the cost of the text: below 680 there is no room, so the arrow is dropped, not squeezed. */
-  .arrow {
-    display: block;
-    bottom: 12px;
-    inline-size: min(195px, calc(100cqw - 2 * var(--pad-x) - 2 * var(--pw) + 12px));
-  }
-}
-
-/* =====================================================================================================
-   >= 1000: the artboard. 1440 x 2300 scaled; every box is a percentage of the stage (measured from Figma at 1440),
-   type is cqw with rem floors, so browser text scaling still works. Heights come from aspect-ratio and text, never fixed.
-   ===================================================================================================== */
-
-@container process-frame (min-width: 1000px) {
-  .stage {
-    aspect-ratio: 1440 / 2300;
-  }
-  .steps {
-    display: block;
-    padding: 0;
-  }
-  .step,
-  .step:nth-child(even) {
-    position: static; /* so the children are placed against .stage */
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-
-  .phone,
-  .phone2,
-  .phone3 {
-    position: absolute;
-    z-index: 1;
-    inset-inline-start: var(--x);
-    inset-block-start: var(--y);
-    inline-size: var(--w);
-    justify-self: auto;
-    align-self: auto;
-    margin: 0;
-  }
-  .phone1 {
-    --x: 4.17%;
-    --y: 0%;
-    --w: 43.26%;
-    aspect-ratio: 1024 / 1536;
-  }
-  .phone2 {
-    --x: 67.58%;
-    --y: 28.55%;
-    --w: 31.24%;
-    aspect-ratio: 860 / 1829;
-  }
-  .phone3 {
-    /* the IMAGE rect (x147 y1347, 595 wide), not the padded Figma node */
-    --x: 10.18%;
-    --y: 58.57%;
-    --w: 41.34%;
-    aspect-ratio: 1024 / 1536;
-  }
-  .settle {
-    --fade-x: 1.5%;
-  }
-  .phone2 .settle {
-    --fade-x: 1.5%;
-  }
-
-  .arrow {
-    display: block;
-    inset-inline: auto;
-    margin-inline: 0;
-    inset-inline-start: var(--x);
-    inset-block-start: var(--y);
-    inset-block-end: auto;
-    inline-size: var(--w);
-  }
-  .arrow1 {
-    --x: 45.76%;
-    --y: 31.65%;
-    --w: 19.26%;
-  }
-  .arrow2 {
-    --x: 46.45%;
-    --y: 67.31%;
-    --w: 21.31%;
-  }
-
-  /*
-   * Each step is a Figma frame (numeral + text column, 177 / 184 / 184 px tall at 1440) whose items are centred on its
-   * middle, so the numeral and the sentence share a centre line. --col is the text column: 492 px for steps 1 and 3 and 497
-   * for step 2, so step 2 ends at x922, 51 px short of phone 2's box (Figma's title ended 14 px short of it).
-   */
-  .copy {
-    position: absolute;
-    inset-inline-start: var(--x);
-    inset-block-start: var(--y);
-    grid-template-columns: auto var(--col);
-    column-gap: 2.19cqw;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
-    align-content: center;
-    min-block-size: var(--frame-h);
+    gap: clamp(32px, 5vw, 80px);
   }
-  .step1 .copy {
-    --x: 50%;
-    --y: 15.73%;
-    --col: 34.15cqw;
-    --num-w: 4.25cqw;
-    --frame-h: 12.29cqw;
+  .step:nth-child(even) > picture {
+    order: 2;
   }
-  .step2 .copy {
-    --x: 19.88%;
-    --y: 45.89%;
-    --col: 34.5cqw;
-    --num-w: 7.47cqw;
-    --frame-h: 12.77cqw;
+  .phone {
+    height: min(70svh, 620px);
   }
-  .step3 .copy {
-    --x: 50.07%;
-    --y: 77.58%;
-    --col: 34.15cqw;
-    --num-w: 7.81cqw;
-    --frame-h: 12.77cqw;
-  }
-
   .numeral {
-    inline-size: var(--num-w);
-    block-size: auto;
+    height: 72px;
   }
   .text {
-    /* 31 at 1440 (the Figma title was 36 and its blurb 23.6): two or three lines in the column, centred on the numeral.
-       The rem floor keeps browser text scaling working; at 200 % text-only zoom the sentence just wraps more inside its
-       column, it never runs into the neighbouring phone. */
-    font-size: clamp(1.375rem, 2.15cqw, 2rem);
-    line-height: 1.22;
-  }
-}
-
-/* =====================================================================================================
-   Landscape phone (844 x 390, 667 x 375, 932 x 430): do NOT stack. Two-column rows, phone beside its text.
-   ===================================================================================================== */
-
-@media (orientation: landscape) and (max-height: 500px) {
-  @container process-frame (max-width: 999.98px) {
-    .steps {
-      --num-h: 52px;
-      --pad-l: max(16px, env(safe-area-inset-left, 0px));
-      --pad-r: max(16px, env(safe-area-inset-right, 0px));
-      padding-block: 32px;
-      row-gap: 28px;
-    }
-    .step,
-    .step:nth-child(even) {
-      display: grid;
-      justify-content: space-between;
-      align-items: center;
-      column-gap: 0;
-      margin-block-start: 0;
-      padding-bottom: 0;
-    }
-    .step {
-      grid-template-columns: 38% 56%;
-    }
-    .step:nth-child(even) {
-      grid-template-columns: 56% 38%;
-    }
-    .phone,
-    .phone2,
-    .phone3 {
-      inline-size: auto;
-      block-size: min(86svh, 340px);
-      justify-self: center;
-    }
-    .phone,
-    .phone3 {
-      aspect-ratio: 8 / 15;
-    }
-    .copy {
-      column-gap: 12px;
-    }
-    .text {
-      font-size: clamp(1.25rem, 2.4cqw, 1.375rem);
-      line-height: 1.25;
-    }
-    .arrow {
-      display: none;
-    }
-  }
-}
-
-/* =====================================================================================================
-   Ultrawide: the stage stays 1440 and centred (the phone masters are 1024 wide: never scale them up). The margins get
-   a faint green haze behind where the phones are, plus a noise tile to break banding. It is masked out of the stage
-   itself so the black curtain over the arrows never sits on a lit background.
-   ===================================================================================================== */
-
-@media (min-width: 1500px) {
-  .haze {
-    --haze: rgb(72 203 59 / 0.08); /* the ceiling: it must stay faint */
-    --margins: linear-gradient(
-      90deg,
-      #000 0,
-      #000 calc(50% - 880px),
-      transparent calc(50% - 720px),
-      transparent calc(50% + 720px),
-      #000 calc(50% + 880px),
-      #000 100%
-    );
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    /* Centred on the three phones (stage-relative: phone 1 -348px, phone 2 +478px, phone 3 -275px; y from the artboard). */
-    background:
-      radial-gradient(ellipse 1100px 900px at calc(50% - 348px) 20%, var(--haze), transparent 100%),
-      radial-gradient(ellipse 1000px 900px at calc(50% + 478px) 49.5%, var(--haze), transparent 100%),
-      radial-gradient(ellipse 1100px 900px at calc(50% - 275px) 78%, var(--haze), transparent 100%);
-    -webkit-mask-image: var(--margins);
-    mask-image: var(--margins);
-    --dither-a: 0.035;
-    --dither-mask: var(--margins);
-  }
-}
-
-/* =====================================================================================================
-   Motion. The default style of everything above is its FINAL frame, so no-JS, print, reduced motion and browsers
-   without scroll timelines show the finished layout. Compositor-only: transform, opacity, and the curtain's transform.
-   ===================================================================================================== */
-
-@keyframes settle {
-  from {
-    transform: translateY(28px) scale(0.97);
-  }
-  to {
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes drift {
-  from {
-    transform: translateY(var(--drift, 0px));
-  }
-  to {
-    transform: translateY(calc(var(--drift, 0px) * -1));
-  }
-}
-@keyframes light {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes curtainOut {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(0);
-  }
-}
-
-/*
- * Note on the `var(--linear, linear)` easings below: the CSS minifier folds an `animation` shorthand followed by
- * `animation-timeline` into ONE shorthand (`animation: ... light view()`), which current browsers do not parse, so the
- * whole animation silently disappears. A var() in the shorthand keeps the two declarations apart (the shared motion.css
- * does the same with var(--ease-out)).
- */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    /*
-     * `forwards`, not `both`: BEFORE its range starts an element shows its natural (finished) style. Everything below
-     * starts exactly when its element first enters the screen, so nothing visible pops, and a page that has not been
-     * scrolled (a full-page screenshot, a crawler render, print) shows the finished layout instead of the start frames.
-     */
-
-    /* The arrows are uncovered by the shared data-fx="curtain" (src/styles/motion.css): arrow 1 left to right, arrow 2
-       (data-fx-dir="rtl") right to left. Its range starts at the first pixel in (the shared one waits for 10 %), and its
-       start frame only exists once the arrow is in range. */
-    .arrow[data-fx='curtain']::after {
-      transform: scaleX(0); /* natural style: the curtain is open */
-      animation-fill-mode: forwards;
-      animation-range: entry 0% cover 45%;
-    }
-
-    /* Phones settle in (translateY 28 to 0, scale .97 to 1) while they enter. */
-    .settle {
-      animation: settle 1ms var(--ease-out) forwards;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
-
-    /* The phone is the lamp: its art (and the halo baked into it) is dim as it enters and comes up to full as the step reaches the
-       middle of the screen, so the steps light one after the other as you read down. The same `light` keyframes as the numeral. */
-    .settle img {
-      animation: light 1ms var(--linear, linear) forwards;
-      animation-timeline: view();
-      animation-range: entry 10% cover 42%;
-    }
-
-    /* The numeral of the step in view rises from .55 to 1 as its step reaches the middle of the screen, and stays lit. */
-    .numeral {
-      animation: light 1ms var(--linear, linear) forwards;
-      animation-timeline: view();
-      animation-range: entry 0% cover 50%;
-    }
-
-    /* Phones drift against their text: +/-16px on a fold, +/-32px on the artboard, none below 600 or in landscape. */
-    @container process-frame (min-width: 600px) {
-      .drift {
-        --drift: 16px;
-        animation: drift 1ms var(--linear, linear) forwards;
-        animation-timeline: view();
-        animation-range: cover 0% cover 100%;
-      }
-    }
-    @container process-frame (min-width: 1000px) {
-      .drift {
-        --drift: 32px;
-      }
-    }
-    @media (orientation: landscape) and (max-height: 500px) {
-      @container process-frame (max-width: 999.98px) {
-        .drift {
-          animation: none;
-        }
-      }
-    }
-  }
-
-  /* No scroll timelines (Firefox, Safari < 26): the same three reveals play ONCE, driven by the engine's [data-once]
-     state machine (armed at boot, played at 35 % visibility). Before the engine boots, nothing is hidden. */
-  @supports not (animation-timeline: view()) {
-    .phone[data-once-state='armed'] .settle {
-      transform: translateY(28px) scale(0.97);
-    }
-    .phone[data-once-state='played'] .settle {
-      animation: settle var(--dur-slow) var(--ease-out) both;
-    }
-    .phone[data-once-state='armed'] .settle img {
-      opacity: 0.55;
-    }
-    .phone[data-once-state='played'] .settle img {
-      animation: light calc(var(--dur-slow) * 1.5) linear both;
-    }
-
-    .copy[data-once-state='armed'] .numeral {
-      opacity: 0.55;
-    }
-    .copy[data-once-state='played'] .numeral {
-      animation: light var(--dur-slow) linear both;
-    }
-
-    .arrow[data-once-state='armed']::after,
-    .arrow[data-once-state='played']::after {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      background: var(--c-bg);
-      pointer-events: none;
-      transform-origin: 100% 50%;
-      mask-image: linear-gradient(90deg, transparent 0, #000 14%);
-    }
-    .arrow[data-fx-dir='rtl'][data-once-state='armed']::after,
-    .arrow[data-fx-dir='rtl'][data-once-state='played']::after {
-      transform-origin: 0 50%;
-      mask-image: linear-gradient(270deg, transparent 0, #000 14%);
-    }
-    .arrow[data-once-state='played']::after {
-      animation: curtainOut calc(var(--dur-slow) * 2) var(--ease-out) both;
-    }
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
   }
 }

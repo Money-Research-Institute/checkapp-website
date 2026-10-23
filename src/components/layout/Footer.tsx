@@ -9,12 +9,12 @@
  *  - a scroll-linked rise (view() timeline, compositor-only) brings the glow from 64px low and 30 % dimmer to exactly
  *    Figma's resting frame as the page ends, so the brightest the glow ever gets is the sampled #2E7034 peak and text
  *    contrast is the same at the end state as in the design. Without view() timelines, or under reduced motion, the
- *    page simply shows that resting frame. On a fine pointer the engine's [data-depth] sways it by at most 40px.
+ *    page simply shows that resting frame.
  *  - ultrawide: the layer stops growing at 2500px (the width of Figma's own glow frame) and its sides ease out to black
  *    with a long mask, so a 3440px screen gets a soft pool of light, never a stretched bar. The row of links stays in the
  *    centred 1320px column and the type grows a notch (15px from 2560, 16px from 3000).
  *
- * Deviations from Figma, all on purpose (docs/landing-decisions.md):
+ * Deviations from Figma, all on purpose (docs/landing.md):
  *  - D1: the tagline says only what the app does today (Figma: "monitors hydration signals"), and the medical
  *    disclaimer strip the old footer carried is kept as <p data-disclaimer>. Figma drops it. The disclaimer is the client's
  *    wording for the page's region (src/content/copy); pages that are not a landing page show the US one.
@@ -24,7 +24,7 @@
  *    raised (see footer.module.css). axe cannot judge text over gradients, so this was measured, not assumed.
  *  - Targets: Figma's 28px link pitch is kept only on a fine pointer from 1100px; everywhere else every link is 44px.
  *
- * Regions and languages (docs/landing-copy.md): the footer is the same component on every route, in the page's language
+ * Regions and languages (docs/landing.md): the footer is the same component on every route, in the page's language
  * (src/i18n). On a landing page it also carries the region switcher, real links to the four landing pages (each label in its
  * own language, hreflang on each, the current one aria-current="page"). The Russian page links to pages that exist in
  * English only (privacy, terms, blog, ...): those links say so with a visible "EN" tag, hreflang="en" and a spoken "page in
@@ -174,7 +174,7 @@ export function Footer({ locale, region }: { locale: Locale; region?: Region }) 
       </h2>
 
       {/* Atmosphere only. The layer is 48px wider than the footer on each side so the pointer sway never shows an edge. */}
-      <div className={styles.glow} aria-hidden="true" data-depth="40" data-depth-y="0" data-depth-k="4">
+      <div className={styles.glow} aria-hidden="true">
         <div className={`${styles.stage} fx-dither`}>
           <Picture
             base="/landing/footer/glow"

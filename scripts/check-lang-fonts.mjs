@@ -4,7 +4,7 @@
  *
  *   node scripts/check-lang-fonts.mjs
  *
- * What it asserts (docs/landing-copy.md, "Regions are pages"):
+ * What it asserts (docs/landing.md, "Regions are pages"):
  *  - <html lang="ru"> on /ru/ and /ru/download/, <html lang="en"> on every other page, the 404 included.
  *  - No English page preloads a Cyrillic font file, and none links a stylesheet that declares the Cyrillic faces twice.
  *  - every Russian page preloads the Cyrillic Manrope file, with the same `font-display: swap` and a "Manrope Fallback" as the English pages.

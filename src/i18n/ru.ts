@@ -1,7 +1,7 @@
 import type { Dict } from './en';
 
 /**
- * Shell strings in Russian. DRAFT: the client has not approved any of this wording yet (docs/landing-copy.md lists the
+ * Shell strings in Russian. DRAFT: the client has not approved any of this wording yet (docs/landing.md lists the
  * drafts). Informal «ты», short, no medical claims. The landing sections' own wording is the client's text in
  * src/content/copy/ru.ts; this file only holds the chrome around them.
  */

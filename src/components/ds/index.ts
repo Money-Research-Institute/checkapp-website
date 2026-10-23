@@ -16,7 +16,6 @@ export { GlassCard } from './GlassCard';
 export { GradientHeading } from './GradientHeading';
 export { ArrowRightIcon, CheckIcon, MinusIcon, PlusIcon, SparkleIcon } from './icons';
 export { Picture } from './Picture';
-export type { PictureSource } from './Picture';
 export { Prose } from './Prose';
 export { PageHero, PageShell, Section } from './Section';
 export { SectionIntro } from './SectionIntro';

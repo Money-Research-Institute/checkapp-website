@@ -1,6 +1,6 @@
 /*
  * Design tokens. One dark theme for the whole site: page background is pure #000.
- * Source: the Figma Landing frame, with the contrast fixes from docs/landing-decisions.md D6.
+ * Source: the Figma Landing frame, with the contrast fixes from docs/landing.md (D6).
  * Tailwind utilities (bg-brand, text-body, ...) are mapped to these in globals.css (@theme inline).
  * Sections never edit this file: section-only values live in custom properties scoped to
  * [data-section="<slug>"] inside the section's own CSS.
@@ -10,9 +10,9 @@
 
   /* Surfaces */
   --c-bg: #000;
-  --c-surface-a: #0e100d; /* usual-way / familiar cards (top of the 180deg ramp) */
+  --c-surface-a: #0e100d; /* cards (top of the 180deg ramp) */
   --c-surface-b: #121412; /* ... and the bottom of it */
-  --c-tile-outer: #070808; /* Projects tiles */
+  --c-tile-outer: #070808; /* 4P tiles */
   --c-tile-border: #1b1c1c;
   --c-tile-inner: #0d0f0e;
   --c-glass: rgb(255 255 255 / 0.06);
@@ -37,7 +37,7 @@
 
   --c-focus: #fff;
 
-  /* Type. Manrope everywhere; Inter for card UI text; Bricolage for the wordmark only (docs/landing-decisions.md D4). */
+  /* Type. Manrope everywhere; Inter for card UI text; Bricolage for the wordmark only (docs/landing.md D4). */
   /* The page's one h1 leads: on a phone it is 34 to 37px and no section h2 passes 29px, so the hero never reads as the weaker
      heading (it was 28 to 31px against h2s of 31 to 34). Desktop is Figma's: 64 and 52 at 1440. */
   --fs-h1: clamp(2.125rem, 1.35rem + 3.6vw, 4rem); /* 34 at 320, 36 at 390, 64 from 1280 */
@@ -63,7 +63,7 @@
   --radius-eyebrow: 90px;
   --tap: 44px;
 
-  /* Footer coupling: the final CTA hangs over the footer. Defaults for pages without it; see the :has() rule below. */
+  /* Footer: how far the page above may hang over its glow, and the runway of pure gradient before the first link. */
   --footer-overlap: 0px;
   --footer-runway: clamp(64px, 10vw, 96px);
 
@@ -91,12 +91,6 @@
   :root {
     --header-h: 64px;
   }
-}
-
-/* The final CTA overlaps the footer by 128 at 1440; every other page has no overlap. */
-body:has([data-section="final-cta"]) {
-  --footer-overlap: clamp(0px, 9vw, 128px);
-  --footer-runway: clamp(96px, 20vw, 251px);
 }
 
 /* More contrast on request: glass becomes solid, translucent text becomes opaque. */

@@ -2,7 +2,7 @@
  * Open Graph images, 1200 x 630: public/og-default.png (English pages, DEFAULT_OG_IMAGE in src/lib/constants.ts) and
  * public/og-default-ru.png (the Russian landing page, DEFAULT_OG_IMAGE_RU).
  *
- * The DiDi master icon sits on the right of a dark #07130c canvas. Fonts follow docs/landing-decisions.md D4: the
+ * The DiDi master icon sits on the right of a dark #07130c canvas. Fonts follow docs/landing.md D4: the
  * wordmark is Bricolage Grotesque, everything else Manrope (shipped as scripts/brand/fonts/*.woff2, Latin and Cyrillic, so
  * this never depends on a build output). The wordmark is "checkapp", lower case, as the client spells it. No health claims
  * are baked in (D1): the gate cannot scan raster text. The master is only placed and rounded (22.4 % corners), never

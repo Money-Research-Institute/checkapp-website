@@ -7,7 +7,7 @@ import styles from './CtaBanner.module.css';
 
 /**
  * The closing call to action of an inner page: a glass card with a headline, one line of support and the big pill.
- * Copy follows docs/landing-decisions.md D1: a wellness companion, no medical claims.
+ * Copy follows docs/landing.md D1: a wellness companion, no medical claims.
  */
 export function CtaBanner({
   headline = 'A small daily check-in with DiDi',

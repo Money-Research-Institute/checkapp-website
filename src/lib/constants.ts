@@ -38,7 +38,7 @@ export const SUPABASE_ANON_KEY =
 
 export const ACCOUNT_DELETION_PATH = '/delete-account/';
 
-/** The brand is spelled in lower case, as the client asks (docs/landing-copy.md). The legal pages keep their own text. */
+/** The brand is spelled in lower case, as the client asks (docs/landing.md). The legal pages keep their own text. */
 export const SITE_NAME = 'checkapp';
 
 /**
