@@ -112,6 +112,12 @@ interface DepthItem {
   y: number;
   tx: number;
   ty: number;
+  /** data-depth-rot: the most degrees the element leans toward the pointer. Published as --rx / --ry (deg) for the CSS to use. */
+  rot: number;
+  rx: number;
+  ry: number;
+  trx: number;
+  try: number;
 }
 interface DepthGroup {
   root: Element;
@@ -137,9 +143,10 @@ function startDepth(reduced: boolean): () => void {
     const mx = parseFloat(el.dataset.depth ?? '') || 0;
     const my = el.dataset.depthY !== undefined ? parseFloat(el.dataset.depthY) || 0 : mx;
     const k = parseFloat(el.dataset.depthK ?? '') || 6;
+    const rot = parseFloat(el.dataset.depthRot ?? '') || 0;
     let g = groups.get(root);
     if (!g) groups.set(root, (g = { root, items: [], visible: false }));
-    g.items.push({ el, mx, my, k, x: 0, y: 0, tx: 0, ty: 0 });
+    g.items.push({ el, mx, my, k, x: 0, y: 0, tx: 0, ty: 0, rot, rx: 0, ry: 0, trx: 0, try: 0 });
   });
 
   let raf = 0;
@@ -151,7 +158,7 @@ function startDepth(reduced: boolean): () => void {
       if (!g) continue;
       g.visible = e.isIntersecting;
       if (!g.visible) {
-        for (const it of g.items) it.tx = it.ty = 0;
+        for (const it of g.items) it.tx = it.ty = it.trx = it.try = 0;
         wake();
       }
     }
@@ -167,13 +174,30 @@ function startDepth(reduced: boolean): () => void {
         const f = 1 - Math.exp(-it.k * dt);
         it.x += (it.tx - it.x) * f;
         it.y += (it.ty - it.y) * f;
+        it.rx += (it.trx - it.rx) * f;
+        it.ry += (it.try - it.ry) * f;
         if (Math.abs(it.tx - it.x) < 0.05 && Math.abs(it.ty - it.y) < 0.05) {
           it.x = it.tx;
           it.y = it.ty;
         } else {
           moving = true;
         }
+        if (Math.abs(it.trx - it.rx) < 0.02 && Math.abs(it.try - it.ry) < 0.02) {
+          it.rx = it.trx;
+          it.ry = it.try;
+        } else {
+          moving = true;
+        }
         it.el.style.translate = it.x === 0 && it.y === 0 ? '' : `${it.x.toFixed(2)}px ${it.y.toFixed(2)}px`;
+        if (it.rot) {
+          if (it.rx === 0 && it.ry === 0) {
+            it.el.style.removeProperty('--rx');
+            it.el.style.removeProperty('--ry');
+          } else {
+            it.el.style.setProperty('--rx', it.rx.toFixed(2));
+            it.el.style.setProperty('--ry', it.ry.toFixed(2));
+          }
+        }
       }
     });
     raf = moving ? requestAnimationFrame(tick) : 0;
@@ -189,7 +213,7 @@ function startDepth(reduced: boolean): () => void {
     groups.forEach((g) => {
       const inside = g.visible && g.root.contains(event.target as Node);
       if (!inside) {
-        for (const it of g.items) it.tx = it.ty = 0;
+        for (const it of g.items) it.tx = it.ty = it.trx = it.try = 0;
         return;
       }
       const r = g.root.getBoundingClientRect();
@@ -198,12 +222,14 @@ function startDepth(reduced: boolean): () => void {
       for (const it of g.items) {
         it.tx = nx * it.mx;
         it.ty = ny * it.my;
+        it.trx = -ny * it.rot;
+        it.try = nx * it.rot;
       }
     });
     wake();
   }
   function onLeave() {
-    groups.forEach((g) => g.items.forEach((it) => (it.tx = it.ty = 0)));
+    groups.forEach((g) => g.items.forEach((it) => (it.tx = it.ty = it.trx = it.try = 0)));
     wake();
   }
 
@@ -214,7 +240,100 @@ function startDepth(reduced: boolean): () => void {
     document.documentElement.removeEventListener('pointerleave', onLeave);
     io.disconnect();
     if (raf) cancelAnimationFrame(raf);
-    groups.forEach((g) => g.items.forEach((it) => (it.el.style.translate = '')));
+    groups.forEach((g) =>
+      g.items.forEach((it) => {
+        it.el.style.translate = '';
+        it.el.style.removeProperty('--rx');
+        it.el.style.removeProperty('--ry');
+      }),
+    );
+  };
+}
+
+/* ---------------------------------------------------------------- pointer light on glass */
+
+/**
+ * The cursor's light on the hero's glass cards (fine pointers only, never under reduced motion): a lamp held near glass. For the cards
+ * within 160px of the pointer it writes --mx / --my (px, relative to the card); fx.css paints a faint highlight into the 1px edge from them.
+ * Cards farther away are cleared. Only the hero's cards take part: the testimonial cards move on their own, so a light computed from the
+ * pointer would freeze on them, and the small pills and rows elsewhere are better still. Work happens in one rAF per burst of pointer or
+ * scroll events, reads all rects before writing any variable (no forced recalc per card), and only over cards near the viewport.
+ */
+function startSpotlight(reduced: boolean): () => void {
+  if (reduced || !matchMedia('(hover: hover) and (pointer: fine)').matches) return noop;
+  const REACH = 160;
+  const near = new Set<HTMLElement>();
+  let lit = new Set<HTMLElement>();
+  let px = -9999;
+  let py = -9999;
+  let raf = 0;
+
+  const clear = (el: HTMLElement) => {
+    el.style.removeProperty('--mx');
+    el.style.removeProperty('--my');
+  };
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        const el = e.target as HTMLElement;
+        if (e.isIntersecting) near.add(el);
+        else {
+          near.delete(el);
+          lit.delete(el);
+          clear(el);
+        }
+      }
+    },
+    { rootMargin: '240px' },
+  );
+  document.querySelectorAll<HTMLElement>('[data-section="hero"] .fx-edge').forEach((el) => io.observe(el));
+
+  function frame() {
+    raf = 0;
+    // reads first ...
+    const hits: Array<[HTMLElement, number, number]> = [];
+    near.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (!r.width) return;
+      const dx = Math.max(r.left - px, 0, px - r.right);
+      const dy = Math.max(r.top - py, 0, py - r.bottom);
+      if (dx * dx + dy * dy <= REACH * REACH) hits.push([el, px - r.left, py - r.top]);
+    });
+    // ... then writes
+    const next = new Set<HTMLElement>();
+    for (const [el, x, y] of hits) {
+      el.style.setProperty('--mx', `${x.toFixed(0)}px`);
+      el.style.setProperty('--my', `${y.toFixed(0)}px`);
+      next.add(el);
+    }
+    lit.forEach((el) => {
+      if (!next.has(el)) clear(el);
+    });
+    lit = next;
+  }
+  const schedule = () => {
+    if (!raf) raf = requestAnimationFrame(frame);
+  };
+  const onMove = (event: PointerEvent) => {
+    if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+    px = event.clientX;
+    py = event.clientY;
+    schedule();
+  };
+  const onLeave = () => {
+    px = py = -9999;
+    schedule();
+  };
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('scroll', schedule, { passive: true });
+  document.documentElement.addEventListener('pointerleave', onLeave);
+  return () => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('scroll', schedule);
+    document.documentElement.removeEventListener('pointerleave', onLeave);
+    io.disconnect();
+    if (raf) cancelAnimationFrame(raf);
+    lit.forEach(clear);
   };
 }
 
@@ -222,12 +341,12 @@ function startDepth(reduced: boolean): () => void {
 
 function qualityFor(coarse: boolean, mid: boolean): Quality {
   const scale = Math.min(coarse ? 0.75 : 1, mid ? 0.6 : 1);
-  const base = coarse ? 40 : 160;
-  const maxMotes = mid ? Math.min(base, 20) : base;
+  const base = coarse ? 24 : 90;
+  const maxMotes = mid ? Math.min(base, 16) : base;
   return {
     scale,
     maxMotes,
-    motes: (cssWidth) => (coarse || mid ? maxMotes : cssWidth >= 2200 ? 300 : 160),
+    motes: (cssWidth) => (coarse || mid ? maxMotes : cssWidth >= 2200 ? 140 : 90),
     fpsCap: coarse ? 30 : 60,
     maxPixels: coarse ? 0.9e6 : 2.6e6,
   };
@@ -285,7 +404,7 @@ export function boot(sched: { idle(): Promise<void> }): Boot {
   const mid = (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) || (nav.hardwareConcurrency ?? 8) <= 4;
 
   root.dataset.fx = 't1';
-  const stops = [startOnce(reduced), startBobPause(), startDepth(reduced)];
+  const stops = [startOnce(reduced), startBobPause(), startDepth(reduced), startSpotlight(reduced)];
 
   return {
     claims: claimContexts(),

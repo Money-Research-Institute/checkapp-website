@@ -13,9 +13,9 @@ export type SceneId = 'hero-floor';
 export interface Quality {
   /** Starting render scale (1 desktop, 0.75 mobile, 0.6 mid-tier; the runner steps down to 0.5 under load). */
   scale: number;
-  /** Mote budget at the current tier: 160 desktop, 40 mobile, <= 20 mid-tier. */
+  /** Mote budget at the current tier: 90 desktop, 24 mobile, <= 16 mid-tier. Dust is only worth seeing where there is light: fewer, better. */
   maxMotes: number;
-  /** Mote budget for a canvas of this CSS width: desktop gives 300 on ultrawide (>= 2200px). */
+  /** Mote budget for a canvas of this CSS width: desktop gives 140 on ultrawide (>= 2200px). */
   motes(cssWidth: number): number;
   /** 60 desktop, 30 on coarse pointers / narrow screens. */
   fpsCap: number;

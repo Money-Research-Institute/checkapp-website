@@ -292,6 +292,9 @@
   width: 100%;
   height: auto;
   max-width: none;
+  /* leans toward the pointer (the engine publishes --rx / --ry in degrees on the plane; 0 at rest, on touch and under reduced motion) */
+  transform: perspective(1400px) rotateX(calc(var(--rx, 0) * 1deg)) rotateY(calc(var(--ry, 0) * 1deg));
+  transform-origin: 50% 60%;
 }
 .exitPhone {
   line-height: 0;
@@ -1357,6 +1360,57 @@
         transform-origin: 50% 100%;
       }
     }
+  }
+}
+
+/* The phone is the lamp: the edge of each glass card that faces it is the brightest (static, no runtime cost). The left cards are lit on their
+   right edge, the right cards on their left one. */
+.rail .glass {
+  --edge: linear-gradient(90deg, rgb(255 255 255 / 0.1) 52%, rgb(170 255 155 / 0.36) 100%);
+}
+.mascot .glass,
+.streak .glass {
+  --edge: linear-gradient(270deg, rgb(255 255 255 / 0.1) 52%, rgb(170 255 155 / 0.36) 100%);
+}
+
+/* ------------------------------------------------------------------ entrance: the cards and the phone come in, staggered */
+
+/* On load, not on scroll: each plane settles from a slightly smaller scale (the cards also fade in), phone first, then the rail, the scans, the
+   mascot and the streak. `scale` and `opacity` only: `translate` is the pointer parallax's. The phone never fades (it is the LCP element);
+   its default state is the finished one, so no-JS, reduced motion and T0 show the design as drawn. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes planeIn {
+    from {
+      opacity: 0;
+      scale: 0.88;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+  @keyframes phoneIn {
+    from {
+      scale: 0.94;
+    }
+    to {
+      scale: 1;
+    }
+  }
+  .plane.phone {
+    animation: phoneIn 1100ms var(--ease-out-expo) both;
+  }
+  .plane.rail {
+    animation: planeIn 900ms var(--ease-out-expo) 260ms both;
+  }
+  .plane.scans {
+    animation: planeIn 900ms var(--ease-out-expo) 380ms both;
+  }
+  .plane.mascot {
+    animation: planeIn 900ms var(--ease-out-expo) 520ms both;
+  }
+  .plane.streak {
+    animation: planeIn 900ms var(--ease-out-expo) 640ms both;
   }
 }
 

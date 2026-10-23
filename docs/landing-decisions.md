@@ -120,3 +120,18 @@ copy rules in docs/landing-copy.md relaxed by a reviewed gate change).
 
 From 960 px, with motion allowed and the engine at tier 1 or 2, the three columns travel up at one steady speed (about 25 px a second), start where the Figma wall stands, dissolve at both ends, stop off-screen and from a pause button (WCAG 2.2.2); hover or keyboard focus stops only the column it is in, so on a short screen the rest of the wall keeps moving. Everywhere else the finished Figma wall stays. The needsReplacement card (a crypto-template quote) does not travel; it stays on the
 still wall, dimmed, as D2 decided. Only five distinct quotes feed three moving columns, so the same quote can appear twice on screen: real, consented testimonials fix that.
+
+## D13. Light and motion: a quiet room  (decided after an art-direction and engineering review, 23.10.2026)
+
+A first pass added many effects at once (drifting dots in six sections, a coloured wash behind two sections, glowing lines between sections, a scroll bar of light, orbiting
+edges, a sheen and magnet on the CTA, a looping scan line). Two reviews (art direction and graphics engineering) and the owner agreed it read cheap: effects with no reason, a visible 480 px
+tile, dots over text, neon lime, loops that never stop, and a page-wide scroll bug from one of the washes. What stays, and why:
+
+- **The phone is the lamp.** Light comes from the product, not the page: the hero floor and shaft, the halos the design already has, nothing behind or over type.
+- **One slow clock** (10 s breath), **events instead of loops**: the hero scan band climbs once at 1.6 s and again only when the pointer dwells on the phone (at most every 14 s).
+  The grid echo runs once per scan. Few, fine dust motes (90 desktop, 24 phone), visible only inside the shaft. An irregular fan of rays and a slowly drifting density field.
+- **Static craft over runtime tricks:** card edges lit on the side that faces the phone, a faint pointer light on the hero cards' edges only, phone tilt of 3 degrees, the staggered entrance.
+- **Removed:** the CSS motes, the coloured washes, section seams, the scroll-progress bar, the orbiting eyebrow edge, the CTA sheen and breath, the magnet, the floor cursor light.
+- Technical: no pow() of a negative number in the shaders; the additive light is summed and rolled off with a soft shoulder; the dither is static and never on pure black.
+- Not done, noted for later: an sRGB, mipmapped poster texture in the runner (the poster aliases a little at the lowest render scales), a shared blue-noise texture, and the
+  scroll-timed halos for the Process phones and the FAQ cone suggested by the review.

@@ -171,7 +171,7 @@ export function HeroSection({ region }: SectionProps) {
 
           {/* The phone: one meaningful image (whole device, UI baked in). The Russian page gets the same screen in Russian
               (phone-ru, made by ./art/build.mjs), so the app reads in one language from the hero down to the final phone. */}
-          <div className={`${s.plane} ${s.phone}`} data-depth="12">
+          <div className={`${s.plane} ${s.phone}`} data-depth="12" data-depth-rot="3">
             <div className={`${s.exitPhone}`}>
               <Picture
                 base={locale === 'ru' ? '/landing/hero/phone-ru' : '/landing/hero/phone'}
