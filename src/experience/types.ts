@@ -54,7 +54,9 @@ export interface SceneState {
   /**
    * 0..1: how far the visible part of the stage has scrolled out of the top of the viewport. The stage is clipped by its
    * [data-section], so this is measured from the section's top when the stage pokes out above it: exactly 0 at scrollY = 0
-   * in every layout. Always 0 under reduced motion (the single still frame is the poster).
+   * in every layout. Always 0 under reduced motion (the single still frame is the poster). The runner eases it in over the first
+   * 0.4 s of drawn time, so the first frame (the poster has no scroll term) is 0 even when the visitor is already scrolled into
+   * the hero; scenes just use the value they are given.
    */
   exit: number;
   onScreen: boolean;

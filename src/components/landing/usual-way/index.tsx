@@ -19,7 +19,13 @@
  *    baked 3D scene. Figma's own screen carried an orange "Needs Attention" verdict, a July 2024 date and "DIDI", which the rest of
  *    the page (and the app's wellness wording) does not say, and the same Scan Details screen must not appear with two UIs on one
  *    page. The "Looks stable" chip is ours, exactly as on the Meet DiDi phone: the owner decides whether the app's real status
- *    labels should appear instead.
+ *    labels should appear instead. That call is not in docs/landing-decisions.md yet (QA round 3 asked for an entry): the chip, the
+ *    Moisture / Surface Texture rows and the one-line summary are shown as "a short wellness insight back", the same screen as the
+ *    Meet DiDi phone 4, and they change together with it, from the same art, when the owner rules.
+ *  - The scene's left-hand glass card (the face in its scan brackets) used to carry a chart panel with a heartbeat-style line under the
+ *    portrait: a vital-sign reading the page does not claim (no monitoring, no trends; docs/landing-copy.md) and the claim scanner cannot
+ *    see in a raster. art/remove-trace.mjs paints the panel out of every file of the render (the portrait, the brackets and the rim stay);
+ *    build.mjs runs it first, so a rebuild from the master stays clean. Do not put a chart, a waveform or a number into this art.
  *  - /ru/ gets its own render, `usual-way-render-ru-*` and `usual-way-render-square-ru-*` (the same scene and the same Russian
  *    screen as the Meet DiDi phone 4), so there is no English app UI left on a Russian page. The floating glass cards are icons
  *    only, so they are the same file for both. The alt text and the pixels say the same thing in both languages.

@@ -11,6 +11,9 @@
  * /ru/ has no English app UI left. Everything else in the scene is the master's own pixels.
  *
  * What it does, in order (the numbers it needs are in screen-fit.json, solved once against the master):
+ *   0. Trace: the master's left-hand glass card carries a chart panel with a heartbeat-style line under the portrait. That reads as a
+ *      vital-sign reading, which the page does not claim and cannot show (docs/landing-copy.md), so remove-trace.mjs paints the panel out
+ *      of the master first (the portrait, the brackets and the rim stay). Everything below then works on the trace-free master.
  *   1. Warp: the screen rect of the 840 x 1711 device export (44, 37, 754 x 1637, radius 104) goes through the homography that
  *      maps its four corners to the four corners of the phone's glass in the master (fit to the glass silhouette: the radius the
  *      fit converged to, 104.2, is the device's own, which is the check that the model is right). 3 x 3 supersampled, with an
@@ -32,10 +35,12 @@
  *     public/landing/usual-way/usual-way-render[-ru]-{640,960,1448}.avif|webp and usual-way-render-square[-ru]-{540,1086}.avif|webp.
  *
  * Only sharp is needed (a devDependency of the repo). Re-run it, with the same fit, whenever a string on the familiar phone 4 changes.
+ * Without the master, `node remove-trace.mjs <shipped 1448 render> [en|ru]` applies step 0 alone to the picture that ships and writes the same outputs.
  */
 import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
+import { removeTrace } from './remove-trace.mjs';
 
 const here = new URL('.', import.meta.url).pathname;
 const repo = resolve(here, '../../../../../');
@@ -280,6 +285,7 @@ function swapIsland(N, R) {
 
 const master = await load(resolve(masterPath));
 if (master.w !== W || master.h !== H) throw new Error(`MASTER must be ${W} x ${H}, got ${master.w} x ${master.h}`);
+removeTrace(master.d, master.w, master.h);
 
 mkdirSync(outDir, { recursive: true });
 const write = async (name, data, w, h) => {

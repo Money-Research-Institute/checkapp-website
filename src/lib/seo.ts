@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { RegionHreflang, RegionPaths, Regions, getRegionCopy, type Locale, type Region } from '@/content/copy';
+import { plain } from '@/i18n/typeset';
 import { DEFAULT_OG_IMAGE, DEFAULT_OG_IMAGE_RU, LOGO_URL, SITE_NAME, SITE_URL } from './constants';
 
 type PageMeta = {
@@ -114,7 +115,7 @@ export function organizationSchema() {
 /** The app's description per language. English is ours; Russian is the client's own hero subheadline (never retyped here). */
 const AppDescription: Record<Locale, string> = {
   en: 'A wellness companion app: take a photo of your tongue, face or iris and DiDi shares a short wellness insight, only when you ask. Not a medical device.',
-  ru: getRegionCopy('ru').hero.subheadline,
+  ru: plain(getRegionCopy('ru').hero.subheadline),
 };
 
 export function mobileApplicationSchema(locale: Locale = 'en') {
@@ -155,7 +156,9 @@ export function landingMetadata(region: Region): Metadata {
   for (const r of Regions) languages[RegionHreflang[r]] = RegionPaths[r];
   return createMetadata({
     title: LandingTitle[copy.locale],
-    description: copy.hero.subheadline,
+    // Plain spaces: the page text carries no-break spaces (src/i18n/typeset.ts) once the typography step has run, and a
+    // description must read the same whether or not it has.
+    description: plain(copy.hero.subheadline),
     path: RegionPaths[region],
     ogImage: LandingOgImage[copy.locale],
     languages,
@@ -170,10 +173,10 @@ export function faqSchema(faqs: { question: string; answer: string }[]) {
     '@type': 'FAQPage',
     mainEntity: faqs.map((faq) => ({
       '@type': 'Question',
-      name: faq.question,
+      name: plain(faq.question),
       acceptedAnswer: {
         '@type': 'Answer',
-        text: faq.answer,
+        text: plain(faq.answer),
       },
     })),
   };

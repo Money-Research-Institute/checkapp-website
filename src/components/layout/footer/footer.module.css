@@ -2,7 +2,9 @@
  * Global footer. Figma 2601:12661, 1440 x 740. See Footer.tsx for what is, and is not, Figma-literal.
  *
  * Layout is driven by the footer's own inline width (container queries on .inner), not by device names:
- *   < 540    brand on top; Product | Company side by side; Connect on its own row; no duplicate legal links
+ *   < 540    brand on top; Product | Company side by side, each as wide as its longest word needs (a word is never broken
+ *            mid-way, and an EN tag drops under its label before the label gives up letters); Connect on its own row;
+ *            no duplicate legal links; below 272px of content the columns stack
  *   540-879  brand on top, then three equal columns; legal links return (stacked under the copyright below 720)
  *   >= 880   the Figma composition: brand | Product | Company | Connect
  *   >= 1000  the disclaimer and the region switcher share one row (stacked below it)
@@ -48,6 +50,14 @@
 @media (max-width: 767.98px) {
   .footer {
     --bar: calc(var(--cta-bar-h, 72px) + env(safe-area-inset-bottom, 0px));
+  }
+}
+/* Short landscape: no bar (MobileCtaBar.module.css), so the footer is laid out as on a tablet: nothing reserved, the home-indicator
+   inset on its own padding. Must follow the rule above. */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+  .footer {
+    --bar: 0px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
   }
 }
 @media (min-width: 768px) {
@@ -214,10 +224,22 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Two columns sized by their content: each is as wide as its longest line wants (the Russian "Конфиденциальность" plus its
+     EN tag is 177px) and never narrower than its longest word (146px), and the leftover is shared. minmax(0, 1fr) would let
+     a column squeeze below that word, and the word would be cut in half. min-content is the track's floor, not the items'
+     own `min-width: 0` (.group), which only governs the items inside a track. */
+  grid-template-columns: repeat(2, minmax(min-content, auto));
   column-gap: 24px;
   row-gap: 28px;
   align-items: start;
+}
+
+/* Below ~272px of content (a 280px folded phone) the two words no longer fit side by side: one column, and the longest
+   word still has the whole width. */
+@container (max-width: 272px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .brand {
@@ -285,20 +307,35 @@
 .legalLink {
   display: flex;
   align-items: center;
+  column-gap: 8px; /* the label to its EN tag; a gap, not a margin, so a tag that wraps to its own line is not indented */
   min-height: var(--tap, 44px);
   border-radius: 4px;
   font-size: var(--f-fs);
   line-height: var(--f-lh);
   color: var(--f-link);
   text-decoration: none;
-  overflow-wrap: anywhere; /* hello@checkapp.today must never push a column wider than the screen */
+  /* A word is never broken: overflow-wrap: anywhere here let the label (a shrinkable flex item beside the EN tag) fold to
+     "Конфиденциальнос / ть" on every phone. The grid gives the column room for the longest word; the e-mail below is the one
+     exception. */
+  overflow-wrap: normal;
   transition: color var(--dur-fast, 150ms) var(--ease-out, ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
+/* The label and its EN tag wrap as units: when both do not fit on one line the tag drops under the label (a line each,
+   centred as a pair in the 44px target) instead of the label giving up letters. The legal links in the bar never wrap. */
+.link {
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+/* hello@checkapp.today has no break opportunity: it may fold anywhere rather than push a column wider than the screen. */
+.link[href^='mailto:'] {
+  overflow-wrap: anywhere;
+}
+
 .lang {
   flex: none;
-  margin-inline-start: 8px;
   padding: 1px 4px;
   border: 1px solid currentColor;
   border-radius: 4px;

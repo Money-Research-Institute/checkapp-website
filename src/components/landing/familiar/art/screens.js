@@ -227,9 +227,10 @@ window.renderScan = (S) => {
   const c = base('scan');
   const orig = base('scan');
   item(c, orig, SCAN.date, S.date);
-  // The chip: Figma's "Needs Attention" verdict is replaced by a calm status (docs/landing-decisions.md, owner to confirm).
+  // The chip: Figma's "Needs Attention" verdict is wiped. No replacement status is drawn when S.chip is null: a finished verdict as a
+  // picture would contradict the page's own copy and cannot be scanned (docs/landing-decisions.md D1).
   fillRows(c, [486, 268, 756, 342], 3, 3);
-  {
+  if (S.chip) {
     const size = 26.5, weight = 600;
     const m = inkMetrics(c, S.chip, size, weight);
     const padL = 18, icon = 34, gap = 12, padR = 24;
@@ -287,7 +288,7 @@ window.renderScan = (S) => {
     fillRows(c, PARA.fill, 3, 3);
     c.font = fontOf(size, 400);
     c.fillStyle = color;
-    const lines = wrap(c, S.para, 690);
+    const lines = wrap(c, S.para, S.paraW ?? 690);
     lines.forEach((ln, i) => c.fillText(ln, 75, PARA.ink1[1] + mo.asc + i * PARA.pitch));
     window.__paraLines = lines.length;
   }

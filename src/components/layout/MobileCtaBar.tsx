@@ -7,7 +7,8 @@ import { APP_DOWNLOAD_URL } from '@/lib/constants';
 import styles from './MobileCtaBar.module.css';
 
 /**
- * Sticky download bar for phones (hidden from md up). It is 72px tall (`--cta-bar-h`, plus the home-indicator inset) and
+ * Sticky download bar for phones (hidden from md up, and on a phone on its side: 480 to 767 wide and at most 500 tall, where the
+ * header carries the download pill instead; see the CSS). It is 72px tall (`--cta-bar-h`, plus the home-indicator inset) and
  * the page reserves exactly that space. It gets out of the way while any element marked `data-hides-cta-bar` (the hero's
  * and the final section's own CTA) is on screen, so two buttons never stack, and while the cookie notice is open (that
  * has its own buttons and the same corner of the screen). Hidden means inert too.

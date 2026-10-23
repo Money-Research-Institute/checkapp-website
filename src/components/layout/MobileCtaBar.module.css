@@ -38,6 +38,17 @@
     display: none;
   }
 }
+/*
+ * Short landscape (a phone on its side, 480 to 767 wide): no bar. Fixed to the bottom edge with the 48px header above it, the bar
+ * and the header took about a third of a 375px-tall screen and squeezed the page between them. The header carries the download pill
+ * instead (Header.module.css, the same 844 x 390 layout), and the page stops reserving the bar's strip (globals.css, the footer).
+ * Narrower than 480 there is no room for the pill beside the logo and the burger, so the bar stays. Keep the three queries in step.
+ */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+  .bar {
+    display: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .bar,
   .bar[data-animate],

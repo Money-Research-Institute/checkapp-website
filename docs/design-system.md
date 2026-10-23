@@ -32,7 +32,7 @@ contract: read `--fs-h1` / `--fs-h2` or clamp to the same numbers, and check at 
 
 | Component | Use |
 |---|---|
-| `CtaButton` | The pill CTA (`size` nav 56 / lg 60 / bar, `tone` deep / brand): arrow, light under the pill that rises on hover and `:focus-visible`, 0.97 press, 44 px target (`--cta-nav-h` shrinks the nav pill; the header sets 44 px on a landscape phone). Spreads `data-*` (`data-critical`, `data-hides-cta-bar`). On the Russian site (`/ru/...`) a link to a page with a Russian twin goes to the twin (`localizeHref`, `src/lib/paths.ts`), so a landing section passes `APP_DOWNLOAD_URL` and never needs to know its language. |
+| `CtaButton` | The pill CTA (`size` nav 56 / lg 60 / bar, `tone` deep / brand): arrow, rim light under the pill that rises on hover and `:focus-visible` (in a `.glow` wrapper whose mask keeps it off the label: the white text keeps the fill's own contrast, 5.3:1 on brand and 7.4:1 on deep, instead of 2.8 to 3.3:1 on the bloom), 0.97 press, 44 px target (`--cta-nav-h` shrinks the nav pill; the header sets 44 px on a landscape phone). Spreads `data-*` (`data-critical`, `data-hides-cta-bar`). On the Russian site (`/ru/...`) a link to a page with a Russian twin goes to the twin (`localizeHref`, `src/lib/paths.ts`), so a landing section passes `APP_DOWNLOAD_URL` and never needs to know its language. |
 | `Button` | Forms and inner pages: `primary` / `secondary` / `ghost`, link or `<button>`. |
 | `Eyebrow`, `GradientHeading`, `SectionIntro` | The section header stack (eyebrow, 60-100-60 gradient heading with solid / forced-colors / high-contrast fallbacks, bracketed lede). |
 | `Container`, `PageShell`, `PageHero`, `Section` | Layout. `PageShell` clears the fixed header; `PageHero` carries the page's single `h1`. |
@@ -90,6 +90,18 @@ Scroll-exit (`SceneState.exit`) is measured against the stage's `[data-section]`
 drawn with `t = 0`, `exit = 0` and a centred pointer at any scroll position, so it is the poster; toggling reduced motion on a
 running page redraws that frame.
 
+The runner eases `SceneState.exit` in over the first 0.4 s of drawn time (`EXIT_RAMP`), so the first frame is the poster even when
+the visitor has already scrolled into the hero (T2 starts after idle, and again after a context restore); the poster has no scroll
+term, and an unramped first frame stepped the floor 25 % darker in one frame. On context loss the poster is put back with its
+transition switched off for that one change (`showPosterAtOnce`): the canvas has no transition, so a poster that eased in from
+nothing made the floor fade to black and back.
+
+Dynamic resolution is judged against the display's own callback period, measured once per (re)start (`calibrate()`: median of 12
+rAF intervals and their spread). A steady cadence near 33.3 ms is a 30 Hz cap (iOS Low Power Mode, power savers), not load: nothing
+steps down for it. Everything else is judged as 60 Hz or faster: slow at `max(24, 1.4 x period)`, stuck at `max(32, 1.9 x period)`.
+Test a change to the ladder by spacing rAF callbacks 33 ms apart (no extra work: the render scale must stay put and `data-fx`
+must stay `t2`) and by adding real work per callback (it must step down and, at the floor, give up).
+
 To add a scene: implement `Scene` (`src/experience/types.ts`), register it in `scenes.ts` and `sceneIds.ts`, and render
 `<GlCanvas scene="..." />` next to a `<Picture data-webgl-poster>` inside a stage that reserves its `aspect-ratio`. The poster is
 the texture (`ctx.posterTexture`, `ctx.posterFit(w, h)`), so frame 0 equals the poster and every additive term must be 0 at
@@ -102,14 +114,20 @@ the texture (`ctx.posterTexture`, `ctx.posterFit(w, h)`), so frame 0 equals the 
   from 1024 (`FULL_BAR_FROM` in `Header.tsx`, the media queries in `Header.module.css`). **Landscape phones**
   (`orientation: landscape` and `max-height: 500px`) get a compact bar: 8 px from the top, 48 px high, the same 16 px edge as the
   hero, a 44 px pill that is dropped while the page's own download button is on screen (`data-cta-covered`, set from the same
-  `[data-hides-cta-bar]` signal the phone bar uses), and a two-column open menu. `--header-h` is 64 px there, so pages that clear
-  the header follow. The links go through `shellLink` (`src/lib/paths.ts`): on a Russian page "How it works" is the landing
+  `[data-hides-cta-bar]` signal the phone bar uses), and a two-column open menu. From 480 to 767 wide the pill is also in the bar there (logo left, pill and burger on the
+  right), because the phone's bottom bar is not shown on a short landscape screen (below). `--header-h` is 64 px there, so pages that clear
+  the header follow. At the top of the page the links sit on a scrim (`.header::before`, a black wash that holds through the nav row
+  and fades out below it; gone once the glass fades in on scroll): the hero's green wash runs under the right-hand links and 16px grey
+  on it measured 2.4 to 3.3:1, with the scrim 6.8 or more. The links go through `shellLink` (`src/lib/paths.ts`): on a Russian page "How it works" is the landing
   page's own section (`/ru/#how-it-works`) and any link to a page that exists in English only wears a visible "EN" tag (and a spoken
   cue), in the header and the footer. The `/blog/` links are `prefetch={false}`: the blog's cover photos come from a third party,
   and prefetching the route from the header fetched one on every page load, before the cookie notice had been answered. The logo never shrinks (`LogoMark` pins its `<picture>`), and the pill's
   right edge stays inside the gutter at every width: a sweep that checks the rect of every header link against the viewport and the
   gutter, for every locale, is the way to test a change here (the gate's overflow check cannot see clipped content).
-- **MobileCtaBar**: server-rendered hidden on a landing page (the hero's CTA is in the first view), then settled silently by the
+- **MobileCtaBar**: not shown on a short landscape screen (`(orientation: landscape) and (max-height: 500px) and (min-width: 480px)`):
+  with the 48 px header above it, the bar took a third of a 375 px screen. The same query, in `MobileCtaBar.module.css`, `globals.css`
+  (the page stops reserving the bar's strip) and `footer.module.css` (laid out as on a tablet), must stay in step with the header's.
+  Narrower than 480 there is no room for the pill beside the logo and the burger, so the bar stays. Server-rendered hidden on a landing page (the hero's CTA is in the first view), then settled silently by the
   observer; only later changes slide (`data-animate`). It also steps aside while the cookie notice is open (`html[data-consent-open]`).
 - **CookieConsent**: after the first input or 8 s. A slim card on phones, a one-row strip on short landscape screens. It is held
   back (laid out, invisible) while its box would cover a `data-critical` element, and appears once scrolling or resizing clears it.

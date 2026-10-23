@@ -38,7 +38,11 @@ const OWN_CTA = '[data-hides-cta-bar]';
  *
  * Landscape phones (<= 500px tall) get a compact bar (see the CSS): the same 16px edge as the page, 48px high, and no download
  * pill while the page's own download button is on screen (`data-cta-covered`, the same signal the phone bar uses), because two
- * identical buttons cost a third of the height of a screen that short.
+ * identical buttons cost a third of the height of a screen that short. From 480 to 767 wide that bar also takes over the phone's
+ * bottom bar (hidden there): logo, pill and burger, as the Russian bar does from 768 to 1023.
+ *
+ * Over the hero the links sit on a scrim (`.header::before`, gone once the glass fades in on scroll), so the hero's green wash
+ * never lands behind them at full strength.
  *
  * Links on the Russian site: the download button goes to the Russian download page (CtaButton), "How it works" to its section of
  * the Russian landing page, and every other link to an English page, which says so with a visible "EN" tag and a spoken cue.

@@ -57,7 +57,9 @@ export function CtaButton({
 
   const content = (
     <>
-      <span className={styles.light} aria-hidden="true" />
+      <span className={styles.glow} aria-hidden="true">
+        <span className={styles.light} />
+      </span>
       <span className={styles.label}>{children}</span>
       <ArrowRightIcon className={styles.arrow} />
     </>

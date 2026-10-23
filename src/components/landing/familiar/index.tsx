@@ -23,9 +23,12 @@
  *    says. Figma's phone 2 is a video-note recorder (round preview, "0:10,16", Cancel, pause), phone 3 has DiDi asking for "a quick
  *    video" with a 0:10 video note, and phone 4 carries an orange "Needs Attention" verdict and a July 2024 date. The app analyses
  *    photos only, on request, so they were re-made (see "Device art" below): phone 2 is a photo camera (the original round preview,
- *    a one-line instruction, a shutter), phone 3 is a photo exchange with a reply, phone 4 reads "Looks stable" with today's time
- *    and the smiling DiDi instead of the worried one. The "Looks stable" chip is ours (the summary under it already says "generally
- *    stable"): the owner decides whether the real app's status labels should appear instead. Phone 1 only fixes "DIDI" to "DiDi".
+ *    a one-line instruction, a shutter), phone 3 is a photo exchange with a reply, phone 4 is Scan Details with today's time and the
+ *    smiling DiDi instead of the worried one. Phone 4 shows NO verdict and no status chip: the title row says "Your scan" instead of
+ *    "Overall Result", the summary only describes what is visible in the photo and says it is not a medical result, and the card
+ *    below is "A small next step" rather than "Recommended". A finished assessment as a picture would contradict the page's own words
+ *    and cannot be scanned (landing-decisions D1, round 3 review "visual:3"). If the real app's status labels should appear here, the
+ *    owner decides and records it in docs/landing-decisions.md first. Phone 1 only fixes "DIDI" to "DiDi".
  *  - /ru/ gets its own render of all four screens in Russian (<image>-ru-*): the same layout, the strings of src/content/copy where
  *    they exist («Начать скан языка», «Чат?», «Добрый день, Mah!» as on the final-cta phone) and drafts elsewhere. Mixed-language
  *    screens on a Russian page were the worst of the options, so there is no English UI left in this section on /ru/.
@@ -40,7 +43,7 @@
  *  - Device art: the screens were then re-made in Chrome canvas on top of those exports (the bezel, status bar and island are
  *    untouched; screen rect 754 x 1637 at (44, 37), radius 104, at 840 px wide). Everything that stays is Figma's pixels; text that
  *    changes is set in Inter (the app's UI face, matched to the source's size and baseline per string, so English and Russian sit
- *    on the same lines); new pieces (chat bubbles, camera shutter, status chip) are drawn. Re-run the same way when a string changes.
+ *    on the same lines); new pieces (chat bubbles, camera shutter) are drawn. The generator is ./art (see art/build.mjs); re-run it when a string changes.
  *  - silk-*: the bitmap of node 2601:12719, turned 180 degrees because the Figma node is rotated (the raw fill is upside
  *    down against the design). The ribbons therefore cross at 47.5% / 47.5%, which Familiar.module.css relies on.
  */

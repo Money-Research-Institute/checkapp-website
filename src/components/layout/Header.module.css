@@ -6,6 +6,34 @@
   pointer-events: none; /* the bar and the menu opt back in; the strip around them never blocks the page */
 }
 
+/*
+ * The scrim: what the nav reads against at the top of the page, before the glass fades in. The hero's green wash runs under the
+ * right-hand end of the nav row, and 16px grey links on it measured 2.4 to 3.3:1 ("Blog", "Features" on a landscape phone). A
+ * black wash that holds through the nav row and fades out below it puts the lightest hero light behind the links at about 45 %
+ * strength, where the links reach 7:1 or better (measured at 844 x 390 and 932 x 430), with no hard edge anywhere on the hero.
+ * It hands over to the glass on scroll (the glass is denser, so the two never add up) and is gone while the menu covers the page.
+ * Decoration only: pointer-events none.
+ */
+.header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -44px 0;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.5) 0%,
+    rgb(0 0 0 / 0.44) 52%,
+    rgb(0 0 0 / 0.2) 76%,
+    rgb(0 0 0 / 0) 100%
+  );
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.header[data-scrolled]::before,
+.header[data-open]::before {
+  opacity: 0;
+}
+
 .bar {
   position: relative;
   z-index: 1;
@@ -75,7 +103,10 @@
   min-width: var(--tap);
   min-height: var(--tap);
   padding-inline: 4px;
-  color: var(--c-fg-70);
+  /* Not --c-fg-70: that was the link colour that fell to 3.1:1 over the hero's green. The current page stays a step brighter
+     (pure white), which is what tells the two apart. The faint shadow is a local halo for the same reason. */
+  color: rgb(255 255 255 / 0.86);
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.4);
   font-size: 16px;
   line-height: 27px;
   letter-spacing: -0.2px;
@@ -281,7 +312,24 @@
   }
 }
 
+/*
+ * Landscape phones below 768px (667 x 375, 740 x 360): the burger layout, but the phone's bottom bar is hidden (it and this bar took a
+ * third of the screen, MobileCtaBar.module.css), so the download pill moves up here, as it does from 768 (844 x 390). Logo left, pill
+ * and burger together on the right; the pill steps aside, as above, while the page's own button is on screen. From 480: narrower,
+ * there is no room for it beside the logo and the burger, and the bottom bar stays. Keep the queries in step with the bar's.
+ */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) and (max-width: 767.98px) {
+  .cta {
+    display: block;
+    margin-left: auto;
+  }
+  .nav {
+    gap: 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .header::before,
   .nav::before,
   .burgerLines span,
   .link {
@@ -289,10 +337,24 @@
   }
 }
 @media (prefers-contrast: more), (forced-colors: active) {
+  .link {
+    color: var(--c-fg);
+    text-shadow: none;
+  }
   .nav::before {
     background: Canvas;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     border-color: CanvasText;
+  }
+}
+@media (prefers-contrast: more) {
+  .header::before {
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.92) 0%, rgb(0 0 0 / 0.92) 60%, rgb(0 0 0 / 0) 100%);
+  }
+}
+@media (forced-colors: active) {
+  .header::before {
+    display: none; /* the system paints the page; a wash would only be dropped */
   }
 }

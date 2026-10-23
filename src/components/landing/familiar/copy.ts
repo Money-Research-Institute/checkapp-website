@@ -76,7 +76,7 @@ export const familiarCopy: Record<Locale, FamiliarCopy> = {
       },
       {
         image: 'device-scan',
-        alt: 'Scan Details: overall result Looks stable, with tongue color, coating, moisture and surface texture readings and a next step to drink more water.',
+        alt: 'Scan Details: a scan titled Your scan, with short notes on tongue color, coating, moisture and surface texture, a summary of what is visible in the photo and a small next step to drink more water.',
         title: 'See what DiDi noticed',
         text: 'Tongue color, coating, moisture and one small next step for today.',
       },
@@ -126,7 +126,7 @@ export const familiarCopy: Record<Locale, FamiliarCopy> = {
       {
         image: 'device-scan',
         // DRAFT
-        alt: 'Экран деталей скана: общий результат «Стабильно», цвет языка, налёт, влажность и текстура поверхности, краткое резюме и совет выпить больше воды.',
+        alt: 'Экран деталей скана «Твой скан»: короткие заметки о цвете языка, налёте, влажности и текстуре поверхности, краткое описание того, что видно на фото, и небольшой шаг — выпить больше воды.',
         // DRAFT
         title: 'Посмотри, что заметил DiDi',
         // DRAFT

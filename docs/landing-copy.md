@@ -98,10 +98,14 @@ src/app/
   button on the Russian site leads there: the landing sections keep passing `APP_DOWNLOAD_URL` and `CtaButton` swaps it by the page it
   is on (`localizeHref`). The two download pages list each other as hreflang alternates (page head and sitemap). The Russian text on it is
   a DRAFT for the client to approve, like the rest of the shell.
-- **Russian typography**: a dash stays with the word before it, so the browser never starts a line with «— это 4P». The client's strings
-  are verbatim, so a no-break space replaces the plain space before each « — » at render time, once: `src/i18n/typeset.ts` over the
-  client's Russian copy (`typeset-copy.ts`, imported by `SiteFrame`, `LandingPage` and the download page) and over the shell dictionary. A section's own
-  drafts in its `copy.ts` write `\u00A0` where they need it.
+- **Typography** (`src/i18n/typeset.ts`): two rules about where a line may not break, which CSS cannot express, so they are no-break
+  spaces put in at render time. (1) A dash stays with the word before it, in every language: a line never starts with «— это 4P»
+  or "— not a yearly appointment" (the Gulf headline did). (2) Russian only: a one- or two-letter preposition, conjunction, particle or
+  short pronoun (в к с у о а и я, на по за из от до ко со во об, но не ни то да, ты мы вы он её ей им) stays with the word after it,
+  and the enclitics бы ли же with the word before them, so a line never ends on «в» or «и». The client's strings are verbatim, so
+  `typeset-copy.ts` runs the step once over every region's copy and every section's own `copy.ts` (`en` and `ru`), `index.ts` over the shell
+  dictionaries; nobody types U+00A0 into a string, and a section must not retype one to get it. Only plain spaces change, nothing is
+  reworded, `\s` still matches. Meta descriptions and JSON-LD turn them back into plain spaces (`plain`).
 
 ## The gate knows all of this
 

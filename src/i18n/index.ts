@@ -5,8 +5,10 @@ import { typesetInPlace } from './typeset';
 
 export type { Dict } from './en';
 
-// Russian typography (a dash stays with the word before it): done once, here, so no string in ru.ts carries the invisible character.
-typesetInPlace(ru);
+// Typography (src/i18n/typeset.ts: a dash stays with the word before it; Russian also keeps its short words with the next one): done
+// once, here, so no string in en.ts or ru.ts carries the invisible character.
+typesetInPlace(en, 'en');
+typesetInPlace(ru, 'ru');
 
 const dictionaries: Record<Locale, Dict> = { en, ru };
 

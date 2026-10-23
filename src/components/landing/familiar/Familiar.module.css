@@ -315,8 +315,16 @@
     padding-right: 24px;
     border-right: 1px solid rgb(255 255 255 / 0.14);
   }
+  /*
+   * No flex-basis here. `text-wrap: balance` evens the lines but never shrinks the box, so a 600px basis around a 2-line sentence of
+   * about 350px left roughly 250px of empty box on the right, and `justify-content: center` centres the box, not the ink: the whole
+   * row hung ~120px left of the phones above it. The box is capped near the ink instead: 26em = 390px at 15px holds the longest
+   * of the four regions' sentences (US/EU, 2 lines of about 367px, Russian about 347px) with a little room, so the shortest (Gulf,
+   * about 333px) is off by 29px at most and the others by 12-22px. Do not lower it below ~25em: the sentence would wrap to 3 lines.
+   */
   .scopeText {
-    flex: 0 1 600px; /* a width here, because the row is horizontal (in a column it would be a height) */
+    flex: 0 1 auto;
+    max-width: 26em;
     min-width: 0;
   }
 }
