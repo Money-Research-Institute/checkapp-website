@@ -38,26 +38,26 @@ export const SUPABASE_ANON_KEY =
 
 export const ACCOUNT_DELETION_PATH = '/delete-account/';
 
-/** The brand is spelled in lower case, as the client asks (docs/landing.md). The legal pages keep their own text. */
+/** The brand is spelled in lower case, as the client asks (docs/landing-copy.md). The legal pages keep their own text. */
 export const SITE_NAME = 'checkapp';
 
 /**
  * The header's links. `key` picks the label from the shell dictionary (src/i18n), so the same list serves every language.
  * "Home" is not here: it points at the landing page of the current region, which the header knows.
+ *
+ * None of the site's navigation links prefetch (`prefetch={false}` on every `<Link>` in the header, footer and CTA). The
+ * router would otherwise fetch every linked page on the first view, and preload each page's own stylesheet: the
+ * console filled with "preloaded but not used" warnings and the network tab with cancelled requests. The blog never
+ * prefetched for a further reason: its cover photos come from a third party, and prefetching pulled one in before
+ * the visitor had answered the cookie notice. Pages are static files on a CDN; opening one is fast without it.
  */
 export const NAV_LINKS: readonly {
   href: string;
   key: 'howItWorks' | 'features' | 'blog';
-  /**
-   * `false` keeps the router from prefetching the page. The blog's cover photos come from a third party: prefetching
-   * /blog/ from the header pulled one in (and opened a connection to it) on every page load, before the visitor had
-   * answered the cookie notice.
-   */
-  prefetch?: false;
 }[] = [
   { href: '/how-it-works/', key: 'howItWorks' },
   { href: '/features/', key: 'features' },
-  { href: '/blog/', key: 'blog', prefetch: false },
+  { href: '/blog/', key: 'blog' },
 ];
 
 export const SOCIAL_LINKS = {
@@ -66,9 +66,10 @@ export const SOCIAL_LINKS = {
   contact: 'mailto:hello@checkapp.today',
 } as const;
 
-export const DEFAULT_OG_IMAGE = '/og-default.png';
+/** `?v=` is the share-card edition: link previews cache an image by its URL, so a new picture needs a new one. */
+export const DEFAULT_OG_IMAGE = '/og-default.png?v=2';
 /** The Russian landing page's share image: the same card with the client's Russian headline (`npm run og:generate`). */
-export const DEFAULT_OG_IMAGE_RU = '/og-default-ru.png';
+export const DEFAULT_OG_IMAGE_RU = '/og-default-ru.png?v=2';
 
 /** The logo for JSON-LD: the 3D DiDi icon, full-bleed 512 (docs/brand.md). Absolute, because structured data needs it. */
 export const LOGO_PATH = '/brand/icons/icon-512.png';

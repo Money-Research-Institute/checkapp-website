@@ -2,8 +2,8 @@
 
 Static marketing site for [CheckApp](https://checkapp.today), the wellness companion app featuring DiDi.
 
-Built with **Next.js 16** (App Router, `output: "export"`, `trailingSlash: true`), **Tailwind CSS v4** and **MDX** blog content.
-Dark theme only. The landing page is five plain server-rendered sections with no client engine ([docs/landing.md](./docs/landing.md)).
+Built with **Next.js 16** (App Router, `output: "export"`, `trailingSlash: true`), **Tailwind CSS v4**, **MDX** blog content, and a
+small CSS-first motion system with one lazy WebGL canvas on the landing hero. Dark theme only.
 
 ## Quick start
 
@@ -18,30 +18,28 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Path | What lives there |
 |------|------------------|
-| `src/styles/` | Design tokens (`tokens.css`), the scroll-reveal vocabulary the inner pages use (`motion.css`), atmosphere utilities (`fx.css`). `src/app/globals.css` maps them into Tailwind v4. |
+| `src/styles/` | Design tokens (`tokens.css`), the motion vocabulary (`motion.css`), atmosphere utilities (`fx.css`). `src/app/globals.css` maps them into Tailwind v4. |
 | `src/components/ds/` | The design system: `CtaButton`, `Button`, `Eyebrow`, `GradientHeading`, `SectionIntro`, `Container`, `PageShell`/`PageHero`/`Section`, `GlassCard`, `Prose`, `Faq`, form fields, `Picture`, icons. See [docs/design-system.md](./docs/design-system.md). |
 | `src/components/brand/` | `LogoMark` and `Lockup`: the only way the logo is drawn ([docs/brand.md](./docs/brand.md)). |
 | `src/components/layout/` | `Header`, `Footer`, `MobileCtaBar`, `CookieConsent`, analytics glue, `JsonLd`. |
-| `src/components/landing/<slug>/` | One folder per landing section (hero, process, testimonials, faqs, final-cta); `LandingPage.tsx` composes them for `/`, `/eu/`, `/gulf/`, `/ru/`. |
-| `src/content/copy/` | The client's final landing copy, per region, verbatim. |
+| `src/components/landing/<slug>/` | One folder per landing section; `src/app/page.tsx` composes them. |
 | `scripts/brand/`, `scripts/assets/` | Offline asset pipelines (`sharp`): the logo kit, the AVIF/WebP encoder, the dither tile. |
-| `scripts/qa/` | The smoke test behind `npm run qa` (`check.mjs`) and the claims rules it applies (`claims.mjs`). |
-| `docs/landing.md` | What the landing page is, where its copy lives, the claims rules and the decisions that override Figma. Authoritative. |
+| `scripts/qa/` | The quality gate: one ~100-line smoke test, about 10 seconds after a build ([docs/landing.md](./docs/landing.md)). |
+| `docs/landing-decisions.md` | Decisions that override Figma (copy, testimonials, fonts, mascot, logo). Authoritative. |
 
-Fonts (Manrope, Inter, Bricolage Grotesque only) come from `next/font/google` (`src/lib/fonts/`).
+Fonts (Manrope, Inter, Bricolage Grotesque only) come from `next/font/google` in `src/app/layout.tsx`.
 
-## Check
+## Quality gate
 
 ```bash
-npm run lint && npx tsc --noEmit
-npm run build && npm run qa    # about 8 s after the build: the four landing pages at 375 and 1440 wide, against out/
+npm run build && npm run qa    # four landing pages x two viewports against out/, ~10 s
 ```
 
 ## Pages
 
 | Route | Description |
 |-------|-------------|
-| `/`, `/eu/`, `/gulf/`, `/ru/` | The landing page per region: hero, how it works, testimonials (not `/ru/`), FAQ, final CTA |
+| `/` | Home: hero, the usual way, meet DiDi, 4P, testimonials, how it works, FAQ, final CTA |
 | `/how-it-works` | Daily routine, tongue scan, krugocheks, science |
 | `/features` | Feature grid, comparison table, pricing |
 | `/about` | Origin story, team, values, transparency |

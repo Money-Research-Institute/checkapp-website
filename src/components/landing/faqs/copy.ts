@@ -4,9 +4,9 @@
  * and are read in index.tsx; nobody retypes them here, and the same strings feed the FAQPage JSON-LD.
  *
  * What is left is the visible h2. Figma's "Frequently Asked Questions Section" lost its "Section" suffix (a design leftover,
- * docs/landing.md D1). Spelling: `checkapp` (lower case) and `DiDi`; neither is needed in this one line.
+ * docs/landing-decisions.md D1). Spelling: `checkapp` (lower case) and `DiDi`; neither is needed in this one line.
  *
- * Every Russian string is a DRAFT until the client approves it (docs/landing.md). Russian addresses the reader as «ты»;
+ * Every Russian string is a DRAFT until the client approves it (docs/landing-copy.md). Russian addresses the reader as «ты»;
  * a heading names the topic and needs no pronoun.
  */
 import type { Locale } from '@/content/copy';

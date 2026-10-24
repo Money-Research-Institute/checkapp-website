@@ -50,7 +50,7 @@ function isFallbackBlogPath(urlPath) {
 }
 
 /**
- * The four landing pages and their hreflang (docs/landing.md). Keep in step with `RegionPaths` and `RegionHreflang` in
+ * The four landing pages and their hreflang (docs/landing-copy.md). Keep in step with `RegionPaths` and `RegionHreflang` in
  * src/content/copy/index.ts: this file is plain CommonJS and cannot import the TypeScript. Each landing page lists all four
  * (itself included) plus x-default, which is the US page at `/`, so the sitemap says the same thing as the <link rel="alternate">
  * tags in the page head.

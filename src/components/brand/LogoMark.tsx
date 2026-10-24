@@ -6,7 +6,7 @@ import { SITE_NAME } from '@/lib/constants';
  * it is derived from the master art by `scripts/brand/build-brand-kit.mjs` and is never redrawn,
  * recoloured or stretched here (docs/brand.md).
  *
- * Light-surface treatment (docs/landing.md D7): the cream tile is lifted off white pages with a
+ * Light-surface treatment (docs/landing-decisions.md D7): the cream tile is lifted off white pages with a
  * soft shadow only, no rim. From 32 px up the shadow is CSS `drop-shadow` on the plain tile. Below 32 px a
  * shadow is only blur, so those sizes use the tile with a 1 px deep-green hairline baked in.
  *

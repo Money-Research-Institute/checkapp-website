@@ -1,88 +1,472 @@
 /*
- * Final CTA: a glass card. Phones: copy on top, the phone cropped flush with the bottom edge. From 800px: phone left, copy right.
- * Nothing is sized to a line count (Russian runs 15-30 % longer): the copy column sets the card's height.
+ * Final CTA card (Figma 1320 x 433.7 at 1440). The shell is the container; every size below is a container query on its
+ * width or a cqi length, never a viewport query, so 200 % zoom and narrow embeds land in the right layout. The one
+ * exception is the landscape phone, which is about the device's height and so also checks (orientation) and (max-height).
+ *
+ *   base            < 760   stacked: text, then the phone cropped flush with the bottom edge. Padding 36 / 28 / 0, CTA 56.
+ *   >= 760                  row, phone left / text right. 1 design px = 100cqi / 1320, so the row scales with the card.
+ *   landscape phone         (max-height: 520px) and >= 640: the same row.
+ *
+ * The client's headline is 64 characters (Figma's was 46) and the card also carries the data-consent note beside the button,
+ * in a language that runs 15-30 % longer in Russian, so no size here is tied to a line count: the text column is centred in
+ * the card, the card grows with its text, and the phone image is the whole device (758px at 1320 wide, taller than any row card
+ * gets) so it always runs off the bottom edge instead of ending inside the card. The note drops under the button when the column
+ * is too narrow for both.
+ *
+ * --u is one design pixel (Figma at 1320 wide). It is declared on the shell but only ever USED by descendants: cqi resolves
+ * against the nearest container of the element that uses it, which for every descendant is the shell.
+ *
+ * Rules of the road (docs/landing.md): only transform and opacity move, and only inside
+ * prefers-reduced-motion: no-preference and @supports (animation-timeline: view()); the DEFAULT style of every element is its
+ * final frame; nothing a view() animation touches sits under overflow hidden/auto (clip only); `translate` is left alone
+ * (the engine owns it for pointer parallax).
  */
+
 .root {
-  padding-block: clamp(40px, 8vw, 96px);
+  position: relative;
+  z-index: 1; /* above the footer it overlaps */
+  /* Margins, not padding: the data-section height stays the card's own ~434px. The bottom margin is the footer overlap. */
+  margin-block: clamp(56px, 12vw, 160px) calc(var(--footer-overlap) * -1);
 }
 
-/* The phone art is an opaque picture on black, so the card is black too (its edge stroke and corner glows come from GlassCard). */
-.root .card {
-  background: var(--c-bg);
+.shell {
+  --u: calc(100cqi / 1320);
+  --ring: 2.15px;
+  --ring-a: 0.2;
+  --sub: var(--c-sub-on-black); /* #7c7c86, 5.1:1 on black. Figma's #52525b is 2.7:1. */
+
+  position: relative;
+  inline-size: min(var(--measure), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  container-name: final-card;
+  container-type: inline-size;
+  /* The card's own pass through the viewport drives the phone, the CTA glow and the rim. Descendants read it by name. */
+  view-timeline-name: --final-card;
+  view-timeline-axis: block;
+  border-radius: 32px;
+  background: #000;
+  overflow: clip;
+  isolation: isolate;
 }
 
-.layout {
-  display: grid;
+/* The 1px inside stroke (rgba(255,255,255,.2)), drawn over everything so it also crosses the cropped phone. */
+.shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / var(--ring-a));
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Rim light. Two lobes (a green disc and a cream pill, Figma's blob-type and blob-cream) rest at the top-left and
+   bottom-right corners and are seen only through a ring-shaped mask: the .rim box minus its content box, which is the 2.15px
+   gap around the opaque card. Positions are Figma's, measured from the corner they belong to.
+   --------------------------------------------------------------------------------------------------------------------- */
+.rim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 32px;
+  padding: var(--ring);
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+.lobe {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+}
+.lobeTl {
+  inset: 0 auto auto 0;
+}
+.lobeBr {
+  inset: auto 0 0 auto;
+}
+
+.green,
+.cream {
+  position: absolute;
+  display: block;
+}
+.green {
+  inline-size: 155.875px;
+  block-size: 155.875px;
+  border-radius: 50%;
+  background: #2c794d;
+  filter: blur(22.575px);
+}
+.cream {
+  inline-size: 63.425px;
+  block-size: 155.875px;
+  border-radius: 31.7125px;
+  background: #fff1e2;
+  filter: blur(17.2px);
+  rotate: -47deg;
+}
+/* Top-left: disc centred (19, 56.4), pill centred (18.7, 29.9), both from the shell's top-left corner. */
+.lobeTl .green {
+  inset: -21.5px auto auto -58.9px;
+}
+.lobeTl .cream {
+  inset: -48px auto auto -13px;
+}
+/* Bottom-right: disc centred (54, 33.3) and pill centred (54.4, 59.8), both from the shell's bottom-right corner. */
+.lobeBr .green {
+  inset: auto -24px -44.7px auto;
+}
+.lobeBr .cream {
+  inset: auto 22.7px -18.2px auto;
+}
+
+/* Without mask-composite there is no ring to look through: plain stroke plus static corner gradients under the opaque card. */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .rim {
+    display: none;
+  }
+  .shell {
+    background:
+      radial-gradient(circle 120px at 19px 56px, rgb(44 121 77 / 0.9), transparent),
+      radial-gradient(ellipse 52px 92px at 19px 30px, rgb(255 241 226 / 0.85), transparent),
+      radial-gradient(circle 120px at calc(100% - 54px) calc(100% - 33px), rgb(44 121 77 / 0.9), transparent),
+      radial-gradient(ellipse 52px 92px at calc(100% - 54px) calc(100% - 60px), rgb(255 241 226 / 0.85), transparent),
+      #000;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   The opaque card: padding 36 / 28 / 0, one column. Text first (it is first in the DOM and the first thing read), the
+   phone after it.
+   --------------------------------------------------------------------------------------------------------------------- */
+.card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  margin: var(--ring);
+  padding: 36px 28px 0;
+  border-radius: 32px;
+  background: #000;
+  overflow: clip;
 }
 
 .copy {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 56px);
+  gap: 14px;
+  min-inline-size: 0;
   text-align: center;
 }
 
+/* The client's final call, one sentence of 64-68 characters. Manrope 700 (D4: Figma's Inter Bold is not on the site). */
 .heading {
-  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem);
-  line-height: 1.2;
+  margin: 0;
+  max-inline-size: 15em;
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  font-size: clamp(1.625rem, 0.9rem + 5.2cqi, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
 
 .sub {
-  max-width: 36rem;
   margin: 0;
-  color: var(--c-fg-70);
-  font-size: var(--fs-lede);
-  line-height: 1.5;
-  text-wrap: pretty;
+  max-inline-size: 28em;
+  color: var(--sub);
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.85rem + 1.1cqi, 1.375rem);
+  font-weight: 500;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+/* The button and the client's data-consent note: stacked and centred here; the row layout puts the note beside the button. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  max-inline-size: 100%;
+}
+
+/* The ds CtaButton (lg, tone brand). 56px tall on a phone; the row layout puts it back to the ds 60px. */
+.cta {
+  max-inline-size: 100%;
+}
+.cta > a {
+  block-size: 56px;
+  max-inline-size: 100%;
+  --cta-rise: 6px;
+}
+.cta > a > span[aria-hidden="true"] {
+  top: 45px; /* the light's 49px at 60px tall, in proportion */
 }
 
 .note {
-  max-width: 36rem;
   margin: 0;
-  color: var(--c-fg-60);
-  font-size: 14px;
-  line-height: 1.5;
+  max-inline-size: 26em;
+  color: var(--c-fg-60); /* white at 60 % = #999 on black, 7.4:1 */
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.45;
   text-wrap: pretty;
 }
 
-/* The phone is taller than the card: it hangs from the top of this box and the box clips it. */
-.phoneBox {
-  position: relative;
-  height: 300px;
-  overflow: hidden;
-}
+/* The phone: one flattened image (the Figma iPhone 15 Green frame, power button kept, on #000), 384 x 758 CSS px for a 370px
+   device. Stacked, the wrapper is 384 : 380 and shows the top 376px of the device = 0.98 x its width, flush with the card's
+   bottom edge: the greeting, the three scan buttons and DiDi's face. */
 .phone {
+  position: relative;
+  order: 1;
+  flex: none;
+  inline-size: min(76cqi, 340px);
+  margin: 32px auto 0;
+  aspect-ratio: 384 / 380;
+  overflow: clip;
+}
+.rise {
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: min(80%, 280px);
-  height: auto;
-  transform: translateX(-50%);
-  /* Feather the picture's black edge into the card, so no rectangle shows over the corner glow. */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  inset: 0 0 auto 0;
+}
+.img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+.rise picture {
+  display: block;
 }
 
-@media (min-width: 800px) {
-  .layout {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+/* ---------------------------------------------------------------------------------------------------------------------
+   Row: phone left, text right. Figma: padding 17.2, gap 10.75, a 490px phone column (60 | 370 | 60), text padded 32, the
+   card 429.4 tall at 1320 wide. The phone hangs 12px below the card's content top and runs off the bottom edge, where the
+   opaque card clips it; the image (758px at 1320: the whole device) is taller than any row card is, so it never ends inside it.
+   The text is centred in its column, so the three-line Figma block and the longer client block both sit in the middle.
+   --------------------------------------------------------------------------------------------------------------------- */
+@container final-card (min-width: 760px) {
+  .card {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10.75px;
+    padding: 17.2px;
+    min-block-size: calc(429.4 * var(--u));
   }
   .copy {
+    flex: 1 1 0;
     align-items: flex-start;
+    justify-content: center;
+    gap: calc(16 * var(--u));
+    padding: calc(32 * var(--u));
     text-align: start;
   }
-  .layout .heading {
-    text-align: start;
+  .heading {
+    max-inline-size: none;
+    font-size: calc(52 * var(--u));
+    line-height: 1.08;
   }
-  .phoneBox {
-    order: -1;
-    height: auto;
-    min-height: 420px;
+  .sub {
+    max-inline-size: none;
+    font-size: max(15px, calc(26 * var(--u)));
+    line-height: 1.25;
+    text-wrap: pretty;
+  }
+  .actions {
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    margin-top: calc(6 * var(--u));
+    gap: 14px calc(24 * var(--u));
+  }
+  .cta > a {
+    block-size: 60px;
+  }
+  .cta > a > span[aria-hidden="true"] {
+    top: 49px;
+  }
+  .note {
+    flex: 1 1 17em;
+    max-inline-size: 24em;
+    text-align: start;
+    font-size: max(0.8125rem, calc(14.5 * var(--u)));
   }
   .phone {
-    top: 32px;
-    width: min(70%, 300px);
+    order: -1;
+    inline-size: calc(490 * var(--u));
+    margin: 0;
+    aspect-ratio: auto;
+    overflow: visible;
+  }
+  .rise {
+    inset: calc(12 * var(--u)) auto auto calc(56 * var(--u));
+    inline-size: calc(384 * var(--u));
+  }
+}
+
+/* A landscape phone is short, so the stack would be taller than the screen: the row from 640px. Same rules as above. */
+@media (orientation: landscape) and (max-height: 520px) {
+  @container final-card (min-width: 640px) {
+    .card {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 10.75px;
+      padding: 17.2px;
+      min-block-size: calc(429.4 * var(--u));
+    }
+    .copy {
+      flex: 1 1 0;
+      align-items: flex-start;
+      justify-content: center;
+      gap: calc(16 * var(--u));
+      padding: calc(32 * var(--u));
+      text-align: start;
+    }
+    .heading {
+      max-inline-size: none;
+      font-size: calc(52 * var(--u));
+      line-height: 1.08;
+    }
+    .sub {
+      max-inline-size: none;
+      font-size: max(15px, calc(26 * var(--u)));
+      line-height: 1.25;
+      text-wrap: pretty;
+    }
+    .actions {
+      flex-flow: row wrap;
+      justify-content: flex-start;
+      margin-top: calc(6 * var(--u));
+      gap: 14px calc(24 * var(--u));
+    }
+    .cta > a {
+      block-size: 60px;
+    }
+    .cta > a > span[aria-hidden="true"] {
+      top: 49px;
+    }
+    .note {
+      flex: 1 1 17em;
+      max-inline-size: 24em;
+      text-align: start;
+      font-size: max(0.8125rem, calc(14.5 * var(--u)));
+    }
+    .phone {
+      order: -1;
+      inline-size: calc(490 * var(--u));
+      margin: 0;
+      aspect-ratio: auto;
+      overflow: visible;
+    }
+    .rise {
+      inset: calc(12 * var(--u)) auto auto calc(56 * var(--u));
+      inline-size: calc(384 * var(--u));
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Motion. Compositor properties only, all of it an enhancement: with no scroll timelines, or with reduced motion, the card
+   simply sits in its final frame (phone in place, glow at full strength, lobes at their corners).
+   --------------------------------------------------------------------------------------------------------------------- */
+@keyframes phoneRise {
+  from {
+    transform: translateY(28px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes ctaGlow {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lobeSlideTl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(160px);
+  }
+}
+@keyframes lobeSlideBr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-160px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Press: 0.98 here (the ds default is 0.97; reduced motion keeps the ds rule, which is no scale at all). */
+  .cta > a:active {
+    transform: scale(0.98);
+  }
+
+  @supports (animation-timeline: view()) {
+    /* The phone rises 28px into place while the card enters, and the CTA's light brightens .55 to 1 over the same range. */
+    .rise {
+      animation: phoneRise 1ms ease-out both;
+      animation-timeline: --final-card;
+      animation-range: entry 0% entry 85%;
+    }
+    .cta > a > span[aria-hidden="true"] {
+      animation: ctaGlow 1ms linear both;
+      animation-timeline: --final-card;
+      animation-range: entry 0% entry 100%;
+    }
+    /* The rim hot-spots slide ~160px along the top and bottom edges as the card crosses the viewport. No clock involved. */
+    .lobeTl {
+      animation: lobeSlideTl 1ms linear both;
+      animation-timeline: --final-card;
+      animation-range: cover 0% cover 100%;
+    }
+    .lobeBr {
+      animation: lobeSlideBr 1ms linear both;
+      animation-timeline: --final-card;
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Contrast and system colours.
+   --------------------------------------------------------------------------------------------------------------------- */
+@media (prefers-contrast: more) {
+  .shell {
+    --ring-a: 0.6;
+    --sub: #b4b4bc;
+  }
+  .cta > a {
+    border-color: rgb(255 255 255 / 0.8);
+  }
+}
+
+@media (forced-colors: active) {
+  .rim {
+    display: none;
+  }
+  /* The art is flattened on black, which would show as a black slab on a light system palette: trim it to the device. */
+  .img {
+    clip-path: inset(0.53% 3.12% 0 1.78% round 16.3% 16.3% 0 0 / 8.2% 8.2% 0 0);
+  }
+  .shell::after {
+    box-shadow: none;
+    border: 1px solid CanvasText;
+  }
+  .cta > a > span[aria-hidden="true"] {
+    display: none;
   }
 }

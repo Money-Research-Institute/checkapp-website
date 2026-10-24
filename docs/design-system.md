@@ -1,7 +1,7 @@
 # Design system
 
 One dark theme for the whole site (page background pure `#000`). Everything below is built once in the foundation and
-reused by the landing sections and the inner pages (both import from `@/components/ds`). The landing page itself is described in [landing.md](./landing.md).
+reused by the landing sections and the inner pages. Inner pages import only from `@/components/ds`; landing sections may too.
 
 ## Tokens (`src/styles/tokens.css`)
 
@@ -14,7 +14,7 @@ Plain CSS custom properties on `:root`, mirrored into Tailwind v4 by `@theme inl
 | Colour | `--c-bg`, `--c-brand` (#41773c CTA), `--c-brand-deep` (#276221 nav CTA, glows), `--c-accent`, `--c-mint`, `--c-bracket`, `--c-fg`, `--c-fg-body`, `--c-fg-70/-60/-50/-40`, `--c-muted`, `--c-sub-on-black` (#7c7c86), `--c-surface-a/-b`, `--c-tile-*`, `--c-glass`, `--c-glass-edge`, `--c-focus` |
 | Type | `--fs-h1/-h2/-h3/-lede/-body`, `--lh-*`, `--ls-*` (fluid with `clamp()`). Utilities `font-sans` (Manrope), `font-ui` (Inter), `font-brand` (Bricolage, wordmark only). **The h1 leads**: on a phone `--fs-h1` is 34 to 37 px and `--fs-h2` stays under 29 px (see "Heading hierarchy" below) |
 | Layout | `--gutter`, `--measure` (1320), `--measure-narrow` (1280), `--measure-prose`, `--header-h` (72 on phones, 104 from 768, **64 on a landscape phone**: `(orientation: landscape) and (max-height: 500px)`), `--cta-bar-h` (72), `--radius-card/-pill/-eyebrow`, `--tap` (44) |
-| Footer | `--footer-overlap`, `--footer-runway` (how far the page above may hang over the footer glow, and the runway before the first link; the defaults are 0 and 64 to 96 px) |
+| Footer coupling | `--footer-overlap`, `--footer-runway` (the final CTA overlaps the footer; `body:has([data-section="final-cta"])` sets them) |
 | Motion | `--dur-fast/-base/-slow` (150/300/600 ms), `--ease-out-expo`, `--ease-out`, `--spring` (a `linear()` spring) |
 
 `prefers-contrast: more` makes glass solid and translucent text opaque; `forced-colors` and focus rings have baselines in
@@ -41,26 +41,28 @@ contract: read `--fs-h1` / `--fs-h2` or clamp to the same numbers, and check at 
 | `Faq` | Native `<details name>` list with plus / minus and open tracking. |
 | `CtaBanner` | Closing CTA card of an inner page. |
 | `Field`, `Input`, `Textarea`, `Select`, `Checkbox`, `FormMessage` | Form controls (visible focus, 44 px targets, announced errors). |
-| `Picture` | AVIF / WebP `<picture>` through `withBasePath`; `priority` adds `fetchPriority` and a preload; other props go to the `<img>`. |
+| `Picture` | AVIF / WebP `<picture>` through `withBasePath`; `priority` adds `fetchPriority` and a preload; `sources` for art direction; passes `data-webgl-poster` through. |
 | icons | `ArrowRightIcon`, `SparkleIcon`, `PlusIcon`, `MinusIcon`, `CheckIcon`. |
 
 ## Motion vocabulary (`src/styles/motion.css`, `fx.css`)
 
-Used by the inner pages; **the landing page has no scroll-driven motion.** Compositor-only (`transform`, `opacity`, `rotate`, `mask`), CSS-only,
-and **the default style of every element is its final visible state**: no-JS, Firefox, older Safari, print and reduced motion all show the
-finished layout. Every rule lives inside `@media (prefers-reduced-motion: no-preference)`, scroll timelines also inside
-`@supports (animation-timeline: view())`.
+Compositor-only (`transform`, `opacity`, `rotate`, `mask`), CSS-only, and **the default style of every element is its final
+visible state**: no-JS, Firefox, older Safari, print and reduced motion all show the finished layout. Every rule lives inside
+`@media (prefers-reduced-motion: no-preference)`, scroll timelines also inside `@supports (animation-timeline: view())`.
 
 | Attribute | Effect |
 |---|---|
 | `data-fx="rise"` | 14-18 px rise + fade on view entry. Stagger with `style="--i: n"`. |
 | `data-fx="settle"` | `translateY` + `scale(.97)` to rest. |
 | `data-fx="drift"` | travel from `--fx-from` to `--fx-to` (`"0px, 12px"`) over the pass through the viewport. |
+| `data-fx="curtain"` | a black curtain slides off (process arrows); `data-fx-dir="rtl"` reverses. |
+| `data-fx="bob"` | 5-7 s idle bob (`--bob-amp`, `--bob-dur`, `--bob-delay`); paused off-screen by the engine (`data-paused`). |
 | `.fx-dither` | masked noise layer (`--dither-a`, `--dither-mask`) that breaks banding on near-black gradients. Needs `public/landing/_shared/noise-128.png` (made by `scripts/assets/make-noise.mjs`); the layout publishes its base-path-safe URL as `--noise-url`. |
 | `.fx-edge` | gradient 1 px stroke via a masked `::before` (`--edge`, `--edge-w`, `--edge-a`). |
 
-Rules: never `overflow: hidden/auto` on an ancestor of a `view()`-animated element (use `overflow: clip`); declare `animation-timeline`
-after the `animation` shorthand.
+Rules: section motion uses `transform`, `rotate`, `scale` (never `translate`);
+never `overflow: hidden/auto` on an ancestor of a `view()`-animated element (use `overflow: clip`); declare
+`animation-timeline` after the `animation` shorthand.
 
 ## Shell chrome (`src/components/layout`)
 
@@ -78,7 +80,7 @@ after the `animation` shorthand.
   cue), in the header and the footer. The `/blog/` links are `prefetch={false}`: the blog's cover photos come from a third party,
   and prefetching the route from the header fetched one on every page load, before the cookie notice had been answered. The logo never shrinks (`LogoMark` pins its `<picture>`), and the pill's
   right edge stays inside the gutter at every width: a sweep that checks the rect of every header link against the viewport and the
-  gutter, for every locale, is the way to test a change here (the QA overflow check cannot see clipped content).
+  gutter, for every locale, is the way to test a change here (the gate's overflow check cannot see clipped content).
 - **MobileCtaBar**: not shown on a short landscape screen (`(orientation: landscape) and (max-height: 500px) and (min-width: 480px)`):
   with the 48 px header above it, the bar took a third of a 375 px screen. The same query, in `MobileCtaBar.module.css`, `globals.css`
   (the page stops reserving the bar's strip) and `footer.module.css` (laid out as on a tablet), must stay in step with the header's.
@@ -91,8 +93,8 @@ after the `animation` shorthand.
 
 `node scripts/assets/encode.mjs <src> <outDir> <name> --widths 640,1080,1472 [--alpha] [--avif-bits 10]` writes
 `<name>-<w>.avif` and `.webp`. Commit the output under `public/landing/<slug>/`, never the raw export. Every URL goes through
-`withBasePath`; CSS-referenced art is passed in as an inline custom property built in TSX. No claim text in rasters (the claims scan
-cannot read them).
+`withBasePath`; CSS-referenced art is passed in as an inline custom property built in TSX. No claim text in rasters (the gate
+cannot scan them).
 
 `npm run og:generate` writes the two share cards, `public/og-default.png` (English pages) and `public/og-default-ru.png` (`/ru/`,
 headline read from the client's copy). `landingMetadata` picks the card by language.

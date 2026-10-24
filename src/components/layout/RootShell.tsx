@@ -41,8 +41,8 @@ export function RootShell({
         {children}
         <PostHogProvider />
         <ScrollDepthTracker />
-        {/* Vercel Analytics: a no-op off Vercel (GitHub Pages, local). */}
-        <Analytics />
+        {/* Vercel Analytics only exists on Vercel. Off it (GitHub Pages, local) the script is a 404 and a console error. */}
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 /**
- * Fonts of every English page (docs/landing.md D4): Manrope, Inter and Bricolage Grotesque, Latin subset only.
+ * Fonts of every English page (docs/landing-decisions.md D4): Manrope, Inter and Bricolage Grotesque, Latin subset only.
  * No Cyrillic file is declared, preloaded or requested from here. The Russian page has its own set in ./cyrillic.ts; the two
  * live in separate modules so an English page never bundles the Cyrillic @font-face rules.
  *

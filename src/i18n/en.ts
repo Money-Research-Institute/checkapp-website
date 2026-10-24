@@ -5,7 +5,7 @@
  *
  * `Dict` is the contract: ru.ts must have exactly these keys, so a string can't be forgotten in one language.
  * Every leaf is a plain string (no functions), so a slice can be handed to a client component as a prop.
- * Spelling: "checkapp" (lower case) and "DiDi" (docs/landing.md).
+ * Spelling: "checkapp" (lower case) and "DiDi" (docs/landing-copy.md).
  */
 export const en = {
   skipLink: 'Skip to content',

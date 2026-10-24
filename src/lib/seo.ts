@@ -128,9 +128,9 @@ export function mobileApplicationSchema(locale: Locale = 'en') {
     applicationCategory: 'HealthApplication',
     operatingSystem: 'Android',
     image: LOGO_URL,
-    // No `offers`: no price is set yet (docs/landing.md), so none is declared.
+    // No `offers`: no price is set yet (docs/landing-copy.md), so none is declared.
     // No aggregateRating and no Review markup: there are no verified ratings or testimonials yet
-    // (docs/landing.md D1, D2).
+    // (docs/landing-decisions.md D1, D2).
   };
 }
 
@@ -140,7 +140,7 @@ const OgLocale: Record<Region, string> = { us: 'en_US', eu: 'en_IE', gulf: 'en_A
 /** The share image (Open Graph, Twitter) of each language: a Russian page must not unfurl with an English card. */
 const LandingOgImage: Record<Locale, string> = { en: DEFAULT_OG_IMAGE, ru: DEFAULT_OG_IMAGE_RU };
 
-/** The <title> of each landing page (docs/landing.md: wordmark first, then DiDi in the page's language). */
+/** The <title> of each landing page (docs/landing-copy.md: wordmark first, then DiDi in the page's language). */
 const LandingTitle: Record<Locale, string> = {
   en: 'checkapp · DiDi, your digital health companion',
   ru: 'checkapp · DiDi, цифровой друг твоего здоровья',

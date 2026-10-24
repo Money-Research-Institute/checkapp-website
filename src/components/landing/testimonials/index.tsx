@@ -1,60 +1,155 @@
 /**
- * Testimonials: a wall of six glass cards (3 x 2 on desktop, 2 x 3 on a tablet, one column on a phone). A server component, pure markup.
+ * Testimonials wall (Figma node 2601:13023, 1320 x 954). A server component: pure markup, every effect is CSS.
  *
- * Content comes from src/content/testimonials.ts (docs/landing.md D2). Every card is a placeholder, so each <figure> carries
- * data-verified="false" until a real, consented entry replaces it. Entries flagged `needsReplacement` (a crypto-template quote, a claim
- * the page may not make) are not shown at all. The wall renders nothing on /ru/ (H4): LandingPage does not mount it there.
+ * Content comes from src/content/testimonials.ts (docs/landing-decisions.md D2). The six cards are placeholders, so each
+ * <figure> carries data-verified="false" until a real entry replaces it; the QA gate reports that as a warning on purpose.
+ *
+ * The .fx-dither noise layer sits on each card, not on the wall: on the #000 page a wall-wide layer lifts the black gaps between
+ * the cards by up to 4/255 and draws a faint rectangle. Banding only matters inside the card fills and the lit card's glow anyway.
+ *
+ * Structure: header (SectionIntro) + wall. The wall is three independent flex columns, two cards each, vertically centred in the
+ * tallest one, which is what staggers their tops (+13.5 / +47 / 0 px at 1440). Layout per width lives in Testimonials.module.css:
+ * 3 columns from 960 px, 2 columns plus a faded third-column row from 600 px, 1 column below.
+ *
+ * Entries flagged needsReplacement (a crypto-template quote, a claim the page may not make) never take a column's full-brightness
+ * top slot: arrange() swaps them under the card below, and the stylesheet dims them wherever they land and drops them on a phone.
+ * So the cards a reader sees first are the ones the page can stand behind, while all six stay on the wall as D2 decided.
  */
+import type { CSSProperties } from 'react';
+import type { Region, SectionProps } from '@/content/copy';
 import { Container } from '@/components/ds/Container';
-import { GlassCard } from '@/components/ds/GlassCard';
 import { SectionIntro } from '@/components/ds/SectionIntro';
-import { testimonials } from '@/content/testimonials';
+import { testimonials, type Testimonial } from '@/content/testimonials';
 import { withBasePath } from '@/lib/paths';
 import { copy } from './copy';
-import s from './Testimonials.module.css';
+import { MarqueeToggle } from './MarqueeToggle';
+import styles from './Testimonials.module.css';
 
-const SHOWN = 6;
+const COLUMNS = 3;
+const PER_COLUMN = 2;
+/** The Figma card heights by slot (column, row), px. The date sits on margin-top:auto, so these only set the rhythm. */
+const SLOT_HEIGHTS: readonly (readonly number[])[] = [[294, 267], [236, 258], [294, 294]];
+/** Heights for the extra cards, which have no slot in the design: the design's own range, in an order that varies down a column. */
+const EXTRA_HEIGHTS: readonly number[] = [258, 236, 267, 294, 248, 276, 240];
 
-export function TestimonialsSection() {
-  const shown = testimonials.filter((t) => !t.needsReplacement).slice(0, SHOWN);
-  if (!shown.length) return null;
-  const { eyebrow, title, lede } = copy.en;
+/** Regions that show no wall: the six quotes are English placeholders (docs/landing-copy.md H4), so /ru/ has none. */
+const WITHOUT_TESTIMONIALS: readonly Region[] = ['ru'];
+
+/**
+ * The Figma order, two cards per column, except that a flagged card on top of a column trades places with the unflagged card
+ * under it. Order inside a column is the only thing that changes, so each column keeps its two cards and its stagger.
+ */
+function arrange(list: readonly Testimonial[]): Testimonial[][] {
+  return Array.from({ length: COLUMNS }, (_, c) => list.slice(c * PER_COLUMN, (c + 1) * PER_COLUMN))
+    .filter((column) => column.length > 0)
+    .map((column) => {
+      const [top, under] = column;
+      return top.needsReplacement && under && !under.needsReplacement ? [under, top] : column;
+    });
+}
+
+function Card({ t, minH, lit, once }: { t: Testimonial; minH: number; lit: boolean; once: boolean }) {
+  const avatar = (width: 84 | 126) => withBasePath(`${t.avatar}-${width}.webp`);
   return (
-    <section data-section="testimonials" aria-labelledby="testimonials-heading" className={s.section}>
+    <figure
+      className={`${styles.card} fx-edge fx-dither`}
+      data-verified={t.placeholder ? 'false' : 'true'}
+      data-placeholder={t.placeholder ? 'true' : undefined}
+      data-needs-replacement={t.needsReplacement ? 'true' : undefined}
+      data-lit={lit ? 'true' : undefined}
+      data-once={once ? '' : undefined}
+      style={{ '--min-h': `${minH}px` } as CSSProperties}
+    >
+      <figcaption className={styles.who}>
+        {/* A 42px circle: the 84 / 126 px files are its 2x and 3x. Static export has no image optimiser, so a plain <img>. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.avatar}
+          src={avatar(84)}
+          srcSet={`${avatar(84)} 2x, ${avatar(126)} 3x`}
+          width={42}
+          height={42}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <span className={styles.id}>
+          <span className={styles.name}>{t.name}</span>
+          <span className={styles.role}>{t.role}</span>
+        </span>
+      </figcaption>
+      <blockquote className={styles.quote}>
+        <p>{`“${t.quote}”`}</p>
+      </blockquote>
+      <time className={styles.date} dateTime={t.isoDate}>
+        {t.date}
+      </time>
+    </figure>
+  );
+}
+
+/**
+ * It renders nothing for /ru/ (H4) and when there are no testimonials at all. The layout and
+ * the art are the same for us, eu and gulf; the header is the same English text, since the client's document has none for it.
+ */
+export function TestimonialsSection({ region }: SectionProps) {
+  if (WITHOUT_TESTIMONIALS.includes(region) || !testimonials.length) return null;
+  const { eyebrow, title, lede } = copy.en;
+  const columns = arrange(testimonials);
+  // The moving wall needs more than the six of the design: every column carries one ring of ALL the benign quotes, and the three rings
+  // start a third of a lap apart, so no quote is on screen twice at once and no two neighbours show the same one. The lap is the
+  // design's pair for a column, then that column's share of the extras (src/content/testimonials.ts, entries 7 and on), then the next
+  // column's pair. Column c's ring is the same lap started at its own pair, so its first two cards are the still wall.
+  const extras = testimonials.slice(COLUMNS * PER_COLUMN);
+  const per = Math.floor(extras.length / COLUMNS);
+  const share = (c: number) => extras.slice(c * per, c === COLUMNS - 1 ? undefined : (c + 1) * per);
+  const lap = columns.flatMap((column, c) => [
+    ...column.map((t, r) => ({ t, minH: SLOT_HEIGHTS[c]?.[r] ?? 270 })),
+    ...share(c).map((t, i) => ({ t, minH: EXTRA_HEIGHTS[(c * 3 + i) % EXTRA_HEIGHTS.length] })),
+  ]);
+  const starts = columns.map((_, c) => columns.slice(0, c).reduce((n, column, k) => n + column.length + share(k).length, 0));
+  const rings = starts.map((start) => [...lap.slice(start), ...lap.slice(0, start)]);
+  const litId = columns[1]?.[0]?.id;
+
+  return (
+    <section
+      data-section="testimonials"
+      data-figma-node="2601:13023"
+      aria-labelledby="testimonials-heading"
+      className={styles.section}
+    >
       <Container size="wide">
-        <SectionIntro eyebrow={eyebrow} title={title} lede={lede} headingId="testimonials-heading" />
-        <div className={s.wall}>
-          {shown.map((t) => {
-            const avatar = (width: 84 | 126) => withBasePath(`${t.avatar}-${width}.webp`);
-            return (
-              <GlassCard key={t.id} as="figure" className={s.card} data-verified={t.placeholder ? 'false' : 'true'}>
-                <figcaption className={s.who}>
-                  {/* A 42px circle: the 84 / 126 px files are its 2x and 3x. Static export has no image optimiser, so a plain <img>. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className={s.avatar}
-                    src={avatar(84)}
-                    srcSet={`${avatar(84)} 2x, ${avatar(126)} 3x`}
-                    width={42}
-                    height={42}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span>
-                    <span className={s.name}>{t.name}</span>
-                    <span className={s.role}>{t.role}</span>
-                  </span>
-                </figcaption>
-                <blockquote className={s.quote}>
-                  <p>{`“${t.quote}”`}</p>
-                </blockquote>
-                <time className={s.date} dateTime={t.isoDate}>
-                  {t.date}
-                </time>
-              </GlassCard>
-            );
-          })}
+        <SectionIntro
+          className={styles.intro}
+          eyebrow={eyebrow}
+          title={title}
+          lede={lede}
+          headingId="testimonials-heading"
+        />
+        <div className={styles.stage}>
+          {/* Three columns. Each carries the whole ring of cards, starting with its own two (the Figma wall), then the other
+              columns' cards, twice: the second copy is what the marquee scrolls into. Without the marquee (no JS, reduced
+              motion, phones, the low tier) only the first two cards of the first copy show: the finished Figma wall. */}
+          <div className={styles.wall} data-marquee-root>
+            {columns.map((_, c) => (
+              <div key={c} className={styles.col} data-fx="drift">
+                <div className={styles.track} data-fx="marquee">
+                  {[false, true].map((clone) => (
+                    <div
+                      key={clone ? 'clone' : 'set'}
+                      className={styles.set}
+                      {...(clone ? { 'aria-hidden': true, inert: true, 'data-clone': '' } : {})}
+                    >
+                      {rings[c].map(({ t, minH }, i) => (
+                        <Card key={t.id} t={t} minH={minH} lit={t.id === litId} once={!clone && i < PER_COLUMN} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <MarqueeToggle />
         </div>
       </Container>
     </section>

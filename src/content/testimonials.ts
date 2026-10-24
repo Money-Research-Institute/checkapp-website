@@ -1,20 +1,31 @@
 /**
- * Testimonials content (docs/landing.md D2).
+ * Testimonials wall content (docs/landing-decisions.md D2).
  *
- * These are PLACEHOLDERS: the names, roles and quotes look invented and the avatars of the first six are stock photos of real
- * people. Every entry is therefore flagged `placeholder: true`, and the wall renders each one as <figure data-verified="false">.
- * Nothing here is silenced or hidden on purpose. The wall renders nothing on /ru/ (docs/landing.md H4).
+ * The project owner decided to ship the six cards exactly as designed in Figma. They are PLACEHOLDERS: the names, roles and
+ * quotes look invented and the avatars are stock photos of real people. Every entry is therefore flagged `placeholder: true`,
+ * and the wall renders each one as <figure data-verified="false">, which the QA gate reports as the `unverified-testimonial`
+ * warning on every run. Nothing here is silenced or hidden on purpose.
  *
- * The wording of the first six is Figma's, with one normalisation: the mascot is written "DiDi" (Figma has "DIDI"), the site-wide
- * spelling. Entries 7 and on are NOT from the design: they were WRITTEN, the people do not exist, their avatars are initials, and
- * they say only what the app does today. They must all be replaced by real, consented testimonials before launch: a made-up
- * endorsement shown as real is a deceptive practice under consumer-protection law (the US FTC fake-review rule, the EU
- * unfair-commercial-practices directive).
+ * The wording is Figma's, with one normalisation: the mascot is written "DiDi" (Figma has "DIDI"), the site-wide spelling
+ * (docs/landing-copy.md). The wall renders nothing on /ru/ (docs/landing-copy.md H4).
  *
- * The wall (src/components/landing/testimonials) shows the first six entries that are not flagged `needsReplacement`.
- * `needsReplacement` entries are a known liability (leftover crypto-dashboard text, or a claim the page may not make: the claims
- * scan exempts testimonials, so this flag is what keeps them off the page). A real quote that replaces one: overwrite the entry,
- * set `placeholder: false`, and drop `needsReplacement` and `replaceReason`. Do not add Review / AggregateRating JSON-LD for these.
+ * To replace one with a real, consented testimonial: overwrite the entry, set `placeholder: false` (the figure then carries
+ * data-verified="true"), and drop `needsReplacement` and `replaceReason`. Do not add Review / AggregateRating JSON-LD for these.
+ *
+ * Entries 7 and on are NOT from the design. The moving wall (D12) needs at least nine different quotes so that no quote shows twice
+ * at once, and the design has five usable ones, so seven more were WRITTEN to fill it. They are invented, the people do not exist,
+ * their avatars are initials (not photos of real people), and they say only what the app does today. They are placeholders in the
+ * same sense as the first six and carry the same flag, and they must all be replaced by real, consented testimonials before launch:
+ * a made-up endorsement shown as real is a deceptive practice under consumer-protection law (the US FTC fake-review rule, the EU
+ * unfair-commercial-practices directive). The wall marks every one of them data-verified="false" and the gate warns on each run.
+ *
+ * Order matters: it is the Figma card order, column by column. The wall takes them two per column, so cards 1-2 are the left
+ * column, 3-4 the centre and 5-6 the right (Alex, Emily | Sofia, Ryan | Daniel, Liam). The seven after those are the extras, in the order the moving wall hands them out.
+ *
+ * `needsReplacement` entries are a known liability, so the wall never gives them a full-brightness slot: where one would sit on
+ * top of a column it swaps places with the card under it, it is always dimmed to the faded "teaser" tone, and a phone drops it.
+ * With the entries below that puts Alex, Ryan and Liam on the bright row and Emily, Sofia and Daniel on the faded one. The
+ * order here stays the Figma order, so a real quote that replaces a flagged entry brings the design's layout back by itself.
  */
 export type Testimonial = {
   id: string;
@@ -32,8 +43,8 @@ export type Testimonial = {
   placeholder: boolean;
   /**
    * The quote cannot stand on a launch page and must be replaced by a real, consented one: it is leftover text from a previous
-   * (crypto dashboard) template, or it promises something the page may not (docs/landing.md, "What the app can honestly
-   * claim"). The wall does not show it (see the header comment); the wording itself is left exactly as designed (D2).
+   * (crypto dashboard) template, or it promises something the page may not (docs/landing-copy.md, "What the app can honestly
+   * claim"). The wall dims and demotes the card (see the header comment); the wording itself is left exactly as designed (D2).
    */
   needsReplacement?: boolean;
   /** Why `needsReplacement` is set: for whoever sources the real quote. Not rendered. */
@@ -57,8 +68,8 @@ export const testimonials: readonly Testimonial[] = [
   {
     id: 'emily-stone',
     name: 'Emily Stone',
-    // The role is leftover from the crypto template too (the quote is on topic), so the entry is not flagged: a real role comes
-    // with the real consent when this card is sourced.
+    // The role is leftover from the crypto template too (the quote is on topic). It sits on the faded row, so the entry is not
+    // flagged: a real role comes with the real consent when this card is sourced.
     role: 'Web3 Enthusiast',
     quote:
       'I tried the tongue scan out of curiosity. What I liked most was getting a simple, understandable next step instead of another confusing report.',
@@ -77,8 +88,8 @@ export const testimonials: readonly Testimonial[] = [
     date: 'Jan 12, 2026',
     avatar: `${AVATAR}-sofia`,
     placeholder: true,
-    // The app does not compare with earlier check-ins today, and the page must not promise it (docs/landing.md). The claims
-    // scan exempts testimonials, so this flag is what keeps the claim off the page.
+    // The app does not compare with earlier check-ins today, and the page must not promise it (docs/landing-copy.md). The gate
+    // exempts testimonials from that scan, so this flag is what keeps the claim off the bright row.
     needsReplacement: true,
     replaceReason: 'Claims the conversation changes with previous check-ins, which the app does not do.',
   },
