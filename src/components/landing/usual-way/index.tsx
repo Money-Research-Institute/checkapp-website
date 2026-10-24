@@ -2,7 +2,7 @@
  * 02 · The usual way: checkups once a year (Figma node 2601:12628, 1440 x 1057).
  *
  * The still, quiet beat of the page: the problem, stated plainly, before DiDi shows up. A server component, T0 complete.
- * No canvas, no time-based loop, no pointer effect. The only motion is scroll-linked CSS (docs/experience-playbook.md,
+ * No canvas, no time-based loop, no pointer effect. The only motion is scroll-linked CSS (docs/landing.md,
  * "Scroll as a timeline"), and every default style is the finished frame:
  *   - the four statements rise 01 to 04 as they enter (data-fx="rise", stagger via --i),
  *   - the render drifts +/-12px inside its radius-24 clip (data-fx="drift"),

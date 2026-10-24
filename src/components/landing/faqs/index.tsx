@@ -3,7 +3,7 @@
  *
  * A ruled accordion on pure black: two-line gradient h2, four rows (number | question | answer | +/-), row 002 open, and
  * one overhead "lamp" hanging from the top rule of the open row: a huge, very faint green haze plus a small bright cone.
- * Plain DOM + CSS at every tier, no canvas (docs/experience-playbook.md: a shader for a 26-level haze and a 69px cone
+ * Plain DOM + CSS at every tier, no canvas (docs/landing.md: a shader for a 26-level haze and a 69px cone
  * would cost a context for something the DOM does for free).
  *
  *   T0  complete without JS or scroll timelines: native <details name="faq"> rows in an <ol>, row 002 [open], the lamp

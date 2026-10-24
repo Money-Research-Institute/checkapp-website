@@ -89,7 +89,7 @@ function Card({ t, minH, lit, once }: { t: Testimonial; minH: number; lit: boole
 }
 
 /**
- * Optional in figma-sections.json: it renders nothing for /ru/ (H4) and when there are no testimonials at all. The layout and
+ * It renders nothing for /ru/ (H4) and when there are no testimonials at all. The layout and
  * the art are the same for us, eu and gulf; the header is the same English text, since the client's document has none for it.
  */
 export function TestimonialsSection({ region }: SectionProps) {

@@ -5,9 +5,7 @@
  *  1. The DEFAULT style of an element is its FINAL, visible state. No-JS, print, Firefox, older Safari and
  *     reduced motion all show the finished layout; the effects are an enhancement inside
  *     @media (prefers-reduced-motion: no-preference) and, for scroll timelines, @supports (animation-timeline: view()).
- *  2. `transform` / `opacity` are animated here; `translate` is reserved for the pointer parallax the engine
- *     writes on [data-depth] elements (src/experience/core.ts) and `rotate` / `scale` for static tilts.
- *     Do not mix them on one element.
+ *  2. `transform` / `opacity` are animated here; `rotate` / `scale` are for static tilts. Do not mix them on one element.
  *  3. Never put overflow hidden or auto on an ancestor of a view()-animated element (the timeline freezes).
  *     Use overflow: clip.
  *  4. `animation-timeline` is declared AFTER the `animation` shorthand, which resets it.

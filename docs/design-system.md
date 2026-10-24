@@ -60,52 +60,9 @@ visible state**: no-JS, Firefox, older Safari, print and reduced motion all show
 | `.fx-dither` | masked noise layer (`--dither-a`, `--dither-mask`) that breaks banding on near-black gradients. Needs `public/landing/_shared/noise-128.png` (made by `scripts/assets/make-noise.mjs`); the layout publishes its base-path-safe URL as `--noise-url`. |
 | `.fx-edge` | gradient 1 px stroke via a masked `::before` (`--edge`, `--edge-w`, `--edge-a`). |
 
-Rules: `translate` is reserved for the engine's pointer parallax, so section motion uses `transform`, `rotate`, `scale`;
+Rules: section motion uses `transform`, `rotate`, `scale` (never `translate`);
 never `overflow: hidden/auto` on an ancestor of a `view()`-animated element (use `overflow: clip`); declare
 `animation-timeline` after the `animation` shorthand.
-
-## Experience engine (`src/experience`)
-
-Only `Experience.tsx` (about 1 KB gzipped) is in the initial bundle; it is mounted once at the end of `page.tsx`. After the LCP
-entry (or window load + 3 s) and an idle, scroll-quiet moment it imports two chunks with bare `import()` calls:
-
-1. **`core`** (about 2 KB gz): publishes `<html data-fx="t1">`, runs the DOM controllers, and claims a WebGL2 context for T2.
-   - `[data-once]`: an element that is OFF screen at boot gets `data-once-state="armed"` (the start frame) and `"played"` on its
-     first 35 % intersection. An element already on screen at boot (the hero, a reload that restored the scroll, an anchor) is
-     left alone: no attribute = final state, so nothing blinks out and replays under a reader's eyes. The decision is the
-     observer's first report, so ancestors that clip count.
-   - `[data-depth="<px>"]` (`data-depth-y`, `data-depth-k`, optional `data-depth-root`): pointer parallax on fine pointers,
-     written to the CSS `translate` property with `x += (target - x) * (1 - e^(-k dt))`. One rAF loop that sleeps when settled.
-   - `[data-fx="bob"]` off-screen pause.
-2. **`gl`** (about 3 KB gz) plus the scene's own chunk: the runner (context, poster texture, pixel caps, dynamic resolution,
-   pause / cull, context-loss recovery, poster crossfade, luma probe) and `scenes.ts`, the registry that maps `'hero-floor'` to
-   `() => import('@/components/landing/hero/scene')`.
-
-Tiers (published as `html[data-fx]`): **t0** CSS only (saveData, forced-colors, low-end, no JS), **t1** core without GL (no
-WebGL2, software renderer, < 4 cores / 4 GB, give-up after sustained slowness, context lost), **t2** core + GL. The only QA
-override is `window.__QA_FORCE_GL === true`, set by the gate; there is no URL or storage override.
-
-Scroll-exit (`SceneState.exit`) is measured against the stage's `[data-section]`, not the stage box: it is exactly 0 at
-`scrollY = 0` in every layout (a landscape phone's floor box is taller than its hero). Under reduced motion the one still frame is
-drawn with `t = 0`, `exit = 0` and a centred pointer at any scroll position, so it is the poster; toggling reduced motion on a
-running page redraws that frame.
-
-The runner eases `SceneState.exit` in over the first 0.4 s of drawn time (`EXIT_RAMP`), so the first frame is the poster even when
-the visitor has already scrolled into the hero (T2 starts after idle, and again after a context restore); the poster has no scroll
-term, and an unramped first frame stepped the floor 25 % darker in one frame. On context loss the poster is put back with its
-transition switched off for that one change (`showPosterAtOnce`): the canvas has no transition, so a poster that eased in from
-nothing made the floor fade to black and back.
-
-Dynamic resolution is judged against the display's own callback period, measured once per (re)start (`calibrate()`: median of 12
-rAF intervals and their spread). A steady cadence near 33.3 ms is a 30 Hz cap (iOS Low Power Mode, power savers), not load: nothing
-steps down for it. Everything else is judged as 60 Hz or faster: slow at `max(24, 1.4 x period)`, stuck at `max(32, 1.9 x period)`.
-Test a change to the ladder by spacing rAF callbacks 33 ms apart (no extra work: the render scale must stay put and `data-fx`
-must stay `t2`) and by adding real work per callback (it must step down and, at the floor, give up).
-
-To add a scene: implement `Scene` (`src/experience/types.ts`), register it in `scenes.ts` and `sceneIds.ts`, and render
-`<GlCanvas scene="..." />` next to a `<Picture data-webgl-poster>` inside a stage that reserves its `aspect-ratio`. The poster is
-the texture (`ctx.posterTexture`, `ctx.posterFit(w, h)`), so frame 0 equals the poster and every additive term must be 0 at
-`t = 0`. Shader helpers (`linkProgram`, `uniformLocations`, `FULLSCREEN_VS`) are in `gl/util.ts`.
 
 ## Shell chrome (`src/components/layout`)
 

@@ -23,9 +23,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `src/components/brand/` | `LogoMark` and `Lockup`: the only way the logo is drawn ([docs/brand.md](./docs/brand.md)). |
 | `src/components/layout/` | `Header`, `Footer`, `MobileCtaBar`, `CookieConsent`, analytics glue, `JsonLd`. |
 | `src/components/landing/<slug>/` | One folder per landing section; `src/app/page.tsx` composes them. |
-| `src/experience/` | The lazy experience engine: `Experience.tsx` (the only part in the initial bundle), `core.ts`, `gl/`, `scenes.ts`. |
 | `scripts/brand/`, `scripts/assets/` | Offline asset pipelines (`sharp`): the logo kit, the AVIF/WebP encoder, the dither tile. |
-| `scripts/qa/` | The quality gate. Read-only while building pages; see [docs/experience-playbook.md](./docs/experience-playbook.md). |
+| `scripts/qa/` | The quality gate: one ~100-line smoke test, about 10 seconds after a build ([docs/landing.md](./docs/landing.md)). |
 | `docs/landing-decisions.md` | Decisions that override Figma (copy, testimonials, fonts, mascot, logo). Authoritative. |
 
 Fonts (Manrope, Inter, Bricolage Grotesque only) come from `next/font/google` in `src/app/layout.tsx`.
@@ -33,9 +32,7 @@ Fonts (Manrope, Inter, Bricolage Grotesque only) come from `next/font/google` in
 ## Quality gate
 
 ```bash
-npm run build && npm run qa    # quick matrix against out/
-npm run qa:full                # all viewports and every route
-npm run qa:selftest            # proves the gate itself still catches what it should
+npm run build && npm run qa    # four landing pages x two viewports against out/, ~10 s
 ```
 
 ## Pages

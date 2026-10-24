@@ -1,6 +1,6 @@
 /**
  * "How it works": three numbered steps, a staggered walkthrough of the product (Figma 2601:12435 is only phone 1, the
- * section itself is unframed: see scripts/qa/figma-sections.json). Plain DOM + CSS, no GL, no client JS of its own.
+ * section itself is unframed: the Figma frame has no container). Plain DOM + CSS, no GL, no client JS of its own.
  *
  * Words: each step is ONE sentence, the client's (`howItWorks` in src/content/copy, one per region), and the only thing
  * added to it is its number, drawn as the Figma raster numeral. Figma's titles ("Daily Health Monitoring", ...) and blurbs are

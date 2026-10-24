@@ -16,7 +16,7 @@
  * --u is one design pixel (Figma at 1320 wide). It is declared on the shell but only ever USED by descendants: cqi resolves
  * against the nearest container of the element that uses it, which for every descendant is the shell.
  *
- * Rules of the road (docs/experience-playbook.md): only transform and opacity move, and only inside
+ * Rules of the road (docs/landing.md): only transform and opacity move, and only inside
  * prefers-reduced-motion: no-preference and @supports (animation-timeline: view()); the DEFAULT style of every element is its
  * final frame; nothing a view() animation touches sits under overflow hidden/auto (clip only); `translate` is left alone
  * (the engine owns it for pointer parallax).

@@ -1,7 +1,7 @@
 # Landing copy: the client's final wording (22.10.2026)
 
 Source: `checkapp_landing_copy_final.docx` (the client's updated copy, "final wording by region"). It is stored **verbatim** in
-`src/content/copy/{us,eu,gulf,ru}.ts`; `npm run qa:selftest` runs every string of it through the claim rules. Change a word there
+`src/content/copy/{us,eu,gulf,ru}.ts`; `npm run qa` runs the built pages' text through the claim rules. Change a word there
 only with the client's say-so. Where this file disagrees with `docs/landing-decisions.md` D1, **this file wins**; D1 still governs
 every string the client's document does not cover.
 
