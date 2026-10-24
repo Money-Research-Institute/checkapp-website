@@ -39,16 +39,14 @@ export const ru: Dict = {
     blog: 'Блог', // DRAFT
     privacy: 'Конфиденциальность', // DRAFT
     terms: 'Условия', // DRAFT
-    deleteAccount: 'Удалить аккаунт', // DRAFT
     contact: 'Контакты', // DRAFT
     instagram: 'Instagram',
     twitter: 'Twitter/X',
-    legalNav: 'Юридическая информация', // DRAFT
     regionNav: 'Выбери регион', // DRAFT
     regionHeading: 'Регион', // DRAFT
     opensInNewTab: 'откроется в новой вкладке', // DRAFT
     pageInEnglish: 'страница на английском', // DRAFT
-    copyright: '© {year} {name} · Только для общего благополучия · Не медицинское изделие', // DRAFT
+    copyright: '© {year} {name}',
   },
   notFound: {
     eyebrow: '404',

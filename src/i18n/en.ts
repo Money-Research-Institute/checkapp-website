@@ -43,17 +43,15 @@ export const en = {
     blog: 'Blog',
     privacy: 'Privacy',
     terms: 'Terms',
-    deleteAccount: 'Delete account',
     contact: 'Contact',
     instagram: 'Instagram',
     twitter: 'Twitter/X',
-    legalNav: 'Legal',
     regionNav: 'Choose your region',
     regionHeading: 'Region',
     opensInNewTab: 'opens in a new tab',
     /** Spoken after a link whose page is only available in English (shown on the Russian pages). */
     pageInEnglish: 'page in English',
-    copyright: '© {year} {name} · For wellness guidance only · Not a medical device',
+    copyright: '© {year} {name}',
   },
   notFound: {
     eyebrow: '404',

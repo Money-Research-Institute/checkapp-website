@@ -4,10 +4,10 @@
  * Layout is driven by the footer's own inline width (container queries on .inner), not by device names:
  *   < 540    brand on top; Product | Company side by side, each as wide as its longest word needs (a word is never broken
  *            mid-way, and an EN tag drops under its label before the label gives up letters); Connect on its own row;
- *            no duplicate legal links; below 272px of content the columns stack
- *   540-879  brand on top, then three equal columns; legal links return (stacked under the copyright below 720)
+ *            the region switcher above the copyright; below 272px of content the columns stack
+ *   540-879  brand on top, then three equal columns; the region switcher sits beside the copyright from 720
  *   >= 880   the Figma composition: brand | Product | Company | Connect
- *   >= 1000  the disclaimer and the region switcher share one row (stacked below it)
+ *   The disclaimer is one quiet paragraph under the columns; the bar under the rule is the copyright and the region switcher.
  * The Figma-literal 28px link rhythm exists only from 1100px with a fine pointer; every other link is 44px tall.
  *
  * Stacking: .glow (back) < .inner (text). Nothing in .glow takes pointer events or carries meaning.
@@ -303,8 +303,7 @@
   list-style: none;
 }
 
-.link,
-.legalLink {
+.link {
   display: flex;
   align-items: center;
   column-gap: 8px; /* the label to its EN tag; a gap, not a margin, so a tag that wraps to its own line is not indented */
@@ -323,7 +322,7 @@
 }
 
 /* The label and its EN tag wrap as units: when both do not fit on one line the tag drops under the label (a line each,
-   centred as a pair in the 44px target) instead of the label giving up letters. The legal links in the bar never wrap. */
+   centred as a pair in the 44px target) instead of the label giving up letters. */
 .link {
   flex-wrap: wrap;
   align-content: center;
@@ -346,13 +345,11 @@
 }
 
 @media (hover: hover) {
-  .link:hover,
-  .legalLink:hover {
+  .link:hover {
     color: var(--c-fg);
   }
 }
-.link:focus-visible,
-.legalLink:focus-visible {
+.link:focus-visible {
   color: var(--c-fg);
 }
 
@@ -462,35 +459,17 @@
   border-top: 1px solid var(--f-rule);
 }
 
-/* "For wellness guidance only · Not a medical device" carries regulatory wording: it wraps, it never disappears. */
+/* Phones: the region switcher first, the copyright under it. From 720px they share a row (the switcher on the right). */
+.bar .regions {
+  order: -1;
+}
+
 .copy {
   margin: 0;
   font-size: var(--f-fs);
   line-height: var(--f-lh);
   color: var(--f-quiet);
   text-wrap: balance;
-}
-
-/* Phones: the Company column already lists these three links, so the copy is dropped (display none, so also gone from the
-   accessibility tree instead of being read twice). */
-.legal {
-  display: none;
-}
-
-.legalList {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 0 0 -8px; /* the 8px of side padding that makes "Terms" 44px wide is pulled back out of the text edge */
-  padding: 0;
-  list-style: none;
-}
-
-.legalLink {
-  justify-content: center;
-  min-width: var(--tap, 44px);
-  padding-inline: 8px;
-  color: var(--f-quiet);
-  white-space: nowrap;
 }
 
 /* ------------------------------------------------------------------ 540 and up */
@@ -507,9 +486,6 @@
   .tagline {
     max-width: 46ch;
   }
-  .legal {
-    display: block;
-  }
   .meta {
     margin-top: 44px;
   }
@@ -518,7 +494,7 @@
   }
 }
 
-/* One row once the copyright (451px) and the three legal links (about 220px) fit side by side with room to spare. */
+/* One row once the copyright and the region switcher fit side by side: the notice at the left edge, the switcher at the right. */
 @container (min-width: 720px) {
   .bar {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -526,9 +502,9 @@
     column-gap: 24px;
     padding-top: 16px;
   }
-  .legalList {
+  .bar .regions {
+    order: 0;
     justify-content: flex-end;
-    margin: 0 -8px 0 0;
   }
 }
 
@@ -553,25 +529,7 @@
   }
 }
 
-/* The disclaimer on the left, the region switcher on the right edge (where the legal links end), on one row. Without a
-   region (inner pages) there is only the disclaimer and it takes the whole row. */
-@container (min-width: 1000px) {
-  .meta {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: 'note regions';
-    align-items: center;
-    column-gap: 48px;
-  }
-  .note {
-    grid-area: note;
-  }
-  .regions {
-    grid-area: regions;
-    justify-content: flex-end;
-  }
-}
-
-/* Figma-literal rhythm: 20px text on a 28px pitch, 16px between legal links. */
+/* Figma-literal rhythm: 20px text on a 28px pitch. */
 @media (min-width: 1100px) and (hover: hover) and (pointer: fine) {
   .heading {
     margin-bottom: 12px;
@@ -586,22 +544,12 @@
   .bar {
     padding-top: 28px;
   }
-  .legalList {
-    gap: 16px;
-    margin: 0;
-  }
-  .legalLink {
-    min-height: calc(var(--f-lh) + 8px);
-    min-width: 0;
-    padding: 4px 0;
-  }
 }
 
 /* ------------------------------------------------------------------ preferences */
 
 @media (prefers-reduced-motion: reduce) {
   .link,
-  .legalLink,
   .regionLink {
     transition: none;
   }
@@ -620,7 +568,6 @@
 
 @media (forced-colors: active) {
   .link:focus-visible,
-  .legalLink:focus-visible,
   .regionLink:focus-visible {
     outline-color: Highlight;
   }

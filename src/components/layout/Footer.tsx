@@ -9,7 +9,7 @@
  *  - a scroll-linked rise (view() timeline, compositor-only) brings the glow from 64px low and 30 % dimmer to exactly
  *    Figma's resting frame as the page ends, so the brightest the glow ever gets is the sampled #2E7034 peak and text
  *    contrast is the same at the end state as in the design. Without view() timelines, or under reduced motion, the
- *    page simply shows that resting frame. On a fine pointer the engine's [data-depth] sways it by at most 40px.
+ *    page simply shows that resting frame. On a landing page on a fine pointer LandingMotion's [data-depth] sways it by at most 40px.
  *  - ultrawide: the layer stops growing at 2500px (the width of Figma's own glow frame) and its sides ease out to black
  *    with a long mask, so a 3440px screen gets a soft pool of light, never a stretched bar. The row of links stays in the
  *    centred 1320px column and the type grows a notch (15px from 2560, 16px from 3000).
@@ -30,8 +30,8 @@
  * English only (privacy, terms, blog, ...): those links say so with a visible "EN" tag, hreflang="en" and a spoken "page in
  * English". "How it works" goes to its section of the Russian landing page instead (`shellLink`).
  *
- * The three link groups are <nav>s labelled by their visible headings; the duplicate legal links in the bottom bar are
- * hidden (display: none, so out of the accessibility tree too) on phones, where they would only repeat the Company column.
+ * The three link groups are <nav>s labelled by their visible headings. Every link appears once: below them sit the disclaimer
+ * and, under a rule, the copyright with the region switcher. (The bottom bar used to repeat Privacy / Terms / Delete account.)
  */
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
@@ -52,7 +52,7 @@ import { fill, getDict, type Dict } from '@/i18n';
 import { SITE_NAME, SOCIAL_LINKS } from '@/lib/constants';
 import { shellLink } from '@/lib/paths';
 import styles from './footer/footer.module.css';
-import { COMPANY_LINKS, CONNECT_LINKS, LEGAL_LINKS, PRODUCT_LINKS, type FooterLinkItem } from './footer/links';
+import { COMPANY_LINKS, CONNECT_LINKS, PRODUCT_LINKS, type FooterLinkItem } from './footer/links';
 
 const YEAR = new Date().getFullYear();
 
@@ -207,29 +207,16 @@ export function Footer({ locale, region }: { locale: Locale; region?: Region }) 
           <LinkGroup id="footer-connect" title={dict.connect} items={CONNECT_LINKS} ctx={ctx} className={styles.connect} />
         </div>
 
-        {/* One row from 1000px (the disclaimer left, the region switcher right, as the legal links are), stacked below it. */}
+        {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
         <div className={styles.meta}>
-          {region ? <RegionSwitcher current={region} dict={dict} /> : null}
-
-          {/* D1: regulatory wording survives the redesign. Exempt from the gate's banned-claim scan by data-disclaimer. */}
           <p data-disclaimer className={styles.note}>
             {disclaimer}
           </p>
         </div>
 
         <div className={styles.bar}>
-          <p className={styles.copy}>
-            {fill(dict.copyright, { year: YEAR, name: SITE_NAME })}
-          </p>
-          <nav aria-label={dict.legalNav} className={styles.legal}>
-            <ul className={styles.legalList}>
-              {LEGAL_LINKS.map((item) => (
-                <li key={item.href}>
-                  <FooterLink item={item} className={styles.legalLink} ctx={ctx} />
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <p className={styles.copy}>{fill(dict.copyright, { year: YEAR, name: SITE_NAME })}</p>
+          {region ? <RegionSwitcher current={region} dict={dict} /> : null}
         </div>
       </Container>
     </footer>
