@@ -44,20 +44,20 @@ export const SITE_NAME = 'checkapp';
 /**
  * The header's links. `key` picks the label from the shell dictionary (src/i18n), so the same list serves every language.
  * "Home" is not here: it points at the landing page of the current region, which the header knows.
+ *
+ * None of the site's navigation links prefetch (`prefetch={false}` on every `<Link>` in the header, footer and CTA). The
+ * router would otherwise fetch every linked page on the first view, and preload each page's own stylesheet: the
+ * console filled with "preloaded but not used" warnings and the network tab with cancelled requests. The blog never
+ * prefetched for a further reason: its cover photos come from a third party, and prefetching pulled one in before
+ * the visitor had answered the cookie notice. Pages are static files on a CDN; opening one is fast without it.
  */
 export const NAV_LINKS: readonly {
   href: string;
   key: 'howItWorks' | 'features' | 'blog';
-  /**
-   * `false` keeps the router from prefetching the page. The blog's cover photos come from a third party: prefetching
-   * /blog/ from the header pulled one in (and opened a connection to it) on every page load, before the visitor had
-   * answered the cookie notice.
-   */
-  prefetch?: false;
 }[] = [
   { href: '/how-it-works/', key: 'howItWorks' },
   { href: '/features/', key: 'features' },
-  { href: '/blog/', key: 'blog', prefetch: false },
+  { href: '/blog/', key: 'blog' },
 ];
 
 export const SOCIAL_LINKS = {

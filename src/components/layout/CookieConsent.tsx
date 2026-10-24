@@ -98,7 +98,7 @@ export function CookieConsent({ dict }: { dict: Dict['cookie'] }) {
       <div ref={cardRef} className={`fx-edge ${styles.card}`}>
         <p className={styles.text}>
           {dict.text}{' '}
-          <Link href="/privacy/" className={styles.link}>
+          <Link href="/privacy/" prefetch={false} className={styles.link}>
             {dict.privacy}
           </Link>
         </p>

@@ -74,7 +74,7 @@ export function CtaButton({
   }
 
   return (
-    <Link href={target} className={cls} onClick={handleClick} {...rest}>
+    <Link href={target} prefetch={false} className={cls} onClick={handleClick} {...rest}>
       {content}
     </Link>
   );

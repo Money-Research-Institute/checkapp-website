@@ -87,7 +87,7 @@ function FooterLink({ item, className, ctx }: { item: FooterLinkItem; className:
   }
   const target = shellLink(item.href, ctx.locale);
   return (
-    <Link href={target.href} prefetch={item.prefetch} className={className} hrefLang={target.english ? 'en' : undefined}>
+    <Link href={target.href} prefetch={false} className={className} hrefLang={target.english ? 'en' : undefined}>
       {label}
       {target.english ? (
         <>
@@ -142,6 +142,7 @@ function RegionSwitcher({ current, dict }: { current: Region; dict: Dict['footer
           <li key={region}>
             <Link
               href={RegionPaths[region]}
+              prefetch={false}
               hrefLang={RegionHreflang[region]}
               lang={localeOf(region)}
               className={styles.regionLink}

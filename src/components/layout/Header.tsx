@@ -80,12 +80,11 @@ export function Header({
 
   const isActive = (href: string) =>
     href === homeHref ? pathname === homeHref : pathname.startsWith(href.replace(/\/$/, ''));
-  const links: { href: string; label: string; english: boolean; prefetch?: false }[] = [
+  const links: { href: string; label: string; english: boolean }[] = [
     { href: homeHref, label: dict.home, english: false },
     ...NAV_LINKS.map((link) => ({
       ...shellLink(link.href, locale),
       label: dict[link.key],
-      prefetch: link.prefetch,
     })),
   ];
 
@@ -164,7 +163,7 @@ export function Header({
     >
       <div className={styles.bar}>
         <nav data-critical="nav" aria-label={dict.navLabel} className={styles.nav}>
-          <Link href={homeHref} className={styles.brand} onClick={() => setOpen(false)}>
+          <Link href={homeHref} prefetch={false} className={styles.brand} onClick={() => setOpen(false)}>
             <LogoMark size={28} decorative priority />
             <span className={styles.wordmark}>{SITE_NAME}</span>
           </Link>
@@ -174,7 +173,7 @@ export function Header({
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  prefetch={link.prefetch}
+                  prefetch={false}
                   className={styles.link}
                   aria-current={isActive(link.href) ? 'page' : undefined}
                   hrefLang={link.english ? 'en' : undefined}
@@ -224,7 +223,7 @@ export function Header({
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  prefetch={link.prefetch}
+                  prefetch={false}
                   className={styles.panelLink}
                   aria-current={isActive(link.href) ? 'page' : undefined}
                   hrefLang={link.english ? 'en' : undefined}

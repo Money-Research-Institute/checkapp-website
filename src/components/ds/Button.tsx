@@ -62,7 +62,7 @@ export function Button({
       );
     }
     return (
-      <Link href={href} className={cls} onClick={handle} {...anchor}>
+      <Link href={href} prefetch={false} className={cls} onClick={handle} {...anchor}>
         {children}
       </Link>
     );
