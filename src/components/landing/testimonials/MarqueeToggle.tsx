@@ -1,7 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './Testimonials.module.css';
+
+/**
+ * Switches the moving wall on, and pauses it while it is off-screen.
+ *
+ * The stylesheet keeps the finished, still wall as the default and starts the columns only under `html[data-fx]`. Nothing else
+ * publishes that flag now (the page's experience engine, which used to, is gone), so this does, once the page is hydrated: a
+ * visitor who asked for less data (Save-Data) or forced colours keeps the still wall, as does anyone with reduced motion (the
+ * stylesheet's own media query). The loop is the page's one infinite animation, so it stops when its tracks leave the screen.
+ */
+function useMarquee() {
+  useEffect(() => {
+    const root = document.documentElement;
+    const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+    if (nav.connection?.saveData || matchMedia('(forced-colors: active)').matches) return;
+    root.dataset.fx = 't1';
+    const tracks = document.querySelectorAll('[data-fx="marquee"]');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) e.target.setAttribute('data-paused', e.isIntersecting ? 'false' : 'true');
+      },
+      { rootMargin: '100px' },
+    );
+    tracks.forEach((el) => io.observe(el));
+    return () => {
+      io.disconnect();
+      delete root.dataset.fx;
+    };
+  }, []);
+}
 
 /**
  * The pause control WCAG 2.2.2 asks for: the wall moves by itself for longer than five seconds, so there must be a way to stop it
@@ -9,6 +38,7 @@ import styles from './Testimonials.module.css';
  * wall is actually moving (the stylesheet hides it otherwise).
  */
 export function MarqueeToggle() {
+  useMarquee();
   const [paused, setPaused] = useState(false);
   return (
     <button
