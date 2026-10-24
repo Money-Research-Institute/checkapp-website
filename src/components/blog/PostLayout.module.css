@@ -1,0 +1,31 @@
+.layout {
+  /* Shared with MdxContent so `68ch` means the same thing in the column track and in the text. */
+  --blog-fs: clamp(1.0625rem, 1.03rem + 0.12vw, 1.125rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: clamp(32px, 4vw, 64px);
+  font-size: var(--blog-fs);
+}
+.head {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.main {
+  min-width: 0;
+}
+.aside {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 68ch) 15rem;
+    justify-content: center;
+  }
+  .single {
+    grid-template-columns: minmax(0, 68ch);
+  }
+  .aside {
+    display: block;
+    min-width: 0;
+  }
+}

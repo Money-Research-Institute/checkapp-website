@@ -49,6 +49,49 @@ function isFallbackBlogPath(urlPath) {
   }
 }
 
+/**
+ * The four landing pages and their hreflang (docs/landing.md). Keep in step with `RegionPaths` and `RegionHreflang` in
+ * src/content/copy/index.ts: this file is plain CommonJS and cannot import the TypeScript. Each landing page lists all four
+ * (itself included) plus x-default, which is the US page at `/`, so the sitemap says the same thing as the <link rel="alternate">
+ * tags in the page head.
+ */
+const LANDING_PAGES = [
+  { path: '/', hreflang: 'en-US' },
+  { path: '/eu/', hreflang: 'en-IE' },
+  { path: '/gulf/', hreflang: 'en-AE' },
+  { path: '/ru/', hreflang: 'ru' },
+];
+
+function landingAlternateRefs(siteUrl) {
+  const origin = siteUrl.replace(/\/$/, '');
+  return [
+    { href: `${origin}/`, hreflang: 'x-default', hrefIsAbsolute: true },
+    ...LANDING_PAGES.map(({ path, hreflang }) => ({ href: `${origin}${path}`, hreflang, hrefIsAbsolute: true })),
+  ];
+}
+
+/**
+ * The download page exists in English and Russian. The pair lists each other, so the sitemap says the same as the
+ * <link rel="alternate"> tags in the page head (src/app/(en)/(pages)/download/page.tsx and src/app/(ru)/ru/download/page.tsx).
+ */
+const DOWNLOAD_PAGES = [
+  { path: '/download/', hreflang: 'en' },
+  { path: '/ru/download/', hreflang: 'ru' },
+];
+
+function downloadAlternateRefs(siteUrl) {
+  const origin = siteUrl.replace(/\/$/, '');
+  return [
+    { href: `${origin}/download/`, hreflang: 'x-default', hrefIsAbsolute: true },
+    ...DOWNLOAD_PAGES.map(({ path, hreflang }) => ({ href: `${origin}${path}`, hreflang, hrefIsAbsolute: true })),
+  ];
+}
+
+// next-sitemap hands transform() the route as the build manifest spells it ("/eu"), whatever trailingSlash says.
+const normalize = (urlPath) => `${String(urlPath).replace(/\/+$/, '')}/`;
+const isLandingPath = (urlPath) => LANDING_PAGES.some(({ path }) => path === normalize(urlPath));
+const isDownloadPath = (urlPath) => DOWNLOAD_PAGES.some(({ path }) => path === normalize(urlPath));
+
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://checkapp.today',
   outDir: './out',
@@ -60,12 +103,18 @@ module.exports = {
   transform: async (config, urlPath) => {
     if (isNonContentPath(urlPath) || isFallbackBlogPath(urlPath)) return null;
 
+    const landing = isLandingPath(urlPath);
+
     return {
       loc: urlPath,
       changefreq: config.changefreq,
-      priority: config.priority,
+      priority: landing ? 1.0 : config.priority,
       lastmod: config.autoLastmod ? new Date().toISOString() : undefined,
-      alternateRefs: config.alternateRefs ?? [],
+      alternateRefs: landing
+        ? landingAlternateRefs(config.siteUrl)
+        : isDownloadPath(urlPath)
+          ? downloadAlternateRefs(config.siteUrl)
+          : (config.alternateRefs ?? []),
     };
   },
   additionalPaths: async () => {

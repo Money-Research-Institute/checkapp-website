@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
+  // Two root layouts (<html lang="en"> and <html lang="ru">) leave no single layout to build the 404 from, so the 404 is a
+  // whole document of its own: src/app/global-not-found.tsx.
+  experimental: {
+    globalNotFound: true,
+    cssChunking: 'graph',
+  },
   turbopack: {
     root: process.cwd(),
   },

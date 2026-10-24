@@ -1,0 +1,56 @@
+/*
+ * Motion vocabulary. Compositor-only (transform, rotate, opacity, mask), CSS-only.
+ *
+ * Rules every effect below follows:
+ *  1. The DEFAULT style of an element is its FINAL, visible state. No-JS, print, Firefox, older Safari and
+ *     reduced motion all show the finished layout; the effects are an enhancement inside
+ *     @media (prefers-reduced-motion: no-preference) and, for scroll timelines, @supports (animation-timeline: view()).
+ *  2. `transform` / `opacity` are animated here; `rotate` / `scale` are for static tilts. Do not mix them on one element.
+ *  3. Never put overflow hidden or auto on an ancestor of a view()-animated element (the timeline freezes).
+ *     Use overflow: clip.
+ *  4. `animation-timeline` is declared AFTER the `animation` shorthand, which resets it.
+ *
+ * Used by the inner pages (about, features, how-it-works, ...). The landing page has no scroll-driven motion.
+ */
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    /* ---- keyframes ---- */
+    @keyframes fx-rise {
+      from { opacity: 0; transform: translateY(var(--fx-rise, 16px)); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fx-settle {
+      from { opacity: 0; transform: translateY(var(--fx-settle, 28px)) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fx-drift {
+      from { transform: translate(var(--fx-from, 0px, 0px)); }
+      to { transform: translate(var(--fx-to, 0px, 0px)); }
+    }
+
+    /* ---- scroll-linked effects ---- */
+    @supports (animation-timeline: view()) {
+      /* data-fx="rise": 14-18px rise + fade on view entry. Stagger siblings with style="--i: n". */
+      [data-fx="rise"] {
+        animation: fx-rise 1ms var(--ease-out) both;
+        animation-timeline: view();
+        animation-range: entry calc(var(--i, 0) * 6%) entry calc(45% + var(--i, 0) * 6%);
+      }
+
+      /* data-fx="settle": translateY + scale .97 -> 1 as it enters. */
+      [data-fx="settle"] {
+        animation: fx-settle 1ms var(--ease-out) both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+      }
+
+      /* data-fx="drift": travel from --fx-from to --fx-to over the element's whole pass through the viewport.
+         style="--fx-from: 0px, 12px; --fx-to: 0px, -12px" */
+      [data-fx="drift"] {
+        animation: fx-drift 1ms linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+    }
+  }
+}

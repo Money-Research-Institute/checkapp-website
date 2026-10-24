@@ -1,0 +1,107 @@
+/*
+ * Design tokens. One dark theme for the whole site: page background is pure #000.
+ * Source: the Figma Landing frame, with the contrast fixes from docs/landing.md (D6).
+ * Tailwind utilities (bg-brand, text-body, ...) are mapped to these in globals.css (@theme inline).
+ * Sections never edit this file: section-only values live in custom properties scoped to
+ * [data-section="<slug>"] inside the section's own CSS.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --c-bg: #000;
+  --c-surface-a: #0e100d; /* cards (top of the 180deg ramp) */
+  --c-surface-b: #121412; /* ... and the bottom of it */
+  --c-tile-outer: #070808; /* 4P tiles */
+  --c-tile-border: #1b1c1c;
+  --c-tile-inner: #0d0f0e;
+  --c-glass: rgb(255 255 255 / 0.06);
+  --c-glass-edge: linear-gradient(135deg, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0)); /* 1px stroke, drawn by .fx-edge */
+
+  /* Brand greens */
+  --c-brand: #41773c; /* CTA, testimonial tint */
+  --c-brand-deep: #276221; /* Color/Main: nav CTA, tooltips, glows */
+  --c-accent: #48cb3b; /* eyebrow border */
+  --c-mint: #8aee80;
+  --c-bracket: #6cbf65;
+
+  /* Text on dark */
+  --c-fg: #fff;
+  --c-fg-body: #f0f0f0;
+  --c-fg-70: rgb(255 255 255 / 0.7);
+  --c-fg-60: rgb(255 255 255 / 0.6);
+  --c-fg-50: rgb(255 255 255 / 0.5);
+  --c-fg-40: rgb(255 255 255 / 0.4);
+  --c-muted: #a8a8a8;
+  --c-sub-on-black: #7c7c86; /* replaces Figma's #52525b (2.7:1) */
+
+  --c-focus: #fff;
+
+  /* Type. Manrope everywhere; Inter for card UI text; Bricolage for the wordmark only (docs/landing.md D4). */
+  /* The page's one h1 leads: on a phone it is 34 to 37px and no section h2 passes 29px, so the hero never reads as the weaker
+     heading (it was 28 to 31px against h2s of 31 to 34). Desktop is Figma's: 64 and 52 at 1440. */
+  --fs-h1: clamp(2.125rem, 1.35rem + 3.6vw, 4rem); /* 34 at 320, 36 at 390, 64 from 1280 */
+  --fs-h2: clamp(1.75rem, 1.1rem + 2.6vw, 3.25rem); /* 28 up to 430, 52 from 1230 */
+  --fs-h3: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  --fs-lede: 1.125rem; /* 18 / 27 */
+  --fs-body: 1rem;
+  --lh-h1: 1.25;
+  --lh-h2: 1.385;
+  --ls-h1: -0.039em; /* -2.5px at 64 */
+  --ls-h2: -0.048em; /* -2.5px at 52 */
+  --ls-ui: -0.011em; /* -0.2px at 18 */
+
+  /* Layout */
+  --gutter: clamp(16px, 4.17vw, 60px);
+  --measure: 1320px;
+  --measure-narrow: 1280px;
+  --measure-prose: 720px;
+  --header-h: 72px;
+  --cta-bar-h: 72px;
+  --radius-card: 24px;
+  --radius-pill: 60px;
+  --radius-eyebrow: 90px;
+  --tap: 44px;
+
+  /* Footer: how far the page above may hang over its glow, and the runway of pure gradient before the first link. */
+  --footer-overlap: 0px;
+  --footer-runway: clamp(64px, 10vw, 96px);
+
+  /* Motion */
+  --dur-fast: 150ms;
+  --dur-base: 300ms;
+  --dur-slow: 600ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A damped spring as a linear() easing: overshoots about 6 % and settles. No JS, no rAF. */
+  --spring: linear(
+    0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.7%, 1.077 23.1%, 1.121 27.6%,
+    1.131 31.5%, 1.113 35.5%, 1.068 41.7%, 1.025 48.9%, 1.006 56.8%, 0.998 66.6%, 1
+  );
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-h: 104px; /* 24 top + 56 bar + 24 */
+  }
+}
+/* Landscape phones: 8 top + 48 bar + 8, so the header does not take a fifth of a 390px-tall screen. Must follow the rule above.
+   The same query sits in Header.module.css and in the hero's landscape-phone layout. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-h: 64px;
+  }
+}
+
+/* More contrast on request: glass becomes solid, translucent text becomes opaque. */
+@media (prefers-contrast: more) {
+  :root {
+    --c-glass: #1a1a1a;
+    --c-fg-70: #fff;
+    --c-fg-60: #fff;
+    --c-fg-50: #e6e6e6;
+    --c-fg-40: #d4d4d4;
+    --c-muted: #d4d4d4;
+    --c-sub-on-black: #b8b8c0;
+  }
+}

@@ -1,0 +1,84 @@
+/*
+ * "How it works": three steps, each a phone and one sentence. Phones: one column. From 900px: a zig-zag, phone and text swap sides.
+ * Nothing here has a fixed height (Russian runs 15-30 % longer): heights come from the art and the text.
+ */
+.root {
+  padding-block: clamp(40px, 8vw, 96px);
+  overflow-x: clip;
+}
+
+.steps {
+  display: grid;
+  gap: clamp(40px, 8vw, 72px);
+  max-width: calc(var(--measure-narrow) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+}
+
+/* The art is an opaque picture on black whose edges carry a faint glow: feather it into the page so no rectangle shows. */
+.phone {
+  --fade: 7%;
+  width: auto;
+  max-width: 100%;
+  height: clamp(360px, 62svh, 560px);
+  object-fit: contain;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent),
+    linear-gradient(transparent, #000 2%, #000 98%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent),
+    linear-gradient(transparent, #000 2%, #000 98%, transparent);
+  mask-composite: intersect;
+}
+
+.copy {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 34rem;
+}
+
+.copy > picture {
+  flex: none;
+}
+.numeral {
+  display: block;
+  width: auto;
+  height: 52px;
+}
+
+.text {
+  margin: 0;
+  font-size: clamp(1.25rem, 0.95rem + 1.7vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 900px) {
+  .step {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: clamp(32px, 5vw, 80px);
+  }
+  .step:nth-child(even) > picture {
+    order: 2;
+  }
+  .phone {
+    height: min(70svh, 620px);
+  }
+  .numeral {
+    height: 72px;
+  }
+  .text {
+    font-size: clamp(1.5rem, 2.2vw, 2rem);
+  }
+}

@@ -1,0 +1,127 @@
+.cta {
+  --cta-rise: 4px;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  overflow: hidden; /* clips the light ellipse to the pill */
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radius-pill);
+  background-color: var(--cta-bg);
+  color: var(--c-fg);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 27px;
+  letter-spacing: -0.2px;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.deep {
+  --cta-bg: var(--c-brand-deep);
+}
+.brand {
+  --cta-bg: var(--c-brand);
+}
+
+.nav {
+  height: var(--cta-nav-h, 56px); /* the header shrinks it to 44px on a landscape phone */
+  padding: 0 20px;
+}
+.lg {
+  height: 60px;
+  min-width: 220px;
+  padding: 0 24px;
+}
+.bar {
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+}
+
+/*
+ * Bottom rim light: a 157 x 33 white ellipse, blurred 25px, centred, with its top 49px down a 60px pill (Figma).
+ *
+ * It lives in a full-size wrapper that masks it out above the label. Unmasked, the 25px blur reaches 35px up the pill and the
+ * white label sat on the lightest part of the bloom: 2.8 to 3.3:1 at its worst pixel on every size (4.2 median), below AA for
+ * 18px text, on the page's one conversion element. The mask is clear down to the label's lower edge (50% + 13.5px: the label
+ * is centred and 27px tall) and eases in over the next ~12px, so the light stays a rim under the pill, at full strength where
+ * the pill ends, and the text keeps the fill's own contrast (5.3:1 on --c-brand, 7.4:1 on --c-brand-deep). The mask is on the
+ * wrapper, not the ellipse, so the hover lift moves the light inside a window that never opens onto the label.
+ */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(50% + 12px), #000 calc(50% + 24px));
+  mask-image: linear-gradient(to bottom, transparent calc(50% + 12px), #000 calc(50% + 24px));
+}
+.light {
+  position: absolute;
+  left: calc(50% + 1.5px);
+  top: 49px;
+  width: 157px;
+  height: 33px;
+  border-radius: 50%;
+  background: #fff;
+  filter: blur(25px);
+  transform: translate(-50%, 0);
+  pointer-events: none;
+  transition: transform var(--dur-base) var(--ease-out-expo);
+}
+.nav .light {
+  top: calc(var(--cta-nav-h, 56px) - 11px); /* same distance from the pill's bottom edge as on the 60px pill */
+}
+.bar .light {
+  top: 45px; /* same proportion on the 56px pills */
+}
+
+.arrow {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .cta:hover {
+    background-color: color-mix(in srgb, var(--cta-bg), #fff 9%);
+  }
+  .cta:hover .light {
+    transform: translate(-50%, calc(var(--cta-rise) * -1));
+  }
+}
+.cta:focus-visible .light {
+  transform: translate(-50%, calc(var(--cta-rise) * -1));
+}
+.cta:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta,
+  .light {
+    transition: none;
+  }
+  .cta:active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .cta {
+    border-color: ButtonText;
+  }
+  .glow {
+    display: none;
+  }
+}

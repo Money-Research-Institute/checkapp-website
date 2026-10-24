@@ -65,7 +65,7 @@ for (const key of ['name', 'email', 'consent', 'project', 'source', 'timestamp']
   assert.match(submitLeadSource, new RegExp(`\\b${key}\\b`), `payload must include ${key}`);
 }
 
-const leadFormSource = readFileSync(path.join(ROOT, 'src/components/marketing/LeadForm.tsx'), 'utf8');
+const leadFormSource = readFileSync(path.join(ROOT, 'src/components/forms/LeadForm.tsx'), 'utf8');
 assert.match(leadFormSource, /submitLead\(/, 'LeadForm must call submitLead');
 assert.doesNotMatch(leadFormSource, /script\.google\.com/);
 

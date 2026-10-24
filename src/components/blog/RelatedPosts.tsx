@@ -1,30 +1,27 @@
-import { BlogRelatedCard } from './BlogRelatedCard';
+import { Section } from '@/components/ds/Section';
 import type { BlogPostMeta } from '@/lib/blog';
+import { BlogCard } from './BlogCard';
+import styles from './RelatedPosts.module.css';
 
-type RelatedPostsProps = {
-  posts: BlogPostMeta[];
-};
-
-export function RelatedPosts({ posts }: RelatedPostsProps) {
+/** "You might also like": up to four compact cards under an h2. Renders nothing without posts. */
+export function RelatedPosts({ posts }: { posts: BlogPostMeta[] }) {
   if (posts.length === 0) return null;
 
   return (
-    <section aria-labelledby="related-posts-heading">
-      <h2
-        id="related-posts-heading"
-        className="font-display text-2xl font-bold text-text md:text-3xl"
-      >
-        You might also like
-      </h2>
-      <p className="mt-2 text-text-secondary">
-        More from the CheckApp blog — hydration, habits, and AI wellness.
-      </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {posts.map((post) => (
-          <BlogRelatedCard key={post.slug} post={post} />
-        ))}
+    <Section labelledBy="related-posts-heading">
+      <div className={styles.head}>
+        <h2 id="related-posts-heading" className={styles.title}>
+          You might also like
+        </h2>
+        <p className={styles.lede}>More from the CheckApp blog: hydration, habits, and AI wellness.</p>
       </div>
-    </section>
+      <ul className={styles.grid} role="list">
+        {posts.map((post) => (
+          <li key={post.slug}>
+            <BlogCard post={post} variant="compact" headingLevel={3} />
+          </li>
+        ))}
+      </ul>
+    </Section>
   );
 }

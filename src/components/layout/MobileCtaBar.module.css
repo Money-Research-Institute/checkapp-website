@@ -1,0 +1,66 @@
+.bar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  box-sizing: border-box;
+  height: calc(var(--cta-bar-h) + env(safe-area-inset-bottom, 0px));
+  padding: 8px var(--gutter) calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  background: rgb(0 0 0 / 0.8);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+/* No transition until the observer has answered once (data-animate): the server's guess is settled silently. */
+.bar[data-animate] {
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    visibility 0s;
+}
+.bar[data-hidden] {
+  transform: translateY(100%);
+  visibility: hidden;
+}
+.bar[data-animate][data-hidden] {
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    visibility 0s var(--dur-base);
+}
+/* The cookie notice owns the bottom edge while it is open (CookieConsent sets the flag on <html>). */
+:global(html[data-consent-open]) .bar {
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    visibility 0s var(--dur-base);
+}
+@media (min-width: 768px) {
+  .bar {
+    display: none;
+  }
+}
+/*
+ * Short landscape (a phone on its side, 480 to 767 wide): no bar. Fixed to the bottom edge with the 48px header above it, the bar
+ * and the header took about a third of a 375px-tall screen and squeezed the page between them. The header carries the download pill
+ * instead (Header.module.css, the same 844 x 390 layout), and the page stops reserving the bar's strip (globals.css, the footer).
+ * Narrower than 480 there is no room for the pill beside the logo and the burger, so the bar stays. Keep the three queries in step.
+ */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+  .bar {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar,
+  .bar[data-animate],
+  .bar[data-animate][data-hidden],
+  :global(html[data-consent-open]) .bar {
+    transition: none;
+  }
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .bar {
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

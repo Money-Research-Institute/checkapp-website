@@ -1,0 +1,40 @@
+.card {
+  width: 100%;
+  max-width: 480px;
+}
+.inner {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgb(72 203 59 / 0.4);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgb(72 203 59 / 0.2), rgb(72 203 59 / 0.04));
+  color: var(--c-mint);
+}
+.list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--c-fg-body);
+  font-size: 17px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.check {
+  flex: none;
+  margin-top: 2px;
+  color: var(--c-mint);
+}

@@ -1,0 +1,9 @@
+/* Space between a section's centred intro and what follows it. */
+.gap {
+  margin-top: clamp(32px, 5vw, 56px);
+}
+/* The five feature rows, with room to breathe between them. */
+.rows {
+  display: grid;
+  gap: clamp(56px, 9vw, 112px);
+}

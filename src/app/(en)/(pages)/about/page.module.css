@@ -1,0 +1,57 @@
+/* Space between a section's centred intro and what follows it. */
+.gap {
+  margin-top: clamp(32px, 5vw, 56px);
+}
+
+/* Our story: the words on one side, the phone on the other (under the words on phones). */
+.story {
+  display: grid;
+  gap: clamp(32px, 5vw, 48px);
+  align-items: center;
+}
+.storyCopy {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+  min-width: 0;
+}
+.storyTitle {
+  text-wrap: balance;
+}
+.prose {
+  display: grid;
+  gap: 18px;
+  max-width: 56ch;
+}
+.prose p {
+  margin: 0;
+  color: var(--c-fg-70);
+  font-size: var(--fs-lede);
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.storyVisual {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .story {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(48px, 7vw, 112px);
+  }
+}
+
+/* The client's closing line, centred in a glass card. It is a statement of ours, not a quote from a person, so it is a plain paragraph. */
+.quote {
+  text-align: center;
+}
+.quoteText {
+  max-width: 30ch;
+  margin: 0 auto;
+  padding: clamp(8px, 2vw, 20px) 0;
+  color: var(--c-fg);
+  font-size: clamp(1.375rem, 1rem + 1.6vw, 2rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}

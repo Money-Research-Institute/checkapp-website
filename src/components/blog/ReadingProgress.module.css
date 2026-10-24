@@ -1,0 +1,25 @@
+.track {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 65; /* above the page, below the header (70) so the open menu covers it */
+  height: 3px;
+  pointer-events: none;
+}
+.fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-brand), var(--c-mint));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+@media (forced-colors: active) {
+  .fill {
+    background: Highlight;
+  }
+}
+@media print {
+  .track {
+    display: none;
+  }
+}

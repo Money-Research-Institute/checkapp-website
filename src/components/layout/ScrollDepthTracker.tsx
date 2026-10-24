@@ -10,6 +10,8 @@ export function ScrollDepthTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // No analytics key, no scroll listener.
+    if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
     const reached = new Set<number>();
 
     function handleScroll() {

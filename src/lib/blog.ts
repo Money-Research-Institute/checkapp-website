@@ -4,6 +4,9 @@ import matter from 'gray-matter';
 
 const BLOG_DIR = path.join(process.cwd(), 'content/blog');
 
+/** Default byline photo: a 216px WebP (72px at 3x) made from the original portrait. */
+export const DEFAULT_AUTHOR_IMAGE = '/pages/blog/ed-musinski-216.webp';
+
 export type BlogAuthor = {
   name: string;
   role: string;
@@ -56,7 +59,7 @@ function parsePost(filename: string): BlogPost {
   const DEFAULT_AUTHOR: BlogAuthor = {
     name: 'Ed Musinski',
     role: 'Chief Science Consultant',
-    image: '/assets/photos/ed-musinski.png',
+    image: DEFAULT_AUTHOR_IMAGE,
   };
 
   // Handle both object and string author formats
@@ -192,17 +195,38 @@ export function getFourPMedicinePosts(limit = 4): BlogPostMeta[] {
   return ordered.slice(0, limit);
 }
 
+/**
+ * Strip the inline Markdown a heading can carry, so the TOC shows (and the id is built from) what a reader sees:
+ * links keep their label, emphasis and code lose their marks.
+ */
+export function cleanHeadingText(raw: string): string {
+  return raw
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*`~]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * The anchor id for a heading. The MDX `h2` component and `extractHeadings` both go through this, so the TOC links
+ * always land on a real id. (The rule is the long-standing one: lower case, letters/digits/hyphens, spaces to hyphens.)
+ */
+export function headingSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-');
+}
+
 export function extractHeadings(content: string): { id: string; text: string }[] {
   const headingRegex = /^## (.+)$/gm;
   const headings: { id: string; text: string }[] = [];
   let match: RegExpExecArray | null;
 
   while ((match = headingRegex.exec(content)) !== null) {
-    const text = match[1];
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-');
+    const text = cleanHeadingText(match[1]);
+    const id = headingSlug(text);
+    if (!id) continue;
     headings.push({ id, text });
   }
 

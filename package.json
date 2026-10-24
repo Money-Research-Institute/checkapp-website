@@ -12,31 +12,33 @@
     "test:webhooks": "node --experimental-strip-types src/lib/leadsWebhook.test.ts",
     "test:publish-date": "node --experimental-strip-types scripts/check-publish-dates.test.ts",
     "test": "npm run test:webhooks && npm run test:publish-date",
-    "assets:sync": "bash scripts/sync-assets.sh",
-    "og:generate": "node scripts/generate-og-image.js"
+    "check:lang-fonts": "node scripts/check-lang-fonts.mjs",
+    "og:generate": "node --experimental-strip-types scripts/generate-og-image.js",
+    "qa": "node scripts/qa/check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "@vercel/analytics": "^2.0.1",
-    "framer-motion": "^12.40.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.17.0",
-    "next": "16.2.7",
+    "next": "16.4.2",
     "next-mdx-remote": "^6.0.0",
     "next-sitemap": "^4.2.3",
     "posthog-js": "^1.381.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
+    "eslint": "^10.13.0",
+    "eslint-config-next": "16.4.2",
+    "playwright-core": "^1.64.1",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "~6.0.3"
   }
 }

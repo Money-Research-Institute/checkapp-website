@@ -1,0 +1,133 @@
+/*
+ * Phones: a slim card at the bottom edge. The CTA bar steps aside while it is open (MobileCtaBar), so nothing is stacked
+ * under it. md and up: one row. Short landscape screens: a one-row strip, ~52px tall.
+ * `data-held`: laid out (CookieConsent measures it) but invisible until it clears every data-critical element.
+ */
+.wrap {
+  position: fixed;
+  z-index: 60;
+  inset: auto max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 8px)
+    max(12px, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+.wrap[data-held] {
+  visibility: hidden;
+}
+.card {
+  --edge: linear-gradient(135deg, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.05));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 880px;
+  margin-inline: auto;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: var(--c-surface-b);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+  pointer-events: auto;
+}
+.text {
+  margin: 0;
+  color: var(--c-fg-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+.link {
+  color: var(--c-mint);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap; /* a label that wraps makes the card taller; the Russian one is shortened instead */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.primary {
+  background: var(--c-brand);
+  color: var(--c-fg);
+}
+.secondary {
+  background: transparent;
+  color: var(--c-fg);
+}
+/* 320 to 360: two labels share a 270px row. */
+@media (max-width: 360px) {
+  .btn {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+@media (min-width: 768px) {
+  .wrap {
+    bottom: 16px;
+  }
+  .card {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 20px;
+  }
+  .text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .btn {
+    flex: none;
+    padding: 0 16px;
+  }
+}
+/* Short landscape screens (any width): one slim strip across the bottom instead of a tall corner card. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .wrap {
+    inset: auto max(8px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px))
+      max(8px, env(safe-area-inset-left, 0px));
+  }
+  .card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 6px 4px 14px;
+    border-radius: 16px;
+  }
+  .text {
+    flex: 1;
+    font-size: 12.5px;
+    line-height: 16px;
+  }
+  .actions {
+    flex: none;
+  }
+  .btn {
+    flex: none;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .card {
+    border: 1px solid CanvasText;
+  }
+}

@@ -4,7 +4,6 @@ import { getQueueStats } from './queue';
 import { ensureRobotsTxt } from './robots';
 import { regenerateSitemap } from './sitemap';
 import { validateArticle } from './validator';
-import { getMinWordCount } from './generator';
 import type { ArticleRequest } from './prompts/types';
 import fs from 'fs';
 import path from 'path';

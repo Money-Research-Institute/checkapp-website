@@ -1,0 +1,50 @@
+/*
+ * Atmosphere utilities. Everything here is decoration: aria-hidden or pointer-events none, never carrying meaning.
+ */
+@layer components {
+  /* ---- gradient stroke ("edge"): a 1px ring painted with --edge, via a masked ::before ----
+     .fx-edge  { --edge-w: 1px; --edge: var(--c-glass-edge); }   (width and paint are overridable per component) */
+  .fx-edge {
+    position: relative;
+  }
+  .fx-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--edge-w, 1px);
+    background: var(--edge, var(--c-glass-edge));
+    opacity: var(--edge-a, 1);
+    pointer-events: none;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  @media (forced-colors: active) {
+    .fx-edge::before {
+      background: CanvasText;
+      opacity: 0.4;
+    }
+  }
+
+  /* ---- .fx-dither: a masked noise layer over near-black gradients, to break 8-bit banding ----
+     Needs the noise tile (public/landing/_shared/noise-128.png). The root layout publishes its URL, base-path safe,
+     as --noise-url, because CSS url() ignores GITHUB_PAGES_BASE_PATH.
+     Tune per use: --dither-a (default .04), --dither-mask (restrict it to the glow region). */
+  .fx-dither {
+    position: relative;
+    isolation: isolate;
+  }
+  .fx-dither::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--noise-url, url("/landing/_shared/noise-128.png"));
+    background-size: 128px 128px;
+    opacity: var(--dither-a, 0.04);
+    mask-image: var(--dither-mask, none);
+    -webkit-mask-image: var(--dither-mask, none);
+  }
+}

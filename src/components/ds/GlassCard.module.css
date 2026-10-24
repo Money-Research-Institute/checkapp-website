@@ -1,0 +1,32 @@
+.card {
+  position: relative;
+  overflow: clip;
+  border-radius: var(--radius-card);
+  background: var(--c-glass);
+}
+.padded {
+  padding: clamp(20px, 3vw, 32px);
+}
+.content {
+  position: relative;
+  z-index: 1;
+}
+.glow {
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: var(--c-brand-deep);
+  opacity: 0.6;
+  filter: blur(50px);
+  transform: scale(1.35);
+  pointer-events: none;
+}
+.glowA {
+  top: -25px;
+  left: -25px;
+}
+.glowB {
+  right: -25px;
+  bottom: -9px;
+}

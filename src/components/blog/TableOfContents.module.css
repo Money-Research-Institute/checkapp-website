@@ -1,0 +1,113 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border-left: 2px solid rgb(255 255 255 / 0.12);
+  color: var(--c-fg-70);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.link[aria-current="location"] {
+  border-left-color: var(--c-accent);
+  color: var(--c-fg);
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .link:hover {
+    border-left-color: var(--c-mint);
+    color: var(--c-fg);
+  }
+}
+
+/* ---- aside: sticky column, 1024px and up ---- */
+.aside {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .aside {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+    display: block;
+    max-height: calc(100dvh - var(--header-h) - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+.label {
+  margin: 0 0 8px;
+  padding-left: 14px;
+  color: var(--c-fg-60);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- inline: collapsed disclosure, below 1024px ---- */
+.inline {
+  margin-bottom: 2rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 16px;
+  background: var(--c-glass);
+}
+@media (min-width: 1024px) {
+  .inline {
+    display: none;
+  }
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 0 20px;
+  color: var(--c-fg);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.summary::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.inline[open] .summary::after {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+.inline nav {
+  padding: 0 8px 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .summary::after,
+  .link {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .link[aria-current="location"] {
+    border-left-color: Highlight;
+  }
+  .inline {
+    border-color: CanvasText;
+  }
+}

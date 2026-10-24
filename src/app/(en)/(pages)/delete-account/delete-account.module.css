@@ -1,0 +1,6 @@
+/* A single readable column, centred. The form card fills it; the page never needs a second track. */
+.form {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+}

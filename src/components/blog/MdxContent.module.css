@@ -1,0 +1,179 @@
+/*
+ * Article typography on top of ds/Prose: Manrope 17-18px / 1.7 at a 68ch measure, light-on-black text at AA or better,
+ * and the MDX elements Prose does not know about (labelled table scroller, fixed-ratio images, callouts).
+ * Selectors start with `div.article` so they beat Prose's `.prose x` rules whatever the stylesheet order.
+ */
+div.article {
+  --ink: rgb(255 255 255 / 0.82); /* ~12:1 on black */
+  max-width: 68ch;
+  color: var(--ink);
+  font-size: var(--blog-fs, clamp(1.0625rem, 1.03rem + 0.12vw, 1.125rem));
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+/* The opening paragraph is the standfirst. */
+div.article > p:first-child {
+  color: var(--c-fg-body);
+  font-size: 1.12em;
+  line-height: 1.6;
+}
+
+div.article p,
+div.article ul,
+div.article ol {
+  margin-bottom: 1.25em;
+}
+div.article h2 {
+  margin: 2.75em 0 0.75em;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+div.article h3 {
+  margin: 2em 0 0.5em;
+  font-size: 1.3em;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+div.article h2 + p,
+div.article h3 + p {
+  margin-top: 0;
+}
+div.article li {
+  margin-bottom: 0.5em;
+  padding-left: 0.25em;
+}
+div.article li > p {
+  margin-bottom: 0.5em;
+}
+div.article li > ul,
+div.article li > ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+div.article strong {
+  color: var(--c-fg);
+  font-weight: 700;
+}
+div.article a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+/* "Try CheckApp free ... [Get CheckApp Free](/download/)": the closing call to action every article carries. */
+div.article p:has(> a[href$="/download/"]:last-child) {
+  margin: 2em 0;
+  padding: 1.25rem 1.5rem;
+  border-left: 3px solid var(--c-accent);
+  border-radius: 0 16px 16px 0;
+  background: rgb(72 203 59 / 0.07);
+  color: var(--c-fg-body);
+}
+/* ...and the italic disclaimer after it: small, set apart. */
+div.article > p:last-child:has(> em:only-child) {
+  margin: 2em 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--c-fg-60);
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* ---- blockquote ---- */
+div.article blockquote {
+  margin: 2em 0;
+  padding: 1.25rem 1.5rem;
+  border: 0;
+  border-left: 3px solid var(--c-accent);
+  border-radius: 0 16px 16px 0;
+  background: rgb(72 203 59 / 0.07);
+  color: var(--c-fg-body);
+  font-size: 1.05em;
+}
+div.article blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- code ---- */
+div.article pre {
+  margin: 2em 0;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+/* ---- images: width and height are in the markup, the ratio here, so the box exists before the file does ---- */
+div.article .image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 2rem 0;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background: var(--c-surface-b);
+}
+
+/* ---- tables: a labelled region that scrolls on its own, with a faint edge where more is hidden ---- */
+div.article .tableWrap {
+  --edge: rgb(255 255 255 / 0.14);
+  margin: 2rem 0;
+  overflow-x: auto;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 16px;
+  background-color: var(--c-surface-b);
+  background-image:
+    linear-gradient(to right, var(--c-surface-b) 30%, transparent),
+    linear-gradient(to left, var(--c-surface-b) 30%, transparent),
+    radial-gradient(farthest-side at 0 50%, var(--edge), transparent),
+    radial-gradient(farthest-side at 100% 50%, var(--edge), transparent);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-size: 28px 100%, 28px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+div.article .tableWrap table {
+  width: 100%;
+  min-width: 34rem;
+  font-size: 0.9375em;
+}
+div.article .tableWrap th,
+div.article .tableWrap td {
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  line-height: 1.55;
+  text-align: left;
+  vertical-align: top;
+}
+div.article .tableWrap thead th {
+  background: rgb(255 255 255 / 0.05);
+  color: var(--c-fg);
+  font-weight: 700;
+  white-space: normal;
+}
+div.article .tableWrap td {
+  color: var(--ink);
+}
+div.article .tableWrap td:first-child {
+  color: var(--c-fg);
+  font-weight: 600;
+}
+
+@media (prefers-contrast: more) {
+  div.article {
+    --ink: #fff;
+  }
+}
+@media (forced-colors: active) {
+  div.article blockquote,
+  div.article p:has(> a[href$="/download/"]:last-child) {
+    border-left-color: CanvasText;
+  }
+  div.article .tableWrap,
+  div.article .image {
+    border-color: CanvasText;
+  }
+}

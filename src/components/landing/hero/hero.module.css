@@ -1,0 +1,98 @@
+/*
+ * Hero: the client's copy and one static phone. No motion, no layers.
+ * Phones: a centred stack, copy first, so the CTA is in the first view. From 900px (and on a landscape phone): copy left, phone right.
+ */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: clamp(32px, 8vw, 56px);
+  padding: calc(var(--header-h) + clamp(16px, 5vw, 40px)) max(var(--gutter), calc((100% - var(--measure-narrow)) / 2))
+    clamp(40px, 8vw, 72px);
+  overflow-x: clip;
+}
+
+/* The page's one light: a green pool behind the phone. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 90% 34% at 50% 66%, rgb(72 203 59 / 0.3), transparent 70%);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.keep {
+  white-space: nowrap;
+}
+
+.lede {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--c-fg-body);
+  font-size: var(--fs-lede);
+  line-height: 1.5;
+  letter-spacing: var(--ls-ui);
+  text-wrap: pretty;
+}
+
+.fine {
+  margin: 0;
+  color: var(--c-sub-on-black);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.stage {
+  display: flex;
+  justify-content: center;
+}
+
+.phone {
+  display: block;
+  width: min(100%, 280px);
+  height: auto;
+  filter: drop-shadow(0 24px 64px rgb(72 203 59 / 0.22));
+}
+
+@media (min-width: 900px), (orientation: landscape) and (max-height: 500px) and (min-width: 560px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    padding-bottom: 48px;
+  }
+  .hero::before {
+    background: radial-gradient(ellipse 40% 50% at 74% 52%, rgb(72 203 59 / 0.3), transparent 70%);
+  }
+  .copy {
+    align-items: flex-start;
+    margin-inline: 0;
+    text-align: start;
+  }
+  .hero .title {
+    text-align: start;
+    font-size: clamp(2.25rem, 0.6rem + 4vw, 4rem); /* 46 at 900, 51 at 1024, 64 from 1360: the CTA stays in the first view */
+  }
+  .phone {
+    width: min(100%, 380px);
+  }
+}
+
+/* A phone on its side has about 300px under the header: tighter type and gaps, so the CTA is as close to the fold as the copy allows. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .copy {
+    gap: 12px;
+  }
+  .hero .title {
+    font-size: clamp(1.5rem, 8svh, 2.25rem);
+  }
+}

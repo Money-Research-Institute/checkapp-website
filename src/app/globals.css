@@ -1,182 +1,146 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/motion.css";
+@import "../styles/fx.css";
 
-/* CheckApp Figma v2.0 — same tokens as the mobile app (`constants/designTokens.ts`) */
-:root {
-  --color-primary: #588317;
-  --color-primary-light: #93b050;
-  --color-primary-dark: #658532;
-  --color-forest: #0e1f01;
-  --color-forest-mid: #283b0f;
-  --color-bg-warm: #f6f8f0;
-  --color-card: #ffffff;
-  --color-text: #2d2d2d;
-  --color-text-primary: #2d2d2d;
-  --color-text-secondary: #5c5c5c;
-  --color-accent-amber: #ff8c00;
-  --color-bubble-didi: #e7eedd;
-  --color-bubble-user: #e8e8e8;
-  --color-line: rgb(45 45 45 / 0.08);
-  --shadow-soft: 0 1px 2px rgb(14 31 1 / 0.04), 0 12px 40px rgb(14 31 1 / 0.06);
-}
-
+/*
+ * Tailwind v4 theme: utilities such as bg-brand, text-body, bg-surface-a, font-ui exist because they are mapped
+ * here to the --c-* tokens in src/styles/tokens.css. `inline` makes the utilities emit var(--c-*) directly.
+ * Radii, spacing and layout widths stay plain tokens (var(--radius-card), var(--measure), ...).
+ */
 @theme inline {
-  --color-primary: var(--color-primary);
-  --color-primary-light: var(--color-primary-light);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-forest: var(--color-forest);
-  --color-forest-mid: var(--color-forest-mid);
-  --color-bg-warm: var(--color-bg-warm);
-  --color-card: var(--color-card);
-  --color-text: var(--color-text);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-accent-amber: var(--color-accent-amber);
-  --color-bubble-didi: var(--color-bubble-didi);
-  --color-bubble-user: var(--color-bubble-user);
-  --font-sans: var(--font-dm-sans);
-  --font-display: var(--font-bricolage);
-  --font-mono: var(--font-dm-mono);
+  --color-bg: var(--c-bg);
+  --color-surface-a: var(--c-surface-a);
+  --color-surface-b: var(--c-surface-b);
+  --color-tile-outer: var(--c-tile-outer);
+  --color-tile-border: var(--c-tile-border);
+  --color-tile-inner: var(--c-tile-inner);
+  --color-glass: var(--c-glass);
+  --color-brand: var(--c-brand);
+  --color-brand-deep: var(--c-brand-deep);
+  --color-accent: var(--c-accent);
+  --color-mint: var(--c-mint);
+  --color-bracket: var(--c-bracket);
+  --color-fg: var(--c-fg);
+  --color-body: var(--c-fg-body);
+  --color-fg-70: var(--c-fg-70);
+  --color-fg-60: var(--c-fg-60);
+  --color-fg-50: var(--c-fg-50);
+  --color-fg-40: var(--c-fg-40);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-sub-on-black);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-ui: var(--font-inter), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-brand: var(--font-bricolage), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@layer base {
   html {
-    scroll-behavior: auto;
+    background: var(--c-bg);
+    color: var(--c-fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Anchors (#how-it-works, #faqs) clear the fixed header; the CTA bar never hides a focused element. */
+    scroll-padding-top: var(--header-h);
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  body {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--c-bg);
+    color: var(--c-fg);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+  }
+
+  main {
+    flex: 1 0 auto;
+  }
+
+  ::selection {
+    background: var(--c-brand);
+    color: var(--c-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 3px;
+  }
+
+  /* The bar is 72px tall plus the home-indicator inset; the page and anchors leave room for it. */
+  @media (max-width: 767.98px) {
+    html {
+      scroll-padding-bottom: calc(var(--cta-bar-h) + env(safe-area-inset-bottom, 0px));
+    }
+    body {
+      padding-bottom: calc(var(--cta-bar-h) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+  /* Short landscape: the bar is not shown (MobileCtaBar.module.css), so nothing is reserved for it. Must follow the rule above. */
+  @media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+    html {
+      scroll-padding-bottom: 0;
+    }
+    body {
+      padding-bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      /* `none`, not a 0.01ms duration: with the default `transition-property: all`, a 0.01ms transition still holds its start
+         value for one frame, so the first container-query style change painted the hero in UA defaults (CLS 0.5). */
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline-color: Highlight;
+    }
   }
 }
 
-body {
-  background: var(--color-bg-warm);
-  color: var(--color-text);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
-}
-
-::selection {
-  background: color-mix(in srgb, var(--color-primary) 28%, white);
-  color: var(--color-forest);
-}
-
-h1, h2, h3, h4 {
-  font-family: var(--font-display), system-ui, sans-serif;
-  letter-spacing: -0.02em;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
-}
-
-@utility surface {
-  border-radius: 1.75rem;
-  border: 1px solid var(--color-line);
-  background: var(--color-card);
-  box-shadow: var(--shadow-soft);
-}
-
-@utility surface-hover {
-  transition: box-shadow 200ms ease, transform 200ms ease;
-  &:hover {
-    box-shadow: 0 1px 2px rgb(14 31 1 / 0.05), 0 18px 48px rgb(14 31 1 / 0.1);
-  }
-}
-
-.prose-checkapp h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-  color: var(--color-text);
-}
-
-.prose-checkapp h3 {
-  font-size: 1.25rem;
+/* Keyboard users get a way past the header. Parked above the viewport (not sr-only: it must keep a 44px box). */
+.skip-link {
+  position: fixed;
+  top: -120px;
+  left: 16px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: #000;
   font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 12px;
 }
 
-.prose-checkapp p {
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: var(--color-text-secondary);
-  margin-bottom: 1.25rem;
+/* 44 x 44 minimum touch targets (WCAG 2.5.8). `tap` sizes the element; `tap-y` only its height. */
+@utility tap {
+  min-width: var(--tap);
+  min-height: var(--tap);
+}
+@utility tap-y {
+  min-height: var(--tap);
 }
 
-.prose-checkapp ul {
-  list-style: disc;
-  padding-left: 1.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.prose-checkapp li {
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: var(--color-text-secondary);
-  margin-bottom: 0.5rem;
-}
-
-.prose-checkapp a {
-  color: var(--color-primary-dark);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.prose-checkapp strong {
-  color: var(--color-text);
-  font-weight: 600;
-}
-
-.prose-checkapp .prose-table-wrap table {
-  width: 100%;
-  min-width: 28rem;
-  border-collapse: collapse;
-}
-
-.prose-checkapp .prose-table-wrap th,
-.prose-checkapp .prose-table-wrap td {
-  padding: 0.875rem 1.25rem;
-  text-align: left;
-  vertical-align: top;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.prose-checkapp .prose-table-wrap th {
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 700;
-  color: var(--color-text);
-  white-space: nowrap;
-}
-
-.prose-checkapp .prose-table-wrap td {
-  color: var(--color-text-secondary);
-}
-
-.prose-checkapp .prose-table-wrap tbody tr:last-child td,
-.prose-checkapp .prose-table-wrap tbody tr:last-child th {
-  border-bottom: none;
-}
-
-.prose-checkapp .prose-table-wrap tbody tr:hover {
-  background: color-mix(in srgb, var(--color-primary) 6%, white);
-}
-
-.prose-checkapp hr {
-  margin: 2.5rem 0;
-  border: none;
-  border-top: 1px solid var(--color-line);
+/* Standard page gutter and measure; sections that need a different box set their own. */
+@utility gutter {
+  padding-inline: var(--gutter);
 }

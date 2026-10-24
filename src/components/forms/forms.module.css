@@ -1,0 +1,196 @@
+/*
+ * Shared layout for the form cards (contact, delete account) and the auth-callback card.
+ * The controls themselves (Field, Input, Textarea, Checkbox, FormMessage, Button) come from the design system;
+ * this file only arranges them. Everything is fluid: nothing here assumes a width between 320 and 3440 px.
+ */
+
+/* The glass card a form lives in. The pages decide how wide it may grow. */
+.card {
+  width: 100%;
+}
+
+.form,
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* The heading of a card. It is also the focus target when a step changes, so it takes programmatic focus quietly. */
+.title {
+  margin: 0;
+  color: var(--c-fg);
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.title:focus {
+  outline: none;
+}
+
+.text {
+  margin: 0;
+  color: var(--c-fg-70);
+  font-size: 1rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+  overflow-wrap: anywhere; /* a long email address must never push the card wider than a 320px screen */
+}
+.text strong {
+  color: var(--c-fg);
+  font-weight: 600;
+}
+
+.link {
+  color: var(--c-mint);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .link:hover {
+    color: var(--c-fg);
+  }
+}
+/* A link inside a FormMessage keeps the message colour so it reads as part of the sentence. */
+.messageLink {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/*
+ * The Privacy Policy link sits inside the consent sentence. Its hit area is a full 44px tall (padding), while negative
+ * margins give the padding back to the line, so the sentence keeps its rhythm.
+ */
+.consentLink {
+  display: inline-block;
+  padding-block: 10px;
+  margin-block: -10px;
+}
+.messageText {
+  margin: 0;
+}
+
+/* An error for a control that has no <Field> around it (the consent checkbox). Matches the ds field error. */
+.fieldError {
+  margin: -8px 0 0;
+  color: #ff8a80;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+/*
+ * Submit buttons. The ds Button is a fixed 48px tall pill, which would clip a long label that wraps on a 320px
+ * screen or at 200 % zoom, so here it may grow. `.actions .submit` out-ranks the ds single-class rules.
+ */
+.actions .submit {
+  height: auto;
+  min-height: 48px;
+  padding-block: 10px;
+  text-align: center;
+  line-height: 1.25;
+}
+@media (max-width: 479.98px) {
+  .actions .submit {
+    width: 100%;
+  }
+}
+
+/* The irreversible step: the confirm button is red, not the brand green, so it never looks like "next". */
+.actions .danger {
+  border-color: rgb(255 255 255 / 0.3);
+  background: #b3261e; /* white text on it is 6.5 : 1 */
+  color: var(--c-fg);
+}
+@media (hover: hover) {
+  .actions .danger:hover {
+    background: color-mix(in srgb, #b3261e, #fff 9%);
+  }
+}
+
+/* Visually hidden but announced: the persistent live region and any label that sighted users do not need. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- auth callback status ---------- */
+.statusBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+/*
+ * The message changes from one line ("Redirecting to the app…") to the three-line fallback. Both sit in one grid cell
+ * and the longest is always laid out (invisibly), so the card never changes height and the footer below never shifts.
+ */
+.statusText {
+  display: grid;
+  width: 100%;
+}
+.statusLive,
+.statusSizer {
+  grid-area: 1 / 1;
+  margin: 0;
+  color: var(--c-fg-70);
+  font-size: 1rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.statusSizer {
+  visibility: hidden;
+}
+.spinner {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgb(255 255 255 / 0.2);
+  border-top-color: var(--c-mint);
+  border-radius: 50%;
+}
+/* Once the fallback shows, nothing is loading any more: the slot stays (no shift) but the ring goes. */
+.spinner[data-stopped] {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spin 0.9s linear infinite;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (forced-colors: active) {
+  .spinner {
+    border-color: GrayText;
+    border-top-color: Highlight;
+  }
+  .actions .danger {
+    border-color: ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+}

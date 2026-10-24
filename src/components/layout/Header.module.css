@@ -1,0 +1,364 @@
+.header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 70; /* above the cookie notice (60) so an open menu is never covered by it */
+  padding-top: 8px;
+  pointer-events: none; /* the bar and the menu opt back in; the strip around them never blocks the page */
+}
+
+/*
+ * The scrim: what the nav reads against at the top of the page, before the glass fades in. The hero's green wash runs under the
+ * right-hand end of the nav row, and 16px grey links on it measured 2.4 to 3.3:1 ("Blog", "Features" on a landscape phone). A
+ * black wash that holds through the nav row and fades out below it puts the lightest hero light behind the links at about 45 %
+ * strength, where the links reach 7:1 or better (measured at 844 x 390 and 932 x 430), with no hard edge anywhere on the hero.
+ * It hands over to the glass on scroll (the glass is denser, so the two never add up) and is gone while the menu covers the page.
+ * Decoration only: pointer-events none.
+ */
+.header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -44px 0;
+  z-index: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.5) 0%,
+    rgb(0 0 0 / 0.44) 52%,
+    rgb(0 0 0 / 0.2) 76%,
+    rgb(0 0 0 / 0) 100%
+  );
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.header[data-scrolled]::before,
+.header[data-open]::before {
+  opacity: 0;
+}
+
+.bar {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: calc(var(--measure-narrow) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  pointer-events: auto;
+}
+
+.nav {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 56px;
+}
+
+/* The glass sits behind the nav and reaches 16px past each side, so fading it in never moves the logo or the links. */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0 -16px;
+  z-index: -1;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 0.78); /* dense enough that article text never prints through the logo */
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.header[data-scrolled] .nav::before,
+.header[data-open] .nav::before {
+  opacity: 1;
+}
+
+.brand {
+  flex: none; /* the logo and the wordmark never give up width to the links or the pill */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  color: var(--c-fg);
+  text-decoration: none;
+}
+.wordmark {
+  font-family: var(--font-brand);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+.links {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding-inline: 4px;
+  /* Not --c-fg-70: that was the link colour that fell to 3.1:1 over the hero's green. The current page stays a step brighter
+     (pure white), which is what tells the two apart. The faint shadow is a local halo for the same reason. */
+  color: rgb(255 255 255 / 0.86);
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.4);
+  font-size: 16px;
+  line-height: 27px;
+  letter-spacing: -0.2px;
+  white-space: nowrap; /* the Russian labels are longer: never wrap inside the 56px bar */
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.link[aria-current="page"] {
+  color: var(--c-fg);
+}
+/* "EN": a link on a Russian page whose target is an English page. The spoken cue is a sibling .sr-only span. */
+.lang {
+  flex: none;
+  margin-inline-start: 6px;
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 14px;
+  opacity: 0.75;
+}
+.panelLink .lang {
+  margin-inline-start: 10px;
+  font-size: 12px;
+  line-height: 16px;
+}
+@media (hover: hover) {
+  .link:hover {
+    color: var(--c-fg);
+  }
+}
+
+.cta {
+  display: none;
+}
+
+.burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin-right: -10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--c-fg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.burgerLines {
+  display: grid;
+  gap: 5px;
+  width: 22px;
+}
+.burgerLines span {
+  display: block;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+.header[data-open] .burgerLines span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.header[data-open] .burgerLines span:nth-child(2) {
+  opacity: 0;
+}
+.header[data-open] .burgerLines span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Full-screen menu (below md). */
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: calc(var(--header-h) + 8px) var(--gutter) calc(24px + env(safe-area-inset-bottom, 0px));
+  background: var(--c-bg);
+  overflow-y: auto;
+  pointer-events: auto;
+}
+.panel[hidden] {
+  display: none;
+}
+.panel nav {
+  flex: 1;
+}
+.panelLinks {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.panelLink {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  color: var(--c-fg-70);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.panelLink[aria-current="page"] {
+  color: var(--c-fg);
+}
+
+/*
+ * The bar has three shapes:
+ *   < 768              logo + burger (the menu holds the links and the pill)
+ *   768 to 1023, ru    logo + pill + burger: the Russian labels are ~130px longer and two links carry an "EN" tag, so the links wait for 1024
+ *   768 up (en), 1024 up (ru)   logo + links + pill
+ * The shell never clips: at every width the pill's right edge stays inside the gutter. Keep FULL_BAR_FROM in Header.tsx in step.
+ */
+@media (min-width: 768px) {
+  .header {
+    padding-top: 24px;
+  }
+  .nav {
+    gap: 24px;
+  }
+  .cta {
+    display: block;
+  }
+  .header:not([data-lang="ru"]) .links {
+    display: flex;
+    gap: clamp(8px, 2.8vw, 36px);
+  }
+  .header:not([data-lang="ru"]) .burger,
+  .header:not([data-lang="ru"]) .panel {
+    display: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .header[data-lang="ru"] .cta {
+    margin-left: auto; /* brand left; pill and burger together on the right */
+  }
+  .header[data-lang="ru"] .nav {
+    gap: 16px;
+  }
+}
+@media (min-width: 1024px) {
+  .header[data-lang="ru"] .links {
+    display: flex;
+    gap: clamp(8px, 2.8vw, 36px);
+  }
+  .header[data-lang="ru"] .burger,
+  .header[data-lang="ru"] .panel {
+    display: none;
+  }
+}
+
+/*
+ * Landscape phones (<= 500px tall: 844 x 390, 915 x 412, 932 x 430, and the 568 to 740 wide ones that use the burger).
+ * The 104px desktop header would cover 27 % of the screen and stand 24px above a hero whose text starts at the 16px edge.
+ *   - 8px from the top and a 48px bar: --header-h is 64px here (tokens.css), so the hero's top padding follows;
+ *   - the same 16px edge as the hero (and the notch inset), the glass reaching only 8px past the logo;
+ *   - a 44px download pill, and none at all while the page's own button is on screen (data-cta-covered);
+ *   - the open menu in two columns: four 52px rows in one column (240px) pushed its button below the fold at 390 tall.
+ * Keep the 500px threshold in step with the hero's landscape-phone layout (landing/hero/hero.module.css) and --header-h.
+ */
+@media (orientation: landscape) and (max-height: 500px) {
+  .header {
+    padding-top: 8px;
+  }
+  .bar {
+    padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  }
+  .nav {
+    gap: 16px;
+    height: 48px;
+  }
+  .nav::before {
+    inset: 0 -8px;
+  }
+  .cta {
+    --cta-nav-h: 44px;
+  }
+  /* Hidden, not removed: display:none took the pill's ~270px out of the row, so the links slid right and back every time the page's
+     own button scrolled on and off screen (CLS 0.06 to 0.12 at 844 x 390). The slot stays, the pill just fades. */
+  .header[data-cta-covered] .cta {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .panel {
+    gap: 12px;
+    padding: calc(var(--header-h) + 8px) max(16px, env(safe-area-inset-right, 0px))
+      calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .panelLinks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+  .panelLink {
+    min-height: 52px;
+    font-size: 20px;
+  }
+}
+
+/*
+ * Landscape phones below 768px (667 x 375, 740 x 360): the burger layout, but the phone's bottom bar is hidden (it and this bar took a
+ * third of the screen, MobileCtaBar.module.css), so the download pill moves up here, as it does from 768 (844 x 390). Logo left, pill
+ * and burger together on the right; the pill steps aside, as above, while the page's own button is on screen. From 480: narrower,
+ * there is no room for it beside the logo and the burger, and the bottom bar stays. Keep the queries in step with the bar's.
+ */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 480px) and (max-width: 767.98px) {
+  .cta {
+    display: block;
+    margin-left: auto;
+  }
+  .nav {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header::before,
+  .nav::before,
+  .burgerLines span,
+  .link {
+    transition: none;
+  }
+}
+@media (prefers-contrast: more), (forced-colors: active) {
+  .link {
+    color: var(--c-fg);
+    text-shadow: none;
+  }
+  .nav::before {
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: CanvasText;
+  }
+}
+@media (prefers-contrast: more) {
+  .header::before {
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.92) 0%, rgb(0 0 0 / 0.92) 60%, rgb(0 0 0 / 0) 100%);
+  }
+}
+@media (forced-colors: active) {
+  .header::before {
+    display: none; /* the system paints the page; a wash would only be dropped */
+  }
+}

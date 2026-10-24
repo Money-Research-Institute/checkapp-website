@@ -6,6 +6,9 @@
  */
 export const APP_DOWNLOAD_URL = '/download/';
 
+/** The Russian twin of the download page: where the main call to action of `/ru/` goes (see `localizeHref` in paths.ts). */
+export const RUSSIAN_DOWNLOAD_PATH = '/ru/download/';
+
 /**
  * Direct APK for Android (Kave EAS build fd763319, 2026-08).
  * File is ~148MB so it cannot live in this GitHub Pages repo (100MB limit).
@@ -35,13 +38,27 @@ export const SUPABASE_ANON_KEY =
 
 export const ACCOUNT_DELETION_PATH = '/delete-account/';
 
-export const SITE_NAME = 'CheckApp';
+/** The brand is spelled in lower case, as the client asks (docs/landing.md). The legal pages keep their own text. */
+export const SITE_NAME = 'checkapp';
 
-export const NAV_LINKS = [
-  { href: '/how-it-works', label: 'How It Works' },
-  { href: '/features', label: 'Features' },
-  { href: '/blog', label: 'Blog' },
-] as const;
+/**
+ * The header's links. `key` picks the label from the shell dictionary (src/i18n), so the same list serves every language.
+ * "Home" is not here: it points at the landing page of the current region, which the header knows.
+ */
+export const NAV_LINKS: readonly {
+  href: string;
+  key: 'howItWorks' | 'features' | 'blog';
+  /**
+   * `false` keeps the router from prefetching the page. The blog's cover photos come from a third party: prefetching
+   * /blog/ from the header pulled one in (and opened a connection to it) on every page load, before the visitor had
+   * answered the cookie notice.
+   */
+  prefetch?: false;
+}[] = [
+  { href: '/how-it-works/', key: 'howItWorks' },
+  { href: '/features/', key: 'features' },
+  { href: '/blog/', key: 'blog', prefetch: false },
+];
 
 export const SOCIAL_LINKS = {
   instagram: 'https://instagram.com/checkapp',
@@ -50,3 +67,12 @@ export const SOCIAL_LINKS = {
 } as const;
 
 export const DEFAULT_OG_IMAGE = '/og-default.png';
+/** The Russian landing page's share image: the same card with the client's Russian headline (`npm run og:generate`). */
+export const DEFAULT_OG_IMAGE_RU = '/og-default-ru.png';
+
+/** The logo for JSON-LD: the 3D DiDi icon, full-bleed 512 (docs/brand.md). Absolute, because structured data needs it. */
+export const LOGO_PATH = '/brand/icons/icon-512.png';
+export const LOGO_URL = `${SITE_URL.replace(/\/$/, '')}${LOGO_PATH}`;
+
+/** Browser chrome colour: the page is pure black. */
+export const THEME_COLOR = '#000000';
