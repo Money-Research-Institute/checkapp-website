@@ -3,11 +3,10 @@
  *
  * A server component with no client code of its own, taking { region } like every landing section: the layout and the art are the
  * same for us, eu, gulf and ru; only the strings change. The page is complete without any JavaScript: the copy, the phone and the
- * cards are plain DOM/PNG layers over the floor poster (T0). The experience engine (src/experience) adds, in order and only when
- * the device earns it: damped pointer parallax on the [data-depth] planes and the [data-once] one-shots (T1), then the "hero-floor"
- * WebGL canvas drawing the poster as a texture (T2, scene.ts).
+ * cards are plain DOM/PNG layers over the floor poster; any motion is CSS (see styles/motion.css), and the finished
+ * frame is the default one.
  *
- * DOM contract (docs/experience-playbook.md): <h1 data-critical="headline"> is the page's only h1, the primary CTA
+ * DOM contract: <h1 data-critical="headline"> is the page's only h1, the primary CTA
  * carries data-critical="primary-cta" and data-hides-cta-bar, the poster <img data-webgl-poster> and the canvas are
  * siblings in one box (.floor) that never changes size when the canvas arrives, each decorative card is aria-hidden on
  * its own, and the phone keeps real alt text. The Header (nav) is foundation's, fixed over the top of this section.
@@ -31,7 +30,6 @@ import { CtaButton } from '@/components/ds/CtaButton';
 import { Eyebrow } from '@/components/ds/Eyebrow';
 import { GradientHeading } from '@/components/ds/GradientHeading';
 import { Picture } from '@/components/ds/Picture';
-import { GlCanvas } from '@/experience/GlCanvas';
 import { APP_DOWNLOAD_URL } from '@/lib/constants';
 import { GaugeCard, MascotCard, ReadingTiles, ResultCard, ScansCard, StreakCard } from './cards';
 import { heroCopy } from './copy';
@@ -117,7 +115,6 @@ export function HeroSection({ region }: SectionProps) {
                 },
               ]}
             />
-            <GlCanvas scene="hero-floor" fit="cover" position="50% 0%" className={s.canvas} />
             <div className={s.floorFade} aria-hidden="true" />
           </div>
 
