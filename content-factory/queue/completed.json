@@ -657,6 +657,36 @@
     ],
     "plannedDate": "2026-11-12",
     "language": "EN",
-    "completedAt": "2026-10-21T13:22:27.539Z"
+    "completedAt": "2026-11-12"
+  },
+  {
+    "id": 16,
+    "cluster": "Hydration",
+    "slug": "electrolytes-hydration-explained",
+    "titleDe": "Electrolytes and Hydration: What You Actually Need to Know",
+    "titleEn": "Electrolytes and Hydration: What You Actually Need to Know",
+    "keywordDe": "electrolytes hydration",
+    "keywordEn": "electrolytes hydration",
+    "lsiKeywords": [
+      "sodium potassium balance",
+      "electrolyte drinks",
+      "mineral hydration",
+      "fluid replacement"
+    ],
+    "format": "Explainer",
+    "category": "Hydration Science",
+    "unsplashQuery": "electrolyte drink sports hydration minerals",
+    "status": "completed",
+    "priority": "medium",
+    "searchVolDe": 2400,
+    "kd": 27,
+    "searchVolEn": 4800,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-01",
+    "language": "EN",
+    "completedAt": "2026-10-24T12:24:39.891Z"
   }
 ]
