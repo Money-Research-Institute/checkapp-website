@@ -66,9 +66,10 @@ export const SOCIAL_LINKS = {
   contact: 'mailto:hello@checkapp.today',
 } as const;
 
-export const DEFAULT_OG_IMAGE = '/og-default.png';
+/** `?v=` is the share-card edition: link previews cache an image by its URL, so a new picture needs a new one. */
+export const DEFAULT_OG_IMAGE = '/og-default.png?v=2';
 /** The Russian landing page's share image: the same card with the client's Russian headline (`npm run og:generate`). */
-export const DEFAULT_OG_IMAGE_RU = '/og-default-ru.png';
+export const DEFAULT_OG_IMAGE_RU = '/og-default-ru.png?v=2';
 
 /** The logo for JSON-LD: the 3D DiDi icon, full-bleed 512 (docs/brand.md). Absolute, because structured data needs it. */
 export const LOGO_PATH = '/brand/icons/icon-512.png';
