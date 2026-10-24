@@ -4,6 +4,7 @@ import { FamiliarSection } from './familiar';
 import { FaqsSection } from './faqs';
 import { FinalCtaSection } from './final-cta';
 import { HeroSection } from './hero';
+import { LandingMotion } from './LandingMotion';
 import { ProcessSection } from './process';
 import { ProjectsSection } from './projects';
 import { TestimonialsSection } from './testimonials';
@@ -30,6 +31,7 @@ export function LandingPage({ region }: SectionProps) {
       <ProcessSection region={region} />
       <FaqsSection region={region} />
       <FinalCtaSection region={region} />
+      <LandingMotion />
     </>
   );
 }
