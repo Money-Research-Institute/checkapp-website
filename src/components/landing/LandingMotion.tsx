@@ -9,6 +9,8 @@ import { useEffect } from 'react';
  *    attribute = finished frame, so no-JS, print and reduced motion see the whole page.
  *  - [data-depth]: pointer parallax on fine pointers; writes the CSS `translate` property, so section motion uses transform/rotate/scale.
  *  - the cursor's light on the hero's glass cards (--mx / --my, painted by styles/fx.css).
+ *  - the final card's rim light: its two lobes travel around the card's edge, facing the pointer and, when the pointer is not
+ *    about, following the card's pass through the viewport (--adx / --ady / --bdx / --bdy, applied by FinalCta.module.css).
  *
  * Mounted once at the end of LandingPage. Ported from the old experience engine's core, minus its WebGL and tier machinery.
  */
@@ -292,10 +294,106 @@ function startSpotlight(reduced: boolean): () => void {
   };
 }
 
+/* ---------------------------------------------------------------- rim light on the final CTA card */
+
+/** The rest centres of the two lobes' clusters (FinalCta.module.css, Figma's blobs): from the top-left and the bottom-right corner. */
+const RIM_A = { x: 19, y: 43 };
+const RIM_B = { x: 54, y: 46.5 };
+/** Where a ray from the centre of a w x h box leaves it, inset by `inset` px, as a point from the box's top-left. */
+function edgePoint(w: number, h: number, angle: number, inset: number): { x: number; y: number } {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  const t = Math.min(w / 2 / Math.max(Math.abs(c), 1e-6), h / 2 / Math.max(Math.abs(s), 1e-6)) - inset;
+  return { x: w / 2 + c * t, y: h / 2 + s * t };
+}
+const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
+/**
+ * The light on the final card's border turns around the card. Lobe A sits on the ray from the card's centre; lobe B on the opposite
+ * one. The ray points at the pointer while it has moved in the last 2.5 s (fine pointers), and otherwise follows the card's pass
+ * through the viewport: at the start of the pass the lobes rest in the Figma corners, and over the pass they travel half a turn.
+ * The angle is eased (shortest way round); the loop sleeps when it has arrived and only runs while the card is on screen.
+ * Reduced motion keeps the lobes at their corners.
+ */
+function startRimLight(reduced: boolean): () => void {
+  const rim = document.querySelector<HTMLElement>('[data-rim]');
+  if (!rim || reduced) return noop;
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const POINTER_MS = 2500;
+
+  let visible = false;
+  let raf = 0;
+  let last = 0;
+  let angle: number | null = null;
+  let px = 0;
+  let py = 0;
+  let movedAt = -Infinity;
+  let wakeTimer = 0;
+
+  function frame(now: number) {
+    const r = rim!.getBoundingClientRect();
+    const w = r.width;
+    const h = r.height;
+    if (!w || !h) return;
+    const home = Math.atan2(RIM_A.y - h / 2, RIM_A.x - w / 2);
+    const usePointer = fine && now - movedAt < POINTER_MS;
+    const progress = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight + h)));
+    const target = usePointer ? Math.atan2(py - (r.top + h / 2), px - (r.left + w / 2)) : home + progress * Math.PI;
+    if (angle === null) angle = home;
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    const diff = wrapAngle(target - angle);
+    angle = Math.abs(diff) < 0.0008 ? target : angle + diff * (1 - Math.exp(-6 * dt));
+
+    const a = edgePoint(w, h, angle, 2);
+    const b = edgePoint(w, h, angle + Math.PI, 2);
+    rim!.style.setProperty('--adx', `${(a.x - RIM_A.x).toFixed(1)}px`);
+    rim!.style.setProperty('--ady', `${(a.y - RIM_A.y).toFixed(1)}px`);
+    rim!.style.setProperty('--bdx', `${(b.x - (w - RIM_B.x)).toFixed(1)}px`);
+    rim!.style.setProperty('--bdy', `${(b.y - (h - RIM_B.y)).toFixed(1)}px`);
+    raf = Math.abs(diff) < 0.0008 ? 0 : requestAnimationFrame(frame);
+  }
+  function wake() {
+    if (raf || !visible) return;
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+  function onMove(event: PointerEvent) {
+    if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+    px = event.clientX;
+    py = event.clientY;
+    movedAt = performance.now();
+    window.clearTimeout(wakeTimer);
+    wakeTimer = window.setTimeout(wake, POINTER_MS + 50); // hand back to the scroll position once the pointer has gone quiet
+    wake();
+  }
+
+  const io = new IntersectionObserver(
+    ([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) wake();
+    },
+    { rootMargin: '200px' },
+  );
+  io.observe(rim);
+  window.addEventListener('scroll', wake, { passive: true });
+  window.addEventListener('resize', wake);
+  if (fine) window.addEventListener('pointermove', onMove, { passive: true });
+  return () => {
+    io.disconnect();
+    window.removeEventListener('scroll', wake);
+    window.removeEventListener('resize', wake);
+    window.removeEventListener('pointermove', onMove);
+    window.clearTimeout(wakeTimer);
+    if (raf) cancelAnimationFrame(raf);
+    for (const name of ['--adx', '--ady', '--bdx', '--bdy']) rim.style.removeProperty(name);
+  };
+}
+
 export function LandingMotion() {
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const stops = [startOnce(reduced), startDepth(reduced), startSpotlight(reduced)];
+    const stops = [startOnce(reduced), startDepth(reduced), startSpotlight(reduced), startRimLight(reduced)];
     return () => stops.forEach((stop) => stop());
   }, []);
   return null;

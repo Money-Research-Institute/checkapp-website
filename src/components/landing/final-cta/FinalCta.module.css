@@ -19,7 +19,7 @@
  * Rules of the road (docs/landing.md): only transform and opacity move, and only inside
  * prefers-reduced-motion: no-preference and @supports (animation-timeline: view()); the DEFAULT style of every element is its
  * final frame; nothing a view() animation touches sits under overflow hidden/auto (clip only); `translate` is left alone
- * (the engine owns it for pointer parallax).
+ * except on the two rim lobes, which LandingMotion moves around the card's edge (--adx / --ady, --bdx / --bdy).
  */
 
 .root {
@@ -81,12 +81,16 @@
   position: absolute;
   inline-size: 1px;
   block-size: 1px;
+  will-change: translate;
 }
+/* The lobes rest in Figma's corners; LandingMotion offsets them (--adx / --ady, --bdx / --bdy) to turn the light round the card. */
 .lobeTl {
   inset: 0 auto auto 0;
+  translate: var(--adx, 0px) var(--ady, 0px);
 }
 .lobeBr {
   inset: auto 0 0 auto;
+  translate: var(--bdx, 0px) var(--bdy, 0px);
 }
 
 .green,
@@ -392,22 +396,6 @@
     opacity: 1;
   }
 }
-@keyframes lobeSlideTl {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(160px);
-  }
-}
-@keyframes lobeSlideBr {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-160px);
-  }
-}
 
 @media (prefers-reduced-motion: no-preference) {
   /* Press: 0.98 here (the ds default is 0.97; reduced motion keeps the ds rule, which is no scale at all). */
@@ -426,17 +414,6 @@
       animation: ctaGlow 1ms linear both;
       animation-timeline: --final-card;
       animation-range: entry 0% entry 100%;
-    }
-    /* The rim hot-spots slide ~160px along the top and bottom edges as the card crosses the viewport. No clock involved. */
-    .lobeTl {
-      animation: lobeSlideTl 1ms linear both;
-      animation-timeline: --final-card;
-      animation-range: cover 0% cover 100%;
-    }
-    .lobeBr {
-      animation: lobeSlideBr 1ms linear both;
-      animation-timeline: --final-card;
-      animation-range: cover 0% cover 100%;
     }
   }
 }

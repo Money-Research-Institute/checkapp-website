@@ -79,8 +79,9 @@ export function FinalCtaSection({ region }: SectionProps) {
       className={styles.root}
     >
       <div className={styles.shell}>
-        {/* Rim light: two lobes seen only through a ring-shaped mask (the 2.15px gap around the card). */}
-        <div className={styles.rim} aria-hidden="true">
+        {/* Rim light: two lobes seen only through a ring-shaped mask (the 2.15px gap around the card). LandingMotion (data-rim)
+            moves them around the edge: toward the pointer, else with the scroll position. */}
+        <div className={styles.rim} data-rim="" aria-hidden="true">
           <Lobe corner="tl" />
           <Lobe corner="br" />
         </div>
