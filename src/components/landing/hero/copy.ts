@@ -31,8 +31,8 @@ export interface HeroStrings {
   gauge: { title: string; sub: string; tip: string; zones: readonly [string, string, string]; next: string; nextValue: string };
   /** DiDi asking for a photo: the tilted card behind the phone, where the design's Upgrade card stood. */
   mascot: { alt: string; text: string; cta: string; time: string };
-  /** The card that takes the place of the paid-plan card: the three photo scans the app has today. */
-  scans: { title: string; sub: string; tongue: string; face: string; iris: string };
+  /** The card that takes the place of the paid-plan card: DiDi offering a check-in (the app's own nudge). */
+  nudge: { line1: string; line2: string };
   streak: {
     days: string;
     label: string;
@@ -64,12 +64,9 @@ export const heroCopy: Record<Locale, HeroStrings> = {
       cta: 'Start a scan',
       time: '4:56',
     },
-    scans: {
-      title: 'Photo scans',
-      sub: 'Only when you ask',
-      tongue: 'Tongue',
-      face: 'Face',
-      iris: 'Iris',
+    nudge: {
+      line1: 'Feeling good?',
+      line2: 'Let’s do a quick check-in!',
     },
     streak: {
       days: '4 days',
@@ -112,12 +109,9 @@ export const heroCopy: Record<Locale, HeroStrings> = {
       cta: 'Начать скан', // DRAFT
       time: '4:56',
     },
-    scans: {
-      title: 'Фото-сканы', // DRAFT
-      sub: 'Только когда ты сам хочешь', // DRAFT
-      tongue: 'Язык', // DRAFT
-      face: 'Лицо', // DRAFT
-      iris: 'Радужка', // DRAFT
+    nudge: {
+      line1: 'Как самочувствие?', // DRAFT
+      line2: 'Давай быстро проверимся!', // DRAFT
     },
     streak: {
       days: '4 дня', // DRAFT

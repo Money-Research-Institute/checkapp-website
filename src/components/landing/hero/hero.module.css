@@ -6,7 +6,7 @@
  *   1024-1279 --u = 0.9px   cards at near-natural size, re-laid out around a centred phone
  *   < 1024    --u = 1px     cards are real flex layouts at natural text size, never scaled
  * Six modes, mobile first. Width breakpoints are container queries on the section (its own width, not the viewport):
- *   base      < 540    cascade: phone, then the Photo scans card in front of it, then DiDi's note below
+ *   base      < 540    cascade: phone, then the nudge card in front of it, then DiDi's note below
  *   540-699            small tablets and unfolded foldables: the phone at about its 700 size, the two cards side by side below it
  *   700-1023           flank-compact: the two cards flank the phone and tuck behind it (iPad mini and up get the real composition)
  *   1024-1279          small laptop: the desktop composition without the Streak card
@@ -240,7 +240,7 @@
   display: none;
 }
 
-/* Cascade: the phone is cropped at 84 % and fades out. The Photo scans card (the on-message one) hangs in front of it, so it is in
+/* Cascade: the phone is cropped at 84 % and fades out. The nudge card (the on-message one) hangs in front of it, so it is in
    the first view on a phone; DiDi's note sits below it, out of the way. */
 .phone {
   grid-row: 1;
@@ -625,95 +625,68 @@
   line-height: calc(12 * var(--u));
 }
 
-/* scans card, 358 x 145: stands where the Premium+ plan card stood (the plan spots show the three scans, never a plan) */
-.scanCard {
+/* DiDi's nudge, 300 x 156 (Figma 2822:13948): the avatar at the lower left (74 x 74, its head 24px above the disc), the bubble 221 x 108.4
+   at (79, 48). The plane is the whole box, as in the design. */
+.nudge {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* no flex gap here: the <picture> and its <source>s are zero-height flex items that would each take one */
-  box-sizing: border-box;
-  min-height: calc(145 * var(--u));
-  padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(14 * var(--u)) calc(16 * var(--u) + var(--tuck));
-  overflow: clip;
-  border-radius: calc(16 * var(--u));
-  background: #2f4a24;
-  color: #fff;
+  width: calc(300 * var(--u));
+  height: calc(156.4 * var(--u));
   font-family: var(--font-inter), var(--font-manrope), system-ui, sans-serif;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  color: #fff;
 }
-.scanCard::after {
-  content: '';
+.nudgeAvatar {
   position: absolute;
-  inset: 0;
-  border: 1px solid rgb(255 255 255 / 0.16);
-  border-radius: inherit;
-  pointer-events: none;
+  left: 0;
+  top: calc(82.4 * var(--u));
+  width: calc(74 * var(--u));
+  height: calc(74 * var(--u));
+  border-radius: 50%;
+  background: #000;
 }
-/* Figma: the silk art is a 358 x 179 block that starts 24px above the card, cropped to cover */
-.foil {
+.nudgeFace {
   position: absolute;
   top: calc(-24 * var(--u));
-  left: 0;
+  right: 0;
   display: block;
-  width: 100%;
-  height: calc(179 * var(--u));
+  width: calc(74 * var(--u));
+  height: calc(98 * var(--u));
   max-width: none;
-  object-fit: cover;
 }
-/* keeps the white text above 4.5:1 over the lighter sheen of the silk */
-.scrim {
+.nudgeBubble {
+  position: absolute;
+  left: calc(79 * var(--u));
+  top: calc(48 * var(--u));
+  width: calc(221 * var(--u));
+  height: calc(108.4 * var(--u));
+  filter: drop-shadow(0 calc(2 * var(--u)) calc(15 * var(--u)) rgb(0 0 0 / 0.08));
+}
+.nudgeShape {
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, rgb(6 16 4 / 0.22), rgb(6 16 4 / 0.07) 70%, rgb(6 16 4 / 0));
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.scanHead {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-.scanTitle {
-  font-size: calc(16 * var(--u));
-  font-weight: 600;
-  line-height: calc(22 * var(--u));
-}
-.scanSub {
-  color: #e6ecdc;
-  font-size: calc(12.9 * var(--u));
-  line-height: calc(18 * var(--u));
-}
-.scanRow {
-  position: relative;
-  margin-top: calc(10 * var(--u));
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: calc(8 * var(--u));
-}
-.scanItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(4 * var(--u));
-  min-width: 0;
-}
-.scanIcon {
-  display: grid;
-  place-items: center;
-  width: calc(40 * var(--u));
-  height: calc(40 * var(--u));
-  border: 1px solid rgb(255 255 255 / 0.22);
-  border-radius: calc(12 * var(--u));
-  background: rgb(255 255 255 / 0.12);
-  color: var(--c-mint);
-}
-.scanGlyph {
-  width: calc(24 * var(--u));
-  height: calc(24 * var(--u));
-}
-.scanLabel {
-  /* never an ellipsis: a longer word ("Радужка") may spill a few px into the 8px gap between the columns, which is invisible */
-  font-size: calc(12.9 * var(--u));
+.nudgeWave {
+  position: absolute;
+  left: calc(28 * var(--u));
+  top: calc(16 * var(--u));
+  font-size: calc(28 * var(--u));
   font-weight: 500;
-  line-height: calc(18 * var(--u));
+  line-height: normal;
+  letter-spacing: calc(-0.56 * var(--u));
+}
+.nudgeText {
+  position: absolute;
+  left: calc(28 * var(--u));
+  top: calc(48 * var(--u));
+  display: flex;
+  flex-direction: column;
+  font-size: calc(14 * var(--u));
+  font-weight: 500;
+  line-height: calc(22 * var(--u));
+  letter-spacing: calc(-0.28 * var(--u));
   white-space: nowrap;
 }
 
@@ -1019,9 +992,9 @@
     z-index: 2;
   }
   .scans {
-    top: calc(78 * var(--u));
+    top: calc(38 * var(--u));
     left: calc(50% + 177.8 * var(--u));
-    width: calc(358 * var(--u));
+    width: calc(300 * var(--u));
   }
   .result {
     display: flex;
@@ -1095,7 +1068,7 @@
     left: calc(122 * var(--u));
   }
   .scans {
-    left: calc(1004.18 * var(--u));
+    left: calc(976 * var(--u));
   }
   .streak {
     top: calc(308 * var(--u));
@@ -1420,22 +1393,16 @@
   .glass {
     --edge: linear-gradient(135deg, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.4));
   }
-  .scrim {
-    background: #16210d;
-  }
   .noteSub,
   .goal {
     color: #e6e6e6;
   }
 }
 @media (forced-colors: active) {
-  .glass,
-  .scanCard {
+  .glass {
     border: 1px solid CanvasText;
     background: Canvas;
   }
-  .scanCard::after,
-  .scrim,
   .glow,
   .reach {
     display: none;

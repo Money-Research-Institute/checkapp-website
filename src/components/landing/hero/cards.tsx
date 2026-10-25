@@ -5,8 +5,6 @@ import { KeepHyphenated } from './keep-hyphenated';
 import {
   CheckGlyph,
   DropGlyph,
-  FaceGlyph,
-  IrisGlyph,
   LayersGlyph,
   StatusDot,
   TickAhead,
@@ -24,7 +22,7 @@ import s from './hero.module.css';
  *
  * The cards show only what the app does today: a photo scan of the tongue, face or iris on request, and the short wellness
  * insight that comes back (docs/landing-copy.md). The design's smartwatch, Heart Rate, Sleep and Body Composition cards were
- * wearable sync and body readings the app does not have, and its Premium+ and Upgrade cards sold a plan it cannot sell: each has a
+ * wearable sync and body readings the app does not have, and its Upgrade card sold a plan it cannot sell: each has a
  * stand-in in the same glass, in the same place, with the same accent colours (scan, two readings, a gauge, the three scans, DiDi's
  * prompt), so the composition is the design's and every word on it is true.
  *
@@ -161,41 +159,45 @@ export function MascotCard({ t }: { t: HeroStrings['mascot'] }) {
 }
 
 /**
- * Stands where the Premium+ plan card stood (docs/landing-copy.md: the plan spots show the three scans, never a plan, a
- * price, a trial or a report). The same green foil as the design, a dark scrim to keep the white text above AA over the brightest
- * part of the sheen, and the three photo scans the app has today: tongue, face, iris. No button, nothing to tap.
+ * DiDi's nudge (Figma "Nudge Card w/ avatar", 2822:13948, 300 x 156), where the Premium+ plan card stood: the companion's avatar,
+ * its head out of the black disc, and a speech bubble that offers a check-in. It is the app's own nudge (the Home check-in prompt),
+ * so it says nothing the app cannot do. The bubble is the design's own outline (a glass fill and a gradient edge, with a tail at the
+ * lower left); the avatar is the design's picture, cropped to its 74 x 98 box.
  */
-export function ScansCard({ t }: { t: HeroStrings['scans'] }) {
-  const items = [
-    { Glyph: TongueGlyph, label: t.tongue },
-    { Glyph: FaceGlyph, label: t.face },
-    { Glyph: IrisGlyph, label: t.iris },
-  ];
+export function NudgeCard({ t }: { t: HeroStrings['nudge'] }) {
   return (
-    <div className={s.scanCard} aria-hidden="true">
-      <Picture
-        base="/landing/hero/foil"
-        widths={[358, 716]}
-        sizes="358px"
-        width={716}
-        height={358}
-        alt=""
-        className={s.foil}
-      />
-      <span className={s.scrim} />
-      <span className={s.scanHead}>
-        <span className={s.scanTitle}>{t.title}</span>
-        <span className={s.scanSub}>{t.sub}</span>
+    <div className={s.nudge} aria-hidden="true">
+      <span className={s.nudgeAvatar}>
+        <Picture
+          base="/landing/hero/nudge-avatar"
+          widths={[148, 222]}
+          sizes="74px"
+          width={222}
+          height={294}
+          alt=""
+          className={s.nudgeFace}
+        />
       </span>
-      <span className={s.scanRow}>
-        {items.map(({ Glyph, label }) => (
-          <span key={label} className={s.scanItem}>
-            <span className={s.scanIcon}>
-              <Glyph className={s.scanGlyph} />
-            </span>
-            <span className={s.scanLabel}>{label}</span>
-          </span>
-        ))}
+      <span className={s.nudgeBubble}>
+        <svg className={s.nudgeShape} viewBox="0 0 220.8 108.369" preserveAspectRatio="none" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="nudgeEdge" x1="0" y1="-47.6313" x2="95.5367" y2="55.2779" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#fff" />
+              <stop offset="1" stopColor="#fff" stopOpacity="0" />
+            </linearGradient>
+            <path id="nudgePath" d="M209.8 0C215.875 0.000198415 220.8 4.92516 220.8 11V97C220.8 103.075 215.875 108 209.8 108H19.7998C17.4206 108 15.2188 107.244 13.4199 105.96C12.4197 105.245 10.5469 105.905 10.5469 107.134C10.5469 108.302 9.07393 108.815 8.3491 107.899L1.13892 98.7931C-0.379885 96.875 -0.379904 94.1641 1.13887 92.2459L7.50382 84.2071C8.34313 83.1471 8.7998 81.8346 8.7998 80.4826V11C8.8 4.92504 13.7248 0 19.7998 0H209.8Z" />
+            <mask id="nudgeInside" fill="#fff">
+              <use href="#nudgePath" />
+            </mask>
+          </defs>
+          <use href="#nudgePath" fill="#fff" fillOpacity="0.06" />
+          <use href="#nudgePath" stroke="url(#nudgeEdge)" strokeOpacity="0.4" strokeWidth="2" mask="url(#nudgeInside)" />
+        </svg>
+        <span className={s.nudgeWave}>{'\u{1F44B}'}</span>
+        <span className={s.nudgeText}>
+          <span>{t.line1}</span>
+          <span>{t.line2}</span>
+        </span>
       </span>
     </div>
   );
