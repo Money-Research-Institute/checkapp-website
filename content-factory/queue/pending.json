@@ -1,150 +1,5 @@
 [
   {
-    "id": 17,
-    "cluster": "Hydration",
-    "slug": "sleep-and-hydration-connection",
-    "titleDe": "Sleep and Hydration: How They Affect Each Other Overnight",
-    "titleEn": "Sleep and Hydration: How They Affect Each Other Overnight",
-    "keywordDe": "sleep and hydration",
-    "keywordEn": "sleep and hydration",
-    "lsiKeywords": [
-      "overnight fluid loss",
-      "sleep quality hydration",
-      "nighttime dehydration",
-      "morning thirst"
-    ],
-    "format": "Explainer",
-    "category": "Hydration Science",
-    "unsplashQuery": "sleep hydration bedroom water night",
-    "status": "pending",
-    "priority": "medium",
-    "searchVolDe": 1300,
-    "kd": 20,
-    "searchVolEn": 2600,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-09-05",
-    "language": "EN"
-  },
-  {
-    "id": 18,
-    "cluster": "Hydration",
-    "slug": "workplace-hydration-habits",
-    "titleDe": "Workplace Hydration: Staying Hydrated During Long Desk Days",
-    "titleEn": "Workplace Hydration: Staying Hydrated During Long Desk Days",
-    "keywordDe": "workplace hydration",
-    "keywordEn": "workplace hydration",
-    "lsiKeywords": [
-      "office water intake",
-      "desk job dehydration",
-      "workday hydration tips",
-      "hydration reminders"
-    ],
-    "format": "Howto",
-    "category": "Hydration Science",
-    "unsplashQuery": "office desk water bottle hydration work",
-    "status": "pending",
-    "priority": "medium",
-    "searchVolDe": 900,
-    "kd": 18,
-    "searchVolEn": 1800,
-    "targetLength": 1500,
-    "taSegments": [
-      "beginners"
-    ],
-    "plannedDate": "2026-09-09",
-    "language": "EN"
-  },
-  {
-    "id": 21,
-    "cluster": "Habits",
-    "slug": "wellness-streak-psychology",
-    "titleDe": "Wellness Streak Psychology: Why Counting Days Changes Behaviour",
-    "titleEn": "Wellness Streak Psychology: Why Counting Days Changes Behaviour",
-    "keywordDe": "wellness streak psychology",
-    "keywordEn": "wellness streak psychology",
-    "lsiKeywords": [
-      "streak motivation",
-      "loss aversion habits",
-      "consistency tracking",
-      "behavioural science"
-    ],
-    "format": "Explainer",
-    "category": "Daily Habits",
-    "unsplashQuery": "wellness streak calendar motivation habit",
-    "status": "pending",
-    "priority": "medium",
-    "searchVolDe": 800,
-    "kd": 19,
-    "searchVolEn": 1600,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-09-21",
-    "language": "EN"
-  },
-  {
-    "id": 22,
-    "cluster": "Oral Wellness",
-    "slug": "tongue-coating-meaning",
-    "titleDe": "What Does Tongue Coating Mean? Reading Daily Oral Wellness Signals",
-    "titleEn": "What Does Tongue Coating Mean? Reading Daily Oral Wellness Signals",
-    "keywordDe": "tongue coating meaning",
-    "keywordEn": "tongue coating meaning",
-    "lsiKeywords": [
-      "white tongue coating",
-      "tongue health signs",
-      "oral hydration signals",
-      "tongue diagnosis"
-    ],
-    "format": "Explainer",
-    "category": "Preventive Care",
-    "unsplashQuery": "tongue coating oral health wellness",
-    "status": "pending",
-    "priority": "medium",
-    "searchVolDe": 1100,
-    "kd": 21,
-    "searchVolEn": 2200,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-09-25",
-    "language": "EN"
-  },
-  {
-    "id": 23,
-    "cluster": "Hydration",
-    "slug": "dehydration-signs-for-athletes",
-    "titleDe": "Dehydration Signs for Athletes: Performance, Recovery, and Prevention",
-    "titleEn": "Dehydration Signs for Athletes: Performance, Recovery, and Prevention",
-    "keywordDe": "dehydration signs athletes",
-    "keywordEn": "dehydration signs athletes",
-    "lsiKeywords": [
-      "athletic hydration",
-      "sports dehydration",
-      "performance fluid loss",
-      "exercise water intake"
-    ],
-    "format": "Guide",
-    "category": "Hydration Science",
-    "unsplashQuery": "athlete hydration sports water training",
-    "status": "pending",
-    "priority": "medium",
-    "searchVolDe": 1700,
-    "kd": 24,
-    "searchVolEn": 3400,
-    "targetLength": 1500,
-    "taSegments": [
-      "health-curious"
-    ],
-    "plannedDate": "2026-09-29",
-    "language": "EN"
-  },
-  {
     "id": 25,
     "cluster": "Habits",
     "slug": "micro-habits-science",
@@ -345,6 +200,151 @@
       "health-curious"
     ],
     "plannedDate": "2026-11-15",
+    "language": "EN"
+  },
+  {
+    "id": 17,
+    "cluster": "Hydration",
+    "slug": "sleep-and-hydration-connection",
+    "titleDe": "Sleep and Hydration: How They Affect Each Other Overnight",
+    "titleEn": "Sleep and Hydration: How They Affect Each Other Overnight",
+    "keywordDe": "sleep and hydration",
+    "keywordEn": "sleep and hydration",
+    "lsiKeywords": [
+      "overnight fluid loss",
+      "sleep quality hydration",
+      "nighttime dehydration",
+      "morning thirst"
+    ],
+    "format": "Explainer",
+    "category": "Hydration Science",
+    "unsplashQuery": "sleep hydration bedroom water night",
+    "status": "pending",
+    "priority": "medium",
+    "searchVolDe": 1300,
+    "kd": 20,
+    "searchVolEn": 2600,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-05",
+    "language": "EN"
+  },
+  {
+    "id": 18,
+    "cluster": "Hydration",
+    "slug": "workplace-hydration-habits",
+    "titleDe": "Workplace Hydration: Staying Hydrated During Long Desk Days",
+    "titleEn": "Workplace Hydration: Staying Hydrated During Long Desk Days",
+    "keywordDe": "workplace hydration",
+    "keywordEn": "workplace hydration",
+    "lsiKeywords": [
+      "office water intake",
+      "desk job dehydration",
+      "workday hydration tips",
+      "hydration reminders"
+    ],
+    "format": "Howto",
+    "category": "Hydration Science",
+    "unsplashQuery": "office desk water bottle hydration work",
+    "status": "pending",
+    "priority": "medium",
+    "searchVolDe": 900,
+    "kd": 18,
+    "searchVolEn": 1800,
+    "targetLength": 1500,
+    "taSegments": [
+      "beginners"
+    ],
+    "plannedDate": "2026-09-09",
+    "language": "EN"
+  },
+  {
+    "id": 21,
+    "cluster": "Habits",
+    "slug": "wellness-streak-psychology",
+    "titleDe": "Wellness Streak Psychology: Why Counting Days Changes Behaviour",
+    "titleEn": "Wellness Streak Psychology: Why Counting Days Changes Behaviour",
+    "keywordDe": "wellness streak psychology",
+    "keywordEn": "wellness streak psychology",
+    "lsiKeywords": [
+      "streak motivation",
+      "loss aversion habits",
+      "consistency tracking",
+      "behavioural science"
+    ],
+    "format": "Explainer",
+    "category": "Daily Habits",
+    "unsplashQuery": "wellness streak calendar motivation habit",
+    "status": "pending",
+    "priority": "medium",
+    "searchVolDe": 800,
+    "kd": 19,
+    "searchVolEn": 1600,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-21",
+    "language": "EN"
+  },
+  {
+    "id": 22,
+    "cluster": "Oral Wellness",
+    "slug": "tongue-coating-meaning",
+    "titleDe": "What Does Tongue Coating Mean? Reading Daily Oral Wellness Signals",
+    "titleEn": "What Does Tongue Coating Mean? Reading Daily Oral Wellness Signals",
+    "keywordDe": "tongue coating meaning",
+    "keywordEn": "tongue coating meaning",
+    "lsiKeywords": [
+      "white tongue coating",
+      "tongue health signs",
+      "oral hydration signals",
+      "tongue diagnosis"
+    ],
+    "format": "Explainer",
+    "category": "Preventive Care",
+    "unsplashQuery": "tongue coating oral health wellness",
+    "status": "pending",
+    "priority": "medium",
+    "searchVolDe": 1100,
+    "kd": 21,
+    "searchVolEn": 2200,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-25",
+    "language": "EN"
+  },
+  {
+    "id": 23,
+    "cluster": "Hydration",
+    "slug": "dehydration-signs-for-athletes",
+    "titleDe": "Dehydration Signs for Athletes: Performance, Recovery, and Prevention",
+    "titleEn": "Dehydration Signs for Athletes: Performance, Recovery, and Prevention",
+    "keywordDe": "dehydration signs athletes",
+    "keywordEn": "dehydration signs athletes",
+    "lsiKeywords": [
+      "athletic hydration",
+      "sports dehydration",
+      "performance fluid loss",
+      "exercise water intake"
+    ],
+    "format": "Guide",
+    "category": "Hydration Science",
+    "unsplashQuery": "athlete hydration sports water training",
+    "status": "pending",
+    "priority": "medium",
+    "searchVolDe": 1700,
+    "kd": 24,
+    "searchVolEn": 3400,
+    "targetLength": 1500,
+    "taSegments": [
+      "health-curious"
+    ],
+    "plannedDate": "2026-09-29",
     "language": "EN"
   }
 ]
