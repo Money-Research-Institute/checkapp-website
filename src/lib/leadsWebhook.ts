@@ -1,6 +1,5 @@
 /**
- * One Apps Script deployment for every lead form across our sites
- * (Rentiers, Cryp2bus, CheckApp).
+ * Apps Script webhook for CheckApp lead forms.
  * Set NEXT_PUBLIC_LEADS_WEBHOOK_URL to override; do not add a second macros URL.
  */
 const PRIMARY_LEADS_WEBHOOK_URL =
